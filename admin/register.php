@@ -159,7 +159,7 @@ $lastname = $_SESSION['lastname'];
                         confirmationShown = true;
 
                         Swal.fire({
-                            title: 'Confirm Registration',
+                            title: 'Confirm Registration?',
                             text: "Are you sure you want to register?",
                             icon: 'warning',
                             showCancelButton: true,
