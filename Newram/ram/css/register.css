@@ -1,0 +1,60 @@
+body {
+    background-color: #f7f7f7;
+    font-family: Arial, sans-serif;
+}
+
+.form-container {
+    display: grid;
+
+    gap: 20px;
+    max-width: 800px;
+    height: 600px;
+    /* Set a fixed height */
+    margin: 50px auto;
+    padding: 30px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+    /* Make it scrollable */
+}
+
+.form-container h2 {
+    grid-column: span 2;
+    text-align: center;
+    background-color: blue;
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.form-label {
+    color: blue;
+    font-weight: bold;
+}
+
+.form-control {
+    border: 2px solid #ffcc00;
+    padding: 10px;
+    background-color: #fff4cc;
+}
+
+.btn-primary {
+    grid-column: span 2;
+    background-color: #cc0000;
+    border-color: #cc0000;
+    color: white;
+    font-weight: bold;
+    padding: 10px;
+}
+
+.btn-primary:hover {
+    background-color: #ffcc00;
+    border-color: #ffcc00;
+    color: blue;
+}
+
+/* Ensure full-width fields take up both columns */
+.full-width {
+    grid-column: span 2;
+}

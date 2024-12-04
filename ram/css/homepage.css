@@ -1,0 +1,208 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background: #fcd12a;
+    color: white;
+    display: flex;
+    align-items: center;
+    padding: 29px 20px;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+}
+
+.logo img {
+    height: 80px;
+    /* Adjust height as needed */
+    margin-right: 5px;
+    /* Space between logo and title */
+}
+
+.logo h1 {
+    margin: 0;
+}
+
+nav {
+    margin-left: auto;
+    /* Pushes the nav to the right */
+}
+
+nav ul {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    margin: 0;
+}
+
+nav ul li {
+    margin-left: 20px;
+}
+
+nav ul li a {
+    color: white;
+    text-decoration: none;
+}
+
+.hero {
+    position: relative;
+    /* To position the button absolutely */
+    padding: 50px 0;
+    /* Adjusted padding */
+    overflow: hidden;
+    /* Ensure no overflow */
+}
+
+.hero-image-container {
+    position: relative;
+    display: block;
+    /* Remove inline-block for full width */
+    width: 100vw;
+    /* Full viewport width */
+    margin-left: calc(-50vw + 50%);
+    /* Center align with negative margin */
+}
+
+.hero-image {
+    width: 100%;
+    /* Make the image responsive */
+    height: auto;
+    /* Maintain aspect ratio */
+}
+
+.hero-text {
+    font-size: 30px;
+    position: absolute;
+    top: 50%;
+    /* Center vertically */
+    left: 10%;
+    /* Adjust this value to move the text further right */
+    transform: translateY(-50%);
+    /* Center vertically */
+    color: white;
+    /* Text color */
+    text-align: left;
+    /* Align text to the left */
+}
+
+.overlay-btn {
+    margin-top: 20px;
+    /* Space between text and button */
+    background: #e67e22;
+    /* Button color */
+    color: white;
+    padding: 17px 45px;
+    /* Increased padding for larger button */
+    font-size: 1.2em;
+    /* Increased font size for better readability */
+    text-decoration: none;
+    border-radius: 25px;
+    /* Rounded corners */
+    z-index: 10;
+    /* Ensure it overlays the image */
+}
+
+.info {
+    display: flex;
+    align-items: center;
+    padding: 50px 20px;
+    text-align: center;
+}
+
+.info-image-container {
+    width: 50%;
+    display: flex;
+    justify-content: center;
+    /* Centers the image */
+}
+
+.info-image {
+    max-width: 100%;
+    /* Makes sure image fits inside the container */
+    height: auto;
+}
+
+.info-text {
+    width: 50%;
+}
+
+.reverse {
+    flex-direction: row-reverse;
+}
+
+footer {
+    background: #333;
+    color: white;
+    text-align: center;
+    padding: 20px;
+}
+
+footer p {
+    margin: 5px 0;
+}
+
+.btn {
+    display: inline-block;
+    /* Allows padding and margin */
+    background: #ffd900;
+    /* Primary color */
+    color: white;
+    padding: 12px 24px;
+    /* Increased padding for better touch targets */
+    text-decoration: none;
+    border-radius: 20px;
+    /* Slightly more rounded corners */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    /* Adds depth */
+    transition: background 0.3s ease, transform 0.2s ease;
+    /* Smooth transition for hover effect */
+}
+
+.btn:hover {
+    background: #0051ff;
+    /* Darker shade on hover */
+    transform: translateY(-2px);
+    /* Subtle lift effect */
+}
+
+/* Specific styles for the overlay button */
+.overlay-btn {
+    position: absolute;
+    top: 100%;
+    /* Center vertically */
+    left: 20%;
+    /* Center horizontally */
+    transform: translate(-50%, -50%);
+    /* Adjust for the button's width/height */
+    background: #fcd12a;
+    /* Button color */
+    color: white;
+    padding: 17px 45px;
+    /* Increased padding for larger button */
+    font-size: 1.2em;
+    /* Increased font size for better readability */
+    text-decoration: none;
+    border-radius: 25px;
+    /* Rounded corners */
+    z-index: 10;
+    /* Ensure it overlays the image */
+}
+
+.centered-section {
+    text-align: center;
+    /* Center the text */
+    padding: 50px 20px;
+    /* Add some padding for spacing */
+}
+
+.left-section {
+    padding: 50px 20px;
+    /* Add padding for spacing */
+    text-align: left;
+    /* Align text to the left */
+}
