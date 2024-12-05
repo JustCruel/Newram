@@ -4,6 +4,7 @@ include '../config/connection.php';
 
 $firstname = $_SESSION['firstname'];
 $lastname = $_SESSION['lastname'];
+
 // Fetch fare settings from the database
 $query = "SELECT * FROM fare_settings LIMIT 1";
 $result = $conn->query($query);
@@ -40,8 +41,6 @@ $conn->close();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fare Settings</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.6.0/dist/sweetalert2.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -49,7 +48,6 @@ $conn->close();
     <style>
         h1.text-center {
             color: #000;
-            /* Change this color to your preferred one */
         }
     </style>
 </head>
@@ -69,7 +67,6 @@ $conn->close();
                     confirmButtonText: "Okay"
                 });
               </script>';
-        // Unset session variable after showing the alert
         unset($_SESSION['fare_updated']);
     }
     ?>
@@ -97,10 +94,27 @@ $conn->close();
                 </div>
             </div>
         </form>
-
-
     </div>
 
+    <script>
+        document.querySelector('form').addEventListener('submit', function (e) {
+            e.preventDefault(); // Prevent the form from submitting immediately
+
+            Swal.fire({
+                title: 'Are you sure?',
+                text: 'Do you want to update the fares?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, save it!',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // If confirmed, submit the form
+                    e.target.submit();
+                }
+            });
+        });
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
