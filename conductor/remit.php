@@ -123,9 +123,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['confirm_remittance']))
         $stmtDeduction->execute();
     }
 
+    // Reset the daily revenue to 0 after remittance
+    $resetRevenueStmt = $conn->prepare("UPDATE transactions SET amount = 0 WHERE bus_number = ? AND DATE(transaction_date) = CURDATE()");
+    $resetRevenueStmt->bind_param("s", $bus_no);
+    $resetRevenueStmt->execute();
+
+    // Pass conductor name to printremit.php via POST
+    $_POST['conductor_name'] = $conductor_name;
+    include 'printremit.php';
+
     // Success response
-    echo "<script>alert('Remittance saved successfully!'); window.location.href='';</script>";
+    echo "<script>alert('Remittance saved successfully! Revenue for today has been reset.'); window.location.href='';</script>";
 }
+
 $firstname = $_SESSION['firstname'];
 $lastname = $_SESSION['lastname'];
 
@@ -147,7 +157,7 @@ if (!isset($_SESSION['bus_number']) || !isset($_SESSION['driver_account_number']
 
 $bus_number = $_SESSION['bus_number']; // Get bus number from session
 $conductor_id = $_SESSION['driver_account_number']; // Get conductor ID from session
-var_dump($bus_number, $conductor_id);
+var_dump($bus_number, $conductor_id, $conductor_name);
 ?>
 
 
