@@ -331,8 +331,10 @@ $userResult = mysqli_query($conn, $userQuery);
                             const result = JSON.parse(response);
                             if (result.success) {
                                 $('#userTableBody').html(result.tableData);
-                                Swal.fire('Disabled!', 'User has been disabled and funds transferred.', 'success');
-                                location.reload();
+                                Swal.fire('Disabled!', 'User has been disabled and funds transferred.', 'success').then(() => {
+                                    // Reload the page after the alert is closed
+                                    location.reload();
+                                });
                             } else {
                                 Swal.fire('Error!', result.message, 'error');
                             }
@@ -363,9 +365,11 @@ $userResult = mysqli_query($conn, $userQuery);
                         success: function (response) {
                             const result = JSON.parse(response);
                             if (result.success) {
-                                $('#userTableBody').html(result.tableData);
-                                Swal.fire('Disabled!', 'User has been disabled', 'success');
-                                location.reload();
+
+                                Swal.fire('Disabled!', 'User has been disabled', 'success').then(() => {
+                                    // Reload the page after the alert is closed
+                                    location.reload();
+                                });
                             } else {
                                 Swal.fire('Error!', result.message, 'error');
                             }
