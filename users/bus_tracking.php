@@ -105,36 +105,42 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             // Debounce function to limit the number of updates sent to the server
             let lastFetchTime = 0;
-            const fetchDelay = 3000; // 3 seconds
+            const fetchDelay = 10000; // 10 seconds for better performance
 
             // Update marker position and send GPS updates to the server
             if (navigator.geolocation) {
                 navigator.geolocation.watchPosition(function (position) {
                     const newLat = position.coords.latitude;
                     const newLon = position.coords.longitude;
+                    const accuracy = position.coords.accuracy; // Get accuracy of location
 
-                    // Update the marker position
-                    marker.setLatLng([newLat, newLon]);
-                    map.setView([newLat, newLon]);
+                    // If accuracy is within acceptable range (e.g., within 100 meters)
+                    if (accuracy <= 100) {
+                        // Update the marker position
+                        marker.setLatLng([newLat, newLon]);
+                        map.setView([newLat, newLon]);
 
-                    const now = Date.now();
-                    if (now - lastFetchTime > fetchDelay) {
-                        // Send updated coordinates to the server using fetch
-                        fetch(window.location.href, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/x-www-form-urlencoded',
-                            },
-                            body: `gps_latitude=${newLat}&gps_longitude=${newLon}`
-                        })
-                            .then(response => response.text())
-                            .then(data => {
-                                console.log('Location updated:', data);
+                        const now = Date.now();
+                        if (now - lastFetchTime > fetchDelay) {
+                            // Send updated coordinates to the server using fetch
+                            fetch(window.location.href, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/x-www-form-urlencoded',
+                                },
+                                body: `gps_latitude=${newLat}&gps_longitude=${newLon}`
                             })
-                            .catch(error => {
-                                console.error('Error updating location:', error);
-                            });
-                        lastFetchTime = now;
+                                .then(response => response.text())
+                                .then(data => {
+                                    console.log('Location updated:', data);
+                                })
+                                .catch(error => {
+                                    console.error('Error updating location:', error);
+                                });
+                            lastFetchTime = now;
+                        }
+                    } else {
+                        console.warn('Low accuracy, skipping update:', accuracy, 'meters');
                     }
                 }, function (error) {
                     console.error("Error getting location: ", error);
@@ -144,6 +150,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     maximumAge: 0,
                     timeout: 5000
                 });
+            } else {
+                alert("Geolocation is not supported by your browser.");
             }
         }
 
