@@ -57,6 +57,8 @@ if (isset($_POST['Login'])) {
             echo "<script>window.location.href = 'admin/index.php';</script>";
          } else if ($row['role'] === 'Cashier') {
             echo "<script>window.location.href = 'cashier/index.php';</script>";
+         } else if ($row['role'] === 'Superadmin') {
+            echo "<script>window.location.href = 'superadmin/index.php';</script>";
          } else if ($row['role'] === 'User') {
             echo "<script>window.location.href = 'users/index.php';</script>";
          } else if ($row['role'] === 'Conductor') {
