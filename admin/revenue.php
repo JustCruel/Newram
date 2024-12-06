@@ -1,35 +1,52 @@
 <?php
 session_start();
+ob_start();
+
+ini_set('display_errors', 0); // Suppress errors
+error_reporting(0);          // Turn off error reporting
+
 include '../config/connection.php';
 include 'sidebar.php';
 $currentYear = date('Y');
 $currentMonth = date('m');
 $currentDay = date('d');
+$selectedDayRevenue = 0; // Default value
 
-// Fetch daily revenue data for the current year and month
-$dailyRevenueQuery = "SELECT DAY(timestamp) AS day, SUM(fare) AS total_revenue 
-                      FROM passenger_logs 
-                      WHERE YEAR(timestamp) = '$currentYear' 
-                      AND MONTH(timestamp) = '$currentMonth'
-                      GROUP BY DAY(timestamp)";
-$dailyRevenueResult = mysqli_query($conn, $dailyRevenueQuery);
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $selectedDate = $_POST['date'] ?? date('Y-m-d');
+    $selectedYear = date('Y', strtotime($selectedDate));
+    $selectedMonth = date('m', strtotime($selectedDate));
+    $selectedDay = date('d', strtotime($selectedDate));
 
-// Check for query errors
-if (!$dailyRevenueResult) {
-    die("Database query failed: " . mysqli_error($conn));
+    $dailyRevenueQuery = "SELECT DAY(timestamp) AS day, SUM(fare) AS total_revenue 
+                          FROM passenger_logs 
+                          WHERE YEAR(timestamp) = '$selectedYear' 
+                          AND MONTH(timestamp) = '$selectedMonth'
+                          GROUP BY DAY(timestamp)";
+    $dailyRevenueResult = mysqli_query($conn, $dailyRevenueQuery);
+
+    $daysInMonth = date('t', strtotime("$selectedYear-$selectedMonth-01"));
+    $dailyRevenue = array_fill(1, $daysInMonth, 0);
+
+    while ($row = mysqli_fetch_assoc($dailyRevenueResult)) {
+        $dailyRevenue[$row['day']] = $row['total_revenue'];
+    }
+
+    $selectedDayRevenue = $dailyRevenue[(int) $selectedDay] ?? 0;
+
+    header('Content-Type: application/json');
+    ob_end_clean(); // Clear any unwanted output
+    echo json_encode([
+        'dailyRevenue' => $dailyRevenue,
+        'selectedDayRevenue' => $selectedDayRevenue
+    ]);
+
+    exit;
 }
 
-// Initialize an array to hold the daily revenues
-$dailyRevenue = array_fill(1, date('t', strtotime("$currentYear-$currentMonth-01")), 0);
-
-// Populate the array with data from the query result
-while ($row = mysqli_fetch_assoc($dailyRevenueResult)) {
-    $dailyRevenue[$row['day']] = $row['total_revenue'];
-}
-
-$selectedDayRevenue = $dailyRevenue[$currentDay] ?? 0;
-
+$dailyRevenue = $dailyRevenue ?? [];
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -40,19 +57,15 @@ $selectedDayRevenue = $dailyRevenue[$currentDay] ?? 0;
     <title>Revenue Report</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800,900" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800,900">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script> <!-- Load ApexCharts -->
     <link rel="stylesheet" href="../css/style.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
+        h1 {
+            color: black;
         }
     </style>
 </head>
@@ -65,40 +78,11 @@ $selectedDayRevenue = $dailyRevenue[$currentDay] ?? 0;
         <form id="filterForm" method="POST">
             <div class="row mb-3">
                 <div class="col-md-4">
-                    <label for="year" class="form-label">Select Year</label>
-                    <select name="year" id="year" class="form-select" required>
-                        <?php for ($i = 2020; $i <= date('Y'); $i++) {
-                            $selected = ($i == $currentYear) ? 'selected' : '';
-                            echo "<option value='$i' $selected>$i</option>";
-                        } ?>
-                    </select>
-                </div>
-                <div class="col-md-4">
-                    <label for="month" class="form-label">Select Month</label>
-                    <select name="month" id="month" class="form-select" required>
-                        <?php for ($m = 1; $m <= 12; $m++) {
-                            $selected = ($m == $currentMonth) ? 'selected' : '';
-                            echo "<option value='$m' $selected>" . date("F", mktime(0, 0, 0, $m, 1)) . "</option>";
-                        } ?>
-                    </select>
-                </div>
-                <div class="col-md-4">
-                    <div class="form-check">
-                        <input type="checkbox" name="include_day" id="include_day" class="form-check-input">
-                        <label for="include_day" class="form-check-label">Include Day</label>
-                    </div>
+                    <label for="date" class="form-label">Select Date</label>
+                    <input type="date" id="date" name="date" class="form-control"
+                        value="<?php echo "$currentYear-$currentMonth-$currentDay"; ?>" required>
                 </div>
             </div>
-
-            <div class="row mb-3" id="daySelection" style="display: none;">
-                <div class="col-md-4">
-                    <label for="day" class="form-label">Select Day</label>
-                    <select name="day" id="day" class="form-select">
-                        <!-- Options generated by PHP dynamically -->
-                    </select>
-                </div>
-            </div>
-
             <button type="submit" class="btn btn-primary">Filter</button>
             <button type="button" class="btn btn-danger" id="generatePdfBtn">Download PDF</button>
         </form>
@@ -110,69 +94,74 @@ $selectedDayRevenue = $dailyRevenue[$currentDay] ?? 0;
         </div>
 
         <!-- Chart for daily revenue -->
-        <canvas id="revenueChart" width="400" height="200"></canvas>
+        <div id="revenueChart"></div> <!-- ApexCharts container -->
     </div>
 
     <script>
+        // Update the chart using ApexCharts
+        function updateChart(dailyRevenue) {
+            const labels = Object.keys(dailyRevenue).map(day => parseInt(day));
+            const data = Object.values(dailyRevenue);
+
+            var options = {
+                chart: {
+                    type: 'bar',
+                    height: 350
+                },
+                series: [{
+                    name: 'Daily Revenue',
+                    data: data
+                }],
+                xaxis: {
+                    categories: labels,
+                    title: {
+                        text: 'Days of the Month'
+                    }
+                },
+                yaxis: {
+                    title: {
+                        text: 'Revenue (₱)'
+                    }
+                },
+                dataLabels: {
+                    enabled: false
+                },
+                fill: {
+                    opacity: 0.9
+                },
+                colors: ['#4bc0c0']
+            };
+
+            // Clear previous chart and render a new one
+            document.querySelector("#revenueChart").innerHTML = "";
+            var chart = new ApexCharts(document.querySelector("#revenueChart"), options);
+            chart.render();
+        }
 
 
-        // Show/Hide Day Selection
-        document.getElementById('include_day').addEventListener('change', function () {
-            document.getElementById('daySelection').style.display = this.checked ? 'block' : 'none';
-        });
+        window.onload = function () {
+            const initialData = <?php echo json_encode($dailyRevenue); ?>;
+            updateChart(initialData);
+        };
 
-        // Handle form submission with AJAX
         document.getElementById('filterForm').addEventListener('submit', function (e) {
             e.preventDefault();
             const formData = new FormData(this);
 
-            fetch('filter_revenue.php', {
+            fetch(window.location.href, {
                 method: 'POST',
                 body: formData,
             })
-                .then(response => response.text())
-                .then(data => {
-                    document.getElementById('revenueDisplay').innerHTML = data;
-                    updateChart(); // Update the chart based on new data
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.json();
                 })
-                .catch(error => console.error('Error:', error));
+                .then(data => {
+                    document.querySelector('#revenueDisplay p').textContent = `₱${parseFloat(data.selectedDayRevenue).toFixed(2)}`;
+                    updateChart(data.dailyRevenue);
+                })
+                .catch(error => console.error('Error updating revenue data:', error));
         });
-
-        // Update the chart
-        function updateChart() {
-            const ctx = document.getElementById('revenueChart').getContext('2d');
-            const dailyRevenue = <?php echo json_encode($dailyRevenue); ?>;
-            const labels = Object.keys(dailyRevenue).map(day => day);
-            const data = Object.values(dailyRevenue);
-
-            const revenueChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Daily Revenue',
-                        data: data,
-                        backgroundColor: 'rgba(75, 192, 192, 0.5)',
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Revenue (₱)'
-                            }
-                        }
-                    }
-                }
-            });
-        }
-        window.onload = function () {
-            updateChart(); // Call the updateChart function when the page loads
-        };
 
 
         // Handle PDF generation

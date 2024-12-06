@@ -6,14 +6,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $userId = $_POST['user_id'];
 
     if (empty($userId)) {
-        echo json_encode(['success' => false, 'message' => 'User ID is missing.']);
+        echo json_encode(['success' => false, 'message' => 'User  ID is missing.']);
         exit;
     }
 
     try {
         // Disable the user account by setting is_activated to 0
-        $stmt = $conn->prepare("UPDATE useracc SET is_activated = 0 WHERE id = :userId");
-        $stmt->bindParam(':userId', $userId);
+        $stmt = $conn->prepare("UPDATE useracc SET is_activated = 0 WHERE id = ?");
+
+        // Bind the parameter (s for string, i for integer, d for double, b for blob)
+        $stmt->bind_param("i", $userId); // Assuming user_id is an integer
 
         if ($stmt->execute()) {
             // Fetch updated data to refresh the table
@@ -33,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 function fetchUpdatedTableData($conn)
 {
     $stmt = $conn->query("SELECT * FROM useracc");
-    $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $users = $stmt->fetch_all(MYSQLI_ASSOC);
 
     $tableData = '';
     foreach ($users as $user) {

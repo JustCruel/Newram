@@ -49,7 +49,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // Validate ID file upload
     $id_file = $_FILES['id_file']['name'];
-    $target_directory = '../assets/uploads/'; // Your upload directory
+    $target_directory = ''; // Your upload directory
     $target_file = $target_directory . basename($id_file);
 
     // Check for upload errors

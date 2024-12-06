@@ -240,12 +240,7 @@ if (isset($_POST['Login'])) {
                   <input type="submit" name="Login" value="Log in">
                </div>
 
-               <div class="signup-link">
-                  <button type="button" onclick="goBack()"
-                     style="background-color: rgb(87, 107, 237); border: none; color: white; padding: 10px 20px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; margin: 4px 2px; cursor: pointer; border-radius: 4px;">
-                     Go Back
-                  </button>
-               </div>
+
             </form>
          </div>
       </div>

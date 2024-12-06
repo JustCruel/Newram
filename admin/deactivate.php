@@ -324,7 +324,7 @@ $userResult = mysqli_query($conn, $userQuery);
 
                     // Send AJAX request to disable the user and transfer funds
                     $.ajax({
-                        url: 'transfer_and_disabled .php',
+                        url: 'transfer_and_disabled.php',
                         method: 'POST',
                         data: { user_id: userId, new_account_number: newAccountNumber },
                         success: function (response) {
@@ -332,6 +332,7 @@ $userResult = mysqli_query($conn, $userQuery);
                             if (result.success) {
                                 $('#userTableBody').html(result.tableData);
                                 Swal.fire('Disabled!', 'User has been disabled and funds transferred.', 'success');
+                                location.reload();
                             } else {
                                 Swal.fire('Error!', result.message, 'error');
                             }
@@ -356,7 +357,7 @@ $userResult = mysqli_query($conn, $userQuery);
 
                     // Send AJAX request to disable the user and transfer funds
                     $.ajax({
-                        url: 'disable_user.php',
+                        url: 'disable_user_only.php',
                         method: 'POST',
                         data: { user_id: userId, new_account_number: newAccountNumber },
                         success: function (response) {
@@ -364,6 +365,7 @@ $userResult = mysqli_query($conn, $userQuery);
                             if (result.success) {
                                 $('#userTableBody').html(result.tableData);
                                 Swal.fire('Disabled!', 'User has been disabled', 'success');
+                                location.reload();
                             } else {
                                 Swal.fire('Error!', result.message, 'error');
                             }

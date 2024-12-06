@@ -34,6 +34,10 @@ if (isset($_SESSION['firstname']) && isset($_SESSION['lastname'])) {
                     Registration</a>
             </li>
             <li>
+                <a href="activate.php"><span class="fa fa-sticky-note"></span>
+                    Activation</a>
+            </li>
+            <li>
                 <a href="deactivate.php"><span class="fa fa-sticky-note"></span>
                     Deactivation</a>
             </li>
