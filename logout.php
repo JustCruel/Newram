@@ -1,20 +1,49 @@
 <?php
 session_start();
-ob_start();
+include 'config/connection.php';
 
-// Check if the user is logged in by checking session variables
-if (isset($_POST['confirm_logout'])) {
-	// Unset all session variables
-	session_unset();
+$response = ['success' => false, 'message' => ''];
 
-	// Destroy the session
-	session_destroy();
+if (isset($_POST['confirm_logout']) && $_POST['confirm_logout'] === 'true') {
+	// Check if it's a conductor's session
+	if (isset($_SESSION['bus_number'], $_SESSION['driver_account_number'], $_SESSION['email'])) {
+		$bus_number = $_SESSION['bus_number'];
+		$conductor_id = $_SESSION['driver_account_number'];
+		$email = $_SESSION['email'];
 
-	// Return a success message as JSON
-	echo json_encode(['success' => 'You have been logged out successfully!']);
+		// Update the bus status to 'Available'
+		$updateBusStmt = $conn->prepare("UPDATE businfo SET status = 'Available', driverName = '', conductorName = '' WHERE bus_number = ?");
+		if ($updateBusStmt) {
+			$updateBusStmt->bind_param("s", $bus_number);
+			if ($updateBusStmt->execute()) {
+				session_destroy(); // End the session
+				$response = ['success' => true, 'message' => 'Conductor logged out successfully.'];
+			} else {
+				$response = ['error' => 'Error updating bus status: ' . $conn->error];
+			}
+			$updateBusStmt->close();
+		} else {
+			$response = ['error' => 'Error preparing bus update statement: ' . $conn->error];
+		}
+	}
+	// Check if it's a regular user session
+	elseif (isset($_POST['confirm_logout'])) {
+		// Unset all session variables
+		session_unset();
+
+		// Destroy the session
+		session_destroy();
+
+		// Return a success message as JSON
+		echo json_encode(['success' => 'You have been logged out successfully!']);
+		exit();
+	}
+
+	echo json_encode($response);
 	exit();
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -43,21 +72,19 @@ if (isset($_POST['confirm_logout'])) {
 					headers: {
 						'Content-Type': 'application/x-www-form-urlencoded',
 					},
-					body: new URLSearchParams({ confirm_logout: 'true' }) // Ensure correct data format
+					body: new URLSearchParams({ confirm_logout: 'true' })
 				})
 					.then(response => response.json())
 					.then(data => {
-						console.log(data); // Log the response from the backend
 						if (data.success) {
-							Swal.fire('Logged Out!', data.success, 'success')
-								.then(() => window.location.href = 'index.php');
+							Swal.fire('Logged Out!', data.message, 'success')
+								.then(() => window.location.href = 'login.php'); // Redirect after successful logout
 						} else {
-							Swal.fire('Error', 'An error occurred during logout.', 'error');
+							Swal.fire('Error', data.error || 'An error occurred during logout.', 'error');
 							window.history.back(); // Go back to the previous page
 						}
 					})
 					.catch(error => {
-						console.error('Error:', error); // Log any errors
 						Swal.fire('Error', 'An error occurred while logging out.', 'error');
 					});
 			} else {

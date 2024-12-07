@@ -9,17 +9,17 @@ if (isset($_POST['contactnumber'])) {
 
     // Prepare statement to check email existence
     $stmt = mysqli_prepare($conn, "SELECT COUNT(*) FROM useracc WHERE contactnumber = ?");
-    
+
     // Bind the email parameter to the statement
     mysqli_stmt_bind_param($stmt, 's', $email);
-    
+
     // Execute the statement
     mysqli_stmt_execute($stmt);
-    
+
     // Get the result
     mysqli_stmt_bind_result($stmt, $count);
     mysqli_stmt_fetch($stmt);
-    
+
     // Close the statement
     mysqli_stmt_close($stmt);
 

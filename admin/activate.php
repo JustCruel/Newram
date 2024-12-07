@@ -3,11 +3,11 @@ session_start();
 ob_start(); // Start output buffering
 include '../config/connection.php';
 
-if (!isset($_SESSION['email']) || $_SESSION['role'] != 'Admin') {
+
+if (!isset($_SESSION['email']) || ($_SESSION['role'] != 'Admin' && $_SESSION['role'] != 'Superadmin')) {
     header("Location: ../index.php");
     exit();
 }
-
 
 // Assuming you have the user id in session
 $firstname = $_SESSION['firstname'];
@@ -135,7 +135,7 @@ $userResult = mysqli_query($conn, $userQuery);
 
 <body>
     <?php
-    include "sidebar.php";
+    include "../sidebar.php";
     ?>
 
     <!-- Page Content  -->

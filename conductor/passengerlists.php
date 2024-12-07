@@ -2,6 +2,11 @@
 session_start();
 include '../config/connection.php';
 
+if (!isset($_SESSION['email']) || ($_SESSION['role'] != 'Conductor' && $_SESSION['role'] != 'Superadmin')) {
+    header("Location: ../index.php");
+    exit();
+}
+
 $firstname = $_SESSION['firstname'];
 $lastname = $_SESSION['lastname'];
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['dashboard'])) {
@@ -107,7 +112,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['removePassenger'])) {
 
 <body>
     <?php
-    include 'sidebar.php'
+    include '../sidebar.php'
         ?>
     <div class="container mt-5">
         <div class="header">

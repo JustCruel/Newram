@@ -1,8 +1,14 @@
 <?php
 session_start();
 include '../config/connection.php';
-include 'sidebar.php';// Make sure to include your database connection script
+include '../sidebar.php';// Make sure to include your database connection script
 // Assuming you have the user id in session
+
+
+if (!isset($_SESSION['email']) || ($_SESSION['role'] != 'Admin' && $_SESSION['role'] != 'Superadmin')) {
+    header("Location: ../index.php");
+    exit();
+}
 $firstname = $_SESSION['firstname'];
 $lastname = $_SESSION['lastname'];
 // Check if the form is submitted

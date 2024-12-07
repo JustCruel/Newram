@@ -151,7 +151,7 @@ $todayRevenue = $todayRevenueRow['todayRevenue'] ?? 0;
 <body>
 
     <?php
-    include "sidebar.php";
+    include "../sidebar.php";
     ?>
 
     <!-- Page Content  -->

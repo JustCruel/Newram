@@ -1,5 +1,6 @@
 {
     "require": {
-        "mike42/escpos-php": "*"
+        "mike42/escpos-php": "*",
+        "printnode/printnode-php": "^2.1"
     }
 }

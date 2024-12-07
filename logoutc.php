@@ -70,7 +70,7 @@ if (isset($_POST['confirm_logout']) && $_POST['confirm_logout'] === 'true') {
 					.then(data => {
 						if (data.success) {
 							Swal.fire('Logged Out!', data.success, 'success')
-								.then(() => window.location.href = 'index.php'); // Redirect after successful logout
+								.then(() => window.location.href = 'login.php'); // Redirect after successful logout
 						} else {
 							Swal.fire('Error', data.error, 'error');
 							window.history.back(); // Go back to the previous page

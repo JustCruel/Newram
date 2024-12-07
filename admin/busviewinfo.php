@@ -1,7 +1,13 @@
 <?php
 session_start();
 include '../config/connection.php';
-include 'sidebar.php'; // Ensure you include your database connection script
+include '../sidebar.php'; // Ensure you include your database connection script
+
+
+if (!isset($_SESSION['email']) || ($_SESSION['role'] != 'Admin' && $_SESSION['role'] != 'Superadmin')) {
+    header("Location: ../index.php");
+    exit();
+}
 
 // Assuming the user is logged in and their session is active
 $firstname = $_SESSION['firstname'];

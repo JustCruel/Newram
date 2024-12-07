@@ -6,7 +6,14 @@ ini_set('display_errors', 0); // Suppress errors
 error_reporting(0);          // Turn off error reporting
 
 include '../config/connection.php';
-include 'sidebar.php';
+include '../sidebar.php';
+
+
+if (!isset($_SESSION['email']) || ($_SESSION['role'] != 'Admin' && $_SESSION['role'] != 'Superadmin')) {
+    header("Location: ../index.php");
+    exit();
+}
+
 $currentYear = date('Y');
 $currentMonth = date('m');
 $currentDay = date('d');

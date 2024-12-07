@@ -2,11 +2,12 @@
 session_start();
 ob_start();
 include '../config/connection.php';
-include 'sidebar.php';
+include '../sidebar.php';
 
-if (!isset($_SESSION['email'])) {
-    header("Location: login.php");
-    exit;
+
+if (!isset($_SESSION['email']) || ($_SESSION['role'] != 'Admin' && $_SESSION['role'] != 'Superadmin')) {
+    header("Location: ../index.php");
+    exit();
 }
 
 // Fetch user count

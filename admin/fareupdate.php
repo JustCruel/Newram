@@ -2,6 +2,12 @@
 session_start();
 include '../config/connection.php';
 
+
+if (!isset($_SESSION['email']) || ($_SESSION['role'] != 'Admin' && $_SESSION['role'] != 'Superadmin')) {
+    header("Location: ../index.php");
+    exit();
+}
+
 $firstname = $_SESSION['firstname'];
 $lastname = $_SESSION['lastname'];
 
@@ -44,6 +50,9 @@ $conn->close();
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.6.0/dist/sweetalert2.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="../css/style.css">
     <style>
         h1.text-center {
@@ -55,7 +64,7 @@ $conn->close();
 <body>
 
     <?php
-    include 'sidebar.php';
+    include '../sidebar.php';
 
     // Check if fare settings were updated and show SweetAlert
     if (isset($_SESSION['fare_updated']) && $_SESSION['fare_updated']) {
