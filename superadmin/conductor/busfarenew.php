@@ -2,17 +2,10 @@
 session_start();
 include '../config/connection.php';
 
-if (!isset($_SESSION['email']) || ($_SESSION['role'] != 'Conductor' && $_SESSION['role'] != 'Superadmin')) {
-    header("Location: ../index.php");
-    exit();
-}
-
 $firstname = $_SESSION['firstname'];
 $lastname = $_SESSION['lastname'];
 $bus_number = isset($_SESSION['bus_number']) ? $_SESSION['bus_number'] : 'Unknown Bus Number';
 $conductorac = isset($_SESSION['driver_account_number']) ? $_SESSION['driver_account_number'] : 'unknown conductor account number';
-$driverName = isset($_SESSION['driver_name']) ? $_SESSION['driver_name'] : 'unknown driver name';
-$conductorName = isset($_SESSION['conductor_name']) ? $_SESSION['conductor_name'] : 'unknown conductor name';
 
 $conductorName = $firstname . ' ' . $lastname;
 
@@ -38,11 +31,11 @@ if (!isset($_SESSION['passengers'])) {
 
 // Function to fetch balance based on RFID
 // Function to log passenger entry
-function logPassengerEntry($rfid, $fromRoute, $toRoute, $fare, $conductorName, $busNumber, $transactionNumber, $conn)
+function logPassengerEntry($rfid, $fromRoute, $toRoute, $fare, $conductorName, $busNumber, $conn)
 {
-    $query = "INSERT INTO passenger_logs (rfid, from_route, to_route, fare, conductor_name, bus_number, transaction_number) VALUES (?, ?, ?, ?, ?, ?, ?)";
+    $query = "INSERT INTO passenger_logs (rfid, from_route, to_route, fare, conductor_name, bus_number) VALUES (?, ?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($query);
-    $stmt->bind_param("sssssss", $rfid, $fromRoute, $toRoute, $fare, $conductorName, $busNumber, $transactionNumber);
+    $stmt->bind_param("ssssss", $rfid, $fromRoute, $toRoute, $fare, $conductorName, $busNumber);
     $stmt->execute();
     $stmt->close();
 }
@@ -78,7 +71,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $toRoute = $data['toRoute'];
         $fareType = $data['fareType'];
         $passengerQuantity = $data['passengerQuantity'];
-        $transactionNumber = $data['transactionNumber'];
 
         // Fetch balance for RFID if not a cash payment
         if (!empty($rfid)) {
@@ -93,7 +85,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Calculate distance
         $distance = abs($fromRoute['post'] - $toRoute['post']);
-        $_SESSION['distance'] = $distance;
         $fare = $fareSettings['base_fare']; // Default fare for first 4 km
         if ($distance > 4) {
             $fare += ($distance - 4) * $fareSettings['additional_fare'];
@@ -124,7 +115,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ];
 
             $loggedRfid = !empty($rfid) ? $rfid : 'cash'; // Use 'cash' if payment is made in cash
-            logPassengerEntry($loggedRfid, $fromRoute['route_name'], $toRoute['route_name'], $totalFare, $conductorName, $bus_number, $transactionNumber, $conn);
+            logPassengerEntry($loggedRfid, $fromRoute['route_name'], $toRoute['route_name'], $totalFare, $conductorName, $bus_number, $conn);
 
             echo json_encode([
                 'status' => 'success',
@@ -141,6 +132,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     exit;
 }
+
 
 
 // Driver dashboard functionality (for fetching passengers and their destinations)
@@ -250,7 +242,7 @@ $conn->close();
 <body>
 
     <?php
-    include '../sidebar.php'
+    include 'sidebar.php'
         ?>
     <div class="container mt-5">
         <h1 class="text-center text-primary">Bus Fare Calculator</h1>
@@ -381,50 +373,6 @@ $conn->close();
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-
-        const baseFare = <?php echo $base_fare; ?>;
-        const additionalFare = <?php echo $additional_fare; ?>;
-        const driverName = "<?= $_SESSION['driver_name']; ?>";  // PHP variable for driver name
-
-        document.getElementById('fromRoute').addEventListener('change', updateDistance);
-        document.getElementById('toRoute').addEventListener('change', updateDistance);
-
-        function updateDistance() {
-            const fromRouteValue = document.getElementById('fromRoute').value;
-            const toRouteValue = document.getElementById('toRoute').value;
-            const kmLabel = document.getElementById('kmLabel');
-            const fareLabel = document.getElementById('fareLabel');
-
-            if (fromRouteValue && toRouteValue) {
-                try {
-                    const fromRoute = JSON.parse(fromRouteValue);
-                    const toRoute = JSON.parse(toRouteValue);
-
-                    // Calculate the distance in kilometers
-                    const distance = Math.abs(fromRoute.post - toRoute.post);
-                    kmLabel.textContent = `${distance} km`;
-                    console.log(distance);
-
-                    // Calculate the fare based on the distance
-                    let totalFare = baseFare; // Start with the base fare for the first 4 km
-                    if (distance > 4) {
-                        // Add additional fare for kilometers beyond the first 4 km
-                        totalFare += (distance - 4) * additionalFare;
-                    }
-
-                    fareLabel.textContent = `₱${totalFare.toFixed(2)}`;
-                } catch (error) {
-                    console.error('Error parsing route data:', error);
-                    kmLabel.textContent = "Invalid route data";
-                    fareLabel.textContent = "₱0.00";
-                }
-            } else {
-                kmLabel.textContent = "0 km";
-                fareLabel.textContent = "₱0.00";
-            }
-        }
-
-
         function validateRoutes() {
             const fromRoute = document.getElementById('fromRoute').value;
             const toRoute = document.getElementById('toRoute').value;
@@ -526,15 +474,10 @@ $conn->close();
         }
 
         function promptRFIDInput() {
-            const fromRouteValue = document.getElementById('fromRoute').value;
-            const toRouteValue = document.getElementById('toRoute').value;
             // Generate the transaction number before opening the Swal prompt
-            const distance = Math.abs(fromRoute.post - toRoute.post);
             const transactionNumber = generateTransactionNumber();
-            const paymentMethod = 'RFID';
             console.log("Generated Transaction Number:", transactionNumber); // Debugging line
-            console.log("Generated Transaction Number:", distance); // Debugging line
-            console.log("Generated Transaction Number:", paymentMethod);
+
             if (!validateRoutes()) {
                 // Stop execution if routes are not selected
                 return;
@@ -559,7 +502,7 @@ $conn->close();
                             const toRoute = JSON.parse(document.getElementById('toRoute').value);
                             const fareType = document.getElementById('fareType').value;
                             const passengerQuantity = parseInt(document.getElementById('passengerQuantity').value, 10);
-                            const paymentMethod = 'RFID';
+
                             if (!fromRoute || !toRoute) {
                                 Swal.fire('Error', 'Please select both starting point and destination.', 'error');
                                 return;
@@ -568,8 +511,7 @@ $conn->close();
                             console.log("Transaction Number before calling getUserBalance:", transactionNumber); // Debugging line
 
                             // Call the function to get user balance and process the fare
-
-                            getUserBalance(rfid, fromRoute, toRoute, fareType, passengerQuantity, true, transactionNumber, distance, paymentMethod);
+                            getUserBalance(rfid, fromRoute, toRoute, fareType, passengerQuantity, true, transactionNumber);
                         }
                     });
                 }
@@ -598,75 +540,76 @@ $conn->close();
                         const toRoute = JSON.parse(document.getElementById('toRoute').value);
                         const fareType = document.getElementById('fareType').value;
                         const passengerQuantity = parseInt(document.getElementById('passengerQuantity').value, 10);
-                        const paymentMethod = 'Cash';
 
                         // Generate transaction number
                         const transactionNumber = generateTransactionNumber();
-                        const distance = Math.abs(fromRoute.post - toRoute.post);
-                        getUserBalance(rfid, fromRoute, toRoute, fareType, passengerQuantity, true, transactionNumber, distance, paymentMethod);
+
+                        getUserBalance(rfid, fromRoute, toRoute, fareType, passengerQuantity, true, transactionNumber);
                     }
                 });
             }
         }
 
         // Updated getUserBalance function to handle both RFID and cash payments
-        async function getUserBalance(rfid, fromRoute, toRoute, fareType, passengerQuantity, isCashPayment = false, transactionNumber, distance, paymentMethod) {
+        async function getUserBalance(rfid, fromRoute, toRoute, fareType, passengerQuantity, isCashPayment = false, transactionNumber) {
             const conductorName = "<?= $conductorName; ?>";  // PHP variable
             try {
                 const baseFare = <?php echo $base_fare; ?>;
-                const distance = Math.abs(fromRoute.post - toRoute.post);
-                let totalFare = 0;
 
-                // Calculate distance
-
+                // Log the data to ensure it's correctly passed
                 console.log("rfid:", rfid);
                 console.log("fromRoute:", fromRoute);
                 console.log("toRoute:", toRoute);
                 console.log("fareType:", fareType);
                 console.log("passengerQuantity:", passengerQuantity);
-                console.log("passengerQuantity:", distance);
                 console.log("passengerQuantity:", transactionNumber);
-                console.log("passengerQuantity:", driverName);
-                console.log("passengerQuantity:", paymentMethod);
+
+                if (!fromRoute || !toRoute || !fareType || !passengerQuantity) {
+                    console.error("Missing required data:", { fromRoute, toRoute, fareType, passengerQuantity });
+                    Swal.fire('Error', 'Missing required data. Please check all fields.', 'error');
+                    return;
+                }
+
+                let totalFare = 0;
+
                 if (isCashPayment) {
-                    // Cash payment logic
                     const response = await fetch('<?= $_SERVER['PHP_SELF']; ?>', {
                         method: 'POST',
                         body: JSON.stringify({
-                            rfid: rfid,
                             fromRoute: fromRoute,
                             toRoute: toRoute,
                             fareType: fareType,
                             passengerQuantity: passengerQuantity,
-                            transactionNumber: transactionNumber,
-                            distance: distance,
-                            driverName: driverName
+                            transactionNumber: transactionNumber // Pass the transaction number
                         }),
                         headers: {
                             'Content-Type': 'application/json'
                         }
                     });
 
-                    const data = await response.json();
+                    const data = await response.json(); // Await the JSON response here
+
                     if (data.status === 'error') {
                         Swal.fire('Error', data.message, 'error');
                         return;
                     }
 
+                    const distance = Math.abs(fromRoute.post - toRoute.post);
                     totalFare = baseFare;
+
                     if (distance > 4) {
                         totalFare += (distance - 4) * <?php echo $additional_fare; ?>;
                     }
+
                     totalFare *= passengerQuantity;
                 } else {
+
                     console.log("rfid:", rfid);
                     console.log("fromRoute:", fromRoute);
                     console.log("toRoute:", toRoute);
                     console.log("fareType:", fareType);
                     console.log("passengerQuantity:", passengerQuantity);
                     console.log("passengerQuantity:", transactionNumber);
-                    console.log("passengerQuantity:", paymentMethod);
-                    // RFID payment logic
                     const response = await fetch('<?= $_SERVER['PHP_SELF']; ?>', {
                         method: 'POST',
                         body: JSON.stringify({
@@ -675,9 +618,7 @@ $conn->close();
                             toRoute: toRoute,
                             fareType: fareType,
                             passengerQuantity: passengerQuantity,
-                            transactionNumber: transactionNumber,
-                            distance: distance,
-                            driverName: driverName
+                            transactionNumber: transactionNumber // Pass the transaction number // Add passenger quantity
                         }),
                         headers: {
                             'Content-Type': 'application/json'
@@ -695,40 +636,29 @@ $conn->close();
                 }
 
                 totalFare = totalFare.toFixed(0) + ".00";
-                showReceipt(fromRoute, toRoute, fareType, totalFare, conductorName, transactionNumber, distance, paymentMethod);
+                showReceipt(fromRoute, toRoute, fareType, totalFare, conductorName, transactionNumber);
 
             } catch (error) {
                 console.error('Error fetching balance and processing fare:', error);
                 Swal.fire('Error', 'An error occurred while processing your payment. Please try again.', 'error');
             }
         }
-
-        let receiptShown = false;
-
-        function showReceipt(fromRoute, toRoute, fareType, totalFare, conductorName, transactionNumber, distance, paymentMethod) {
-            if (receiptShown) return; // Prevent showing the receipt again
-
-            receiptShown = true;
-            const driverName = "<?= $_SESSION['driver_name']; ?>";  // PHP variable for driver name
-            const busNumber = "<?= $bus_number; ?>";  // PHP variable for bus number
-
+        function showReceipt(fromRoute, toRoute, fareType, totalFare, conductorName, transactionNumber) {
             Swal.fire({
                 html: `
-        <h3>Receipt</h3>
-        <strong>Transaction Number:</strong> ${transactionNumber}<br>
-        <strong>Bus No.:</strong> ${busNumber}<br>
-        <strong>Date:</strong> ${new Date().toLocaleDateString()}<br>
-        <strong>Time:</strong> ${new Date().toLocaleTimeString()}<br>
-        <strong>From:</strong> ${fromRoute.route_name}<br>
-        <strong>To:</strong> ${toRoute.route_name}<br>
-        <strong>Distance:</strong> ${distance} km<br>
-        <strong>Driver:</strong> ${driverName}<br> <!-- Added Driver Name -->
-        <strong>CONDUCTOR:</strong> ${conductorName}<br>
-        <strong>Passenger Type:</strong> ${fareType}<br>
-          <strong>Payment Method:</strong> ${paymentMethod}<br>
-        <div style="font-size: 22px; font-weight: bold;">₱${totalFare}</div><br>
-        <p>Thank you for riding with us!</p>
+            <h3>Receipt</h3>
+            <strong>Transaction Number:</strong> ${transactionNumber}<br>
+            <strong>Bus No.:</strong> <?= $bus_number; ?><br>
+            <strong>Date:</strong> ${new Date().toLocaleDateString()}<br>
+            <strong>Time:</strong> ${new Date().toLocaleTimeString()}<br>
+            <strong>From:</strong> ${fromRoute.route_name}<br>
+            <strong>To:</strong> ${toRoute.route_name}<br>
+            <strong>CONDUCTOR:</strong> ${conductorName}<br>
+            <strong>Passenger Type:</strong> ${fareType}<br>
+            <div style="font-size: 22px; font-weight: bold;">₱${totalFare}</div><br>
+            <p>Thank you for riding with us!</p>
         `,
+                // Make sure to place `didClose` inside the object
                 didClose: () => {
                     // Trigger the PHP print function here using an AJAX request
                     $.post('print_receipt.php', {
@@ -737,20 +667,59 @@ $conn->close();
                         fareType: fareType,
                         totalFare: totalFare,
                         conductorName: conductorName,
-                        driverName: driverName, // Pass driver name to print if needed
-                        busNumber: busNumber,
-                        transactionNumber: transactionNumber,
-                        distance: distance,
-                        paymentMethod: paymentMethod
+                        busNumber: <?= $bus_number; ?> // Ensure busNumber is passed here
                     }, function (response) {
                         console.log("Receipt printed successfully!");
                         location.reload();
                     }).fail(function () {
                         console.error("Failed to print receipt.");
-
                     });
                 }
             });
+        }
+
+
+
+
+
+        const baseFare = <?php echo $base_fare; ?>;
+        const additionalFare = <?php echo $additional_fare; ?>;
+
+        document.getElementById('fromRoute').addEventListener('change', updateDistance);
+        document.getElementById('toRoute').addEventListener('change', updateDistance);
+
+        function updateDistance() {
+            const fromRouteValue = document.getElementById('fromRoute').value;
+            const toRouteValue = document.getElementById('toRoute').value;
+            const kmLabel = document.getElementById('kmLabel');
+            const fareLabel = document.getElementById('fareLabel');
+
+            if (fromRouteValue && toRouteValue) {
+                try {
+                    const fromRoute = JSON.parse(fromRouteValue);
+                    const toRoute = JSON.parse(toRouteValue);
+
+                    // Calculate the distance in kilometers
+                    const distance = Math.abs(fromRoute.post - toRoute.post);
+                    kmLabel.textContent = `${distance} km`;
+
+                    // Calculate the fare based on the distance
+                    let totalFare = baseFare; // Start with the base fare for the first 4 km
+                    if (distance > 4) {
+                        // Add additional fare for kilometers beyond the first 4 km
+                        totalFare += (distance - 4) * additionalFare;
+                    }
+
+                    fareLabel.textContent = `₱${totalFare.toFixed(2)}`;
+                } catch (error) {
+                    console.error('Error parsing route data:', error);
+                    kmLabel.textContent = "Invalid route data";
+                    fareLabel.textContent = "₱0.00";
+                }
+            } else {
+                kmLabel.textContent = "0 km";
+                fareLabel.textContent = "₱0.00";
+            }
         }
 
     </script>

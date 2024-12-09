@@ -77,7 +77,7 @@ $transactions = fetchTransactions($conn);
 
 <body>
     <?php
-    include "../sidebar.php";
+    include "sidebar.php";
     ?>
 
     <!-- Page Content  -->

@@ -57,7 +57,7 @@ if (isset($_POST['Login'])) {
                   header("Location: cashier/cashierdashboard.php");
                   break;
                case 'Superadmin':
-                  header("Location: superadmin.php");
+                  header("Location: superadmin/superadmin.php");
                   break;
                case 'User':
                   header("Location: users/index.php");
@@ -65,7 +65,6 @@ if (isset($_POST['Login'])) {
                case 'Conductor':
                   // Handle conductor-specific logic
                   header("Location: conductor/conductordashboard.php");
-
                   break;
                default:
                   $msg = "<div class='alert alert-danger' style='background-color:#BF0210; text-align:center; color:#FFFFFF;'>Invalid role assignment!</div>";
