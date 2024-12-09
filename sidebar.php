@@ -10,7 +10,7 @@ if (isset($_SESSION['firstname']) && isset($_SESSION['lastname'])) {
     $role = 'Guest';
 }
 ?>
-
+<!--
 <!-- Bootstrap 4 CSS -->
 <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 
@@ -162,63 +162,79 @@ if (isset($_SESSION['firstname']) && isset($_SESSION['lastname'])) {
                 <?php } ?>
             </ul>
             <ul class="list-unstyled components mb-5">
-    <?php if ($role === 'Superadmin') { ?>
-        <!-- Admin Menu -->
-        <li>
-            <a href="#adminSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle"><span class="fa fa-cogs"></span> Admin</a>
-            <ul class="collapse list-unstyled" id="adminSubmenu">
-                <li class="active"><a href="../admin/admindashboard.php"><span class="fa fa-home"></span> Dashboard</a></li>
-                <li><a href="../admin/register.php"><span class="fa fa-user"></span> Registration</a></li>
-                <li><a href="../admin/activate.php"><span class="fa fa-sticky-note"></span> Activation</a></li>
-                <li><a href="../admin/deactivate.php"><span class="fa fa-sticky-note"></span> Deactivation</a></li>
-                <li><a href="../admin/revenue.php"><span class="fa fa-cogs"></span> Revenue</a></li>
-                <li><a href="../admin/fareupdate.php"><span class="fa fa-arrow-up-1-9"></span> Fare Update</a></li>
-                <li><a href="../admin/businfo.php"><span class="fa fa-bus"></span> Reg Bus Info</a></li>
-                <li><a href="../admin/busviewinfo.php"><span class="fa fa-eye"></span> View Bus Info</a></li>
+                <?php if ($role === 'Superadmin') { ?>
+                    <!-- Admin Menu -->
+                    <li>
+                        <a href="#adminSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle"><span
+                                class="fa fa-cogs"></span> Admin</a>
+                        <ul class="collapse list-unstyled" id="adminSubmenu">
+                            <li class="active"><a href="../admin/admindashboard.php"><span class="fa fa-home"></span>
+                                    Dashboard</a></li>
+                            <li><a href="../admin/register.php"><span class="fa fa-user"></span> Registration</a></li>
+                            <li><a href="../admin/activate.php"><span class="fa fa-sticky-note"></span> Activation</a></li>
+                            <li><a href="../admin/deactivate.php"><span class="fa fa-sticky-note"></span> Deactivation</a>
+                            </li>
+                            <li><a href="../admin/revenue.php"><span class="fa fa-cogs"></span> Revenue</a></li>
+                            <li><a href="../admin/fareupdate.php"><span class="fa fa-arrow-up-1-9"></span> Fare Update</a>
+                            </li>
+                            <li><a href="../admin/businfo.php"><span class="fa fa-bus"></span> Reg Bus Info</a></li>
+                            <li><a href="../admin/busviewinfo.php"><span class="fa fa-eye"></span> View Bus Info</a></li>
+                        </ul>
+                    </li>
+
+                    <!-- Cashier Menu -->
+                    <li>
+                        <a href="#cashierSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle"><span
+                                class="fa fa-credit-card"></span> Cashier</a>
+                        <ul class="collapse list-unstyled" id="cashierSubmenu">
+                            <li class="active"><a href="../cashier/cashierdashboard.php"><span
+                                        class="fa fa-tachometer-alt"></span> Dashboard</a></li>
+                            <li><a href="../cashier/loadrfidadmin.php"><span class="fa fa-credit-card"></span> Load RFID</a>
+                            </li>
+                            <li><a href="../cashier/translogscashier.php"><span class="fa fa-list-alt"></span> Load
+                                    Transaction</a></li>
+                            <li><a href="../cashier/loadtranscashier.php"><span class="fa fa-chart-line"></span> Load
+                                    Revenue</a></li>
+                        </ul>
+                    </li>
+
+                    <!-- Conductor Menu -->
+                    <li>
+                        <a href="#conductorSubmenu" data-toggle="collapse" aria-expanded="false"
+                            class="dropdown-toggle"><span class="fa fa-bus"></span> Conductor</a>
+                        <ul class="collapse list-unstyled" id="conductorSubmenu">
+                            <li class="active"><a href="../conductor/conductordashboard.php"><span
+                                        class="fa fa-tachometer-alt"></span> Dashboard</a></li>
+                            <li><a href="../conductor/busfare.php"><span class="fa fa-bus"></span> Bus Fare</a></li>
+                            <li><a href="../conductor/passengerlists.php"><span class="fa fa-users"></span> Passenger
+                                    Lists</a></li>
+                            <li><a href="../conductor/loadrfidconductor.php"><span class="fa fa-id-badge"></span> Load
+                                    RFID</a></li>
+                            <li><a href="../conductor/translogscon.php"><span class="fa fa-history"></span> Load
+                                    Transaction</a></li>
+                            <li><a href="../conductor/loadtranscon.php"><span class="fa fa-dollar-sign"></span> Load
+                                    Revenue</a></li>
+                            <li><a href="../conductor/remitcon.php"><span class="fa fa-paper-plane"></span> Remit</a></li>
+                        </ul>
+                    </li>
+
+                    <!-- User Submenu -->
+                    <li>
+                        <a href="#userSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle"><span
+                                class="fa fa-coins"></span> User</a>
+                        <ul class="collapse list-unstyled" id="userSubmenu">
+                            <li><a href="">User Dashboard</a></li>
+                            <li><a href="recent_trips.php">Recent Trips</a></li>
+                            <li><a href="bus_tracking.php">Track Bus</a></li>
+                            <li><a href="convert_points.php">View Balance</a></li>
+                            <li><a href="">Transaction History</a></li>
+                            <li><a href="">Update Profile</a></li>
+                        </ul>
+                    </li>
+
+                    <!-- Logout -->
+                    <li><a href="../logout.php"><span class="fa fa-sign-out-alt"></span> Logout</a></li>
+                <?php } ?>
             </ul>
-        </li>
 
-        <!-- Cashier Menu -->
-        <li>
-            <a href="#cashierSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle"><span class="fa fa-credit-card"></span> Cashier</a>
-            <ul class="collapse list-unstyled" id="cashierSubmenu">
-                <li class="active"><a href="../cashier/cashierdashboard.php"><span class="fa fa-tachometer-alt"></span> Dashboard</a></li>
-                <li><a href="../cashier/loadrfidadmin.php"><span class="fa fa-credit-card"></span> Load RFID</a></li>
-                <li><a href="../cashier/translogscashier.php"><span class="fa fa-list-alt"></span> Load Transaction</a></li>
-                <li><a href="../cashier/loadtranscashier.php"><span class="fa fa-chart-line"></span> Load Revenue</a></li>
-            </ul>
-        </li>
-
-        <!-- Conductor Menu -->
-        <li>
-            <a href="#conductorSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle"><span class="fa fa-bus"></span> Conductor</a>
-            <ul class="collapse list-unstyled" id="conductorSubmenu">
-                <li class="active"><a href="../conductor/conductordashboard.php"><span class="fa fa-tachometer-alt"></span> Dashboard</a></li>
-                <li><a href="../conductor/busfare.php"><span class="fa fa-bus"></span> Bus Fare</a></li>
-                <li><a href="../conductor/passengerlists.php"><span class="fa fa-users"></span> Passenger Lists</a></li>
-                <li><a href="../conductor/loadrfidconductor.php"><span class="fa fa-id-badge"></span> Load RFID</a></li>
-                <li><a href="../conductor/translogscon.php"><span class="fa fa-history"></span> Load Transaction</a></li>
-                <li><a href="../conductor/loadtranscon.php"><span class="fa fa-dollar-sign"></span> Load Revenue</a></li>
-                <li><a href="../conductor/remitcon.php"><span class="fa fa-paper-plane"></span> Remit</a></li>
-            </ul>
-        </li>
-
-        <!-- User Submenu -->
-        <li>
-            <a href="#userSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle"><span class="fa fa-coins"></span> User</a>
-            <ul class="collapse list-unstyled" id="userSubmenu">
-                <li><a href="">User Dashboard</a></li>
-                <li><a href="recent_trips.php">Recent Trips</a></li>
-                <li><a href="bus_tracking.php">Track Bus</a></li>
-                <li><a href="convert_points.php">View Balance</a></li>
-                <li><a href="">Transaction History</a></li>
-                <li><a href="">Update Profile</a></li>
-            </ul>
-        </li>
-
-        <!-- Logout -->
-        <li><a href="logout.php"><span class="fa fa-sign-out-alt"></span> Logout</a></li>
-    <?php } ?>
-</ul>
-
-    </nav> 
+    </nav> -->
