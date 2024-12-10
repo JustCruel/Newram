@@ -21,16 +21,13 @@ $lastname = $_SESSION['lastname'];
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> <!-- jQuery added here -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> <!-- Use full version -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800,900" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800,900">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="../css/style.css">
@@ -322,6 +319,16 @@ $lastname = $_SESSION['lastname'];
             });
         });
 
+        // Calculate the date for 7 years ago
+        const today = new Date();
+        const sevenYearsAgo = new Date(today.setFullYear(today.getFullYear() - 7));
+
+        // Format the date as YYYY-MM-DD
+        const formattedDate = sevenYearsAgo.toISOString().split('T')[0];
+
+        // Set the minimum date in the input field
+        document.getElementById("birthday").setAttribute("min", formattedDate);
+
     </script>
 </head>
 
@@ -331,25 +338,19 @@ $lastname = $_SESSION['lastname'];
         <form method="POST" action="confirm_register.php" id="registrationForm" enctype="multipart/form-data">
             <div class="row mb-3">
                 <div class="col-md-6">
-                    <label for="account_number" class="form-label">Account Number</label>
-                    <input type="text" class="form-control" id="account_number" name="account_number" required>
-                </div>
-                <div class="col-md-6">
                     <label for="firstname" class="form-label">First Name</label>
                     <input type="text" class="form-control" id="firstname" name="firstname" required>
                 </div>
-            </div>
-            <div class="row mb-3">
                 <div class="col-md-6">
                     <label for="lastname" class="form-label">Last Name</label>
                     <input type="text" class="form-control" id="lastname" name="lastname" required>
                 </div>
+            </div>
+            <div class="row mb-3">
                 <div class="col-md-6">
                     <label for="middlename" class="form-label">Middle Name</label>
                     <input type="text" class="form-control" id="middlename" name="middlename">
                 </div>
-            </div>
-            <div class="row mb-3">
                 <div class="col-md-6">
                     <label for="suffix" class="form-label">Suffix</label>
                     <select class="form-select" id="suffix" name="suffix">
@@ -361,16 +362,20 @@ $lastname = $_SESSION['lastname'];
                         <option value="V">V</option>
                     </select>
                 </div>
-                <div class="col-md-6">
-                    <label for="birthday" class="form-label">Birthday</label>
-                    <input type="date" class="form-control" id="birthday" name="birthday" required>
-                </div>
             </div>
             <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="birthday" class="form-label">Birthday</label>
+                    <input type="date" class="form-control" id="birthday" name="birthday" required min=""
+                        max="2017-12-31" />
+                </div>
+
                 <div class="col-md-6">
                     <label for="age" class="form-label">Age</label>
                     <input type="number" class="form-control" id="age" name="age" readonly>
                 </div>
+            </div>
+            <div class="row mb-3">
                 <div class="col-md-6">
                     <label for="gender" class="form-label">Gender</label>
                     <select class="form-select" id="gender" name="gender" required>
@@ -379,37 +384,32 @@ $lastname = $_SESSION['lastname'];
                         <option value="Female">Female</option>
                     </select>
                 </div>
-            </div>
-
-
-            <div class="row mb-3">
                 <div class="col-md-6">
                     <label for="address" class="form-label">Address</label>
                     <input type="text" class="form-control" id="address" name="address" required>
                 </div>
+            </div>
+            <div class="row mb-3">
                 <div class="col-md-6">
                     <label for="province" class="form-label">Province</label>
                     <select class="form-select" id="province" name="province" required>
                         <option value="">-- Select Province --</option>
                     </select>
                 </div>
-            </div>
-            <div class="row mb-3">
                 <div class="col-md-6">
                     <label for="municipality" class="form-label">Municipality</label>
                     <select class="form-select" id="municipality" name="municipality" required>
                         <option value="">-- Select Municipality --</option>
                     </select>
                 </div>
+            </div>
+            <div class="row mb-3">
                 <div class="col-md-6">
                     <label for="barangay" class="form-label">Barangay</label>
                     <select class="form-select" id="barangay" name="barangay" required>
                         <option value="">-- Select Barangay --</option>
                     </select>
                 </div>
-            </div>
-
-            <div class="row mb-3">
                 <div class="col-md-6">
                     <label for="id_type" class="form-label">ID Type</label>
                     <select class="form-select" id="id_type" name="id_type" required>
@@ -422,35 +422,41 @@ $lastname = $_SESSION['lastname'];
                         <option value="PhilHealth">PhilHealth</option>
                     </select>
                 </div>
+            </div>
+            <div class="row mb-3">
                 <div class="col-md-6">
                     <label for="id_file" class="form-label">Upload ID</label>
                     <input type="file" class="form-control" id="id_file" name="id_file" accept="image/*" required>
                 </div>
-            </div>
-            <div class="row mb-3">
                 <div class="col-md-6">
                     <label for="email" class="form-label">Email</label>
                     <input type="email" class="form-control" id="email" name="email" required>
                     <div id="emailFeedback" class="invalid-feedback"></div>
                 </div>
-
+            </div>
+            <div class="row mb-3">
                 <div class="col-md-6">
                     <label for="phone" class="form-label">Contact Number</label>
                     <div class="form-group d-flex">
                         <span class="border-end country-code px-2">+63</span>
                         <input type="text" class="form-control" id="phone" name="contactnumber" placeholder="" required
                             pattern="\d{11}" maxlength="11" />
-
                     </div>
                     <div id="contactError" class="invalid-feedback" style="display: none;"></div>
-                    <!-- Initially hidden -->
+                </div>
+
+
+                <div class="col-md-6">
+                    <label for="account_number" class="form-label">Account Number</label>
+                    <input type="text" class="form-control" id="account_number" name="account_number" required>
                 </div>
             </div>
+    </div>
 
 
 
-            <button type="submit" class="btn btn-primary">Register</button>
-        </form>
+    <button type="submit" class="btn btn-primary">Register</button>
+    </form>
     </div>
 </body>
 

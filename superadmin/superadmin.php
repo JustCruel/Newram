@@ -52,8 +52,58 @@ $todayRevenueResult = mysqli_query($conn, $todayRevenueQuery);
 $todayRevenueRow = mysqli_fetch_assoc($todayRevenueResult);
 $todayRevenue = $todayRevenueRow['todayRevenue'] ?? 0;
 
-?>
+$firstname = $_SESSION['firstname'];
+$lastname = $_SESSION['lastname'];
+$bus_number = isset($_SESSION['bus_number']) ? $_SESSION['bus_number'] : null;  // Check if bus number is in session
+$conductorac = isset($_SESSION['conductor_name']) ? $_SESSION['conductor_name'] : 'unknown conductor account number';
+$driverac = isset($_SESSION['driver_name']) ? $_SESSION['driver_name'] : null;  // Check if driver name is in session
 
+// Fetch metrics
+$userCountQuery = "SELECT COUNT(*) as userCount FROM useracc";
+$userCountResult = mysqli_query($conn, $userCountQuery);
+$userCount = mysqli_fetch_assoc($userCountResult)['userCount'] ?? 0;
+
+$totalRevenueQuery = "SELECT SUM(amount) as totalRevenue 
+                      FROM transactions 
+                      WHERE transaction_type = 'Load' 
+                      AND bus_number = '$bus_number'
+                      AND DATE(transaction_date) = CURDATE()";
+
+$totalRevenueResult = mysqli_query($conn, $totalRevenueQuery);
+$totalRevenue = mysqli_fetch_assoc($totalRevenueResult)['totalRevenue'] ?? 0;
+
+// Fetch passenger count for today from the database
+$passengerCountQuery = "SELECT COUNT(*) as totalPassengers 
+                        FROM passenger_logs
+                        WHERE DATE(timestamp) = CURDATE() AND bus_number = '$bus_number'";
+
+$passengerCountResult = mysqli_query($conn, $passengerCountQuery);
+$totalPassengers = mysqli_fetch_assoc($passengerCountResult)['totalPassengers'] ?? 0;
+
+// Fetch passenger count by date for the chart
+$passengerCountByDateQuery = "SELECT DATE(timestamp) as date, COUNT(*) as total 
+                              FROM passenger_logs
+                              WHERE bus_number = '$bus_number'
+                              GROUP BY DATE(timestamp)";
+
+$passengerCountByDateResult = mysqli_query($conn, $passengerCountByDateQuery);
+$passengerData = [];
+while ($row = mysqli_fetch_assoc($passengerCountByDateResult)) {
+    $passengerData[] = $row;
+}
+
+// Fetch revenue by date for chart
+$revenueByDateQuery = "SELECT DATE(transaction_date) as date, SUM(amount) as total 
+                       FROM revenue 
+                       WHERE transaction_type = 'debit' 
+                       GROUP BY DATE(transaction_date)";
+$revenueByDateResult = mysqli_query($conn, $revenueByDateQuery);
+$revenueData = [];
+while ($row = mysqli_fetch_assoc($revenueByDateResult)) {
+    $revenueData[] = $row;
+}
+
+?>
 <!doctype html>
 <html lang="en">
 
@@ -69,42 +119,27 @@ $todayRevenue = $todayRevenueRow['todayRevenue'] ?? 0;
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="css/style.css">
     <style>
+        /* General Dashboard Styling */
         .dashboard {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            /* Keep the 4 columns for regular cards */
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 20px;
+            padding: 20px;
         }
 
         .dashboard-item,
         .dashboard-items {
             background-color: #fff;
             padding: 15px;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             text-align: center;
             color: #3e64ff;
-            width: 100%;
-            /* Full width for each card */
-        }
-
-        .dashboard-items {
-            background-color: #fff;
-            color: black;
-        }
-
-        .dashboard-items h3 {
-            color: #000000;
-            font-size: 20px;
-        }
-
-        .dashboard-items h2 {
-            font-size: 20px;
         }
 
         .dashboard-item i {
@@ -112,17 +147,15 @@ $todayRevenue = $todayRevenueRow['todayRevenue'] ?? 0;
             margin-bottom: 20px;
         }
 
-        /* New layout for making charts bigger */
-        .dashboard-items {
-            grid-column: span 2;
-            /* Make each chart span 2 columns */
+        .dashboard-items h3 {
+            color: #333;
         }
 
-        .dashboard-items canvas {
-            width: 100% !important;
-            /* Make canvas fill the card */
-            height: 300px !important;
-            /* Increase the height of the chart */
+        /* Chart Container */
+        .chart-container {
+            width: 100%;
+            height: 100%;
+            min-height: 300px;
         }
 
         /* Responsive Design */
@@ -135,18 +168,39 @@ $todayRevenue = $todayRevenueRow['todayRevenue'] ?? 0;
         @media (max-width: 992px) {
             .dashboard {
                 grid-template-columns: repeat(2, 1fr);
-                /* Two columns on tablets */
             }
         }
 
         @media (max-width: 576px) {
             .dashboard {
                 grid-template-columns: 1fr;
-                /* Single column on mobile */
             }
         }
-    </style>
 
+        /* Card Styling */
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+
+        /* Modal Table Styling */
+        .modal-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .modal-table th,
+        .modal-table td {
+            padding: 8px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
+        h1 {
+            color: #3e64ff;
+        }
+    </style>
 </head>
 
 <body>
@@ -155,114 +209,203 @@ $todayRevenue = $todayRevenueRow['todayRevenue'] ?? 0;
     include "sidebar.php";
     ?>
 
-    <!-- Page Content  -->
-    <div id="content" class="p-4 p-md-5">
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            <div class="container-fluid">
-                <button type="button" id="sidebarCollapse" class="btn btn-primary" onclick="toggleSidebar(event)">
-                    <i class="fa fa-bars"></i>
-                    <span class="sr-only">Toggle Menu</span>
-                </button>
-                <button class="btn btn-dark d-inline-block d-lg-none ml-auto" type="button" data-toggle="collapse"
-                    data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
-                    aria-label="Toggle navigation">
-                    <i class="fa fa-bars"></i>
-                </button>
-
-                <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                    <ul class="nav navbar-nav ml-auto">
-                        <li class="nav-item active">
-                            <a class="nav-link" href="#" onclick="loadContent('home.php');">Dashboard</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">About</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Portfolio</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Contact</a>
-                        </li>
-                    </ul>
-                </div>
+    <!-- Page Content -->
+    <div id="main-content">
+        <div class="dashboard">
+            <div class="dashboard-item">
+                <i class="fas fa-users"></i>
+                <h3>Registered Users</h3>
+                <p><?php echo $userCount; ?></p>
             </div>
-        </nav>
+            <div class="dashboard-item">
+                <i class="fas fa-desktop"></i>
+                <h3>Total Terminals</h3>
+                <p>--</p>
+            </div>
+            <div class="dashboard-item">
+                <i class="fas fa-money-bill-wave"></i>
+                <h3>Total Revenue</h3>
+                <p>₱<?php echo number_format($totalRevenue, 2); ?></p>
+            </div>
+            <div class="dashboard-item">
+                <i class="fas fa-car"></i>
+                <h3>Total Bus</h3>
+                <p>--</p>
+            </div>
 
-        <div id="main-content">
+            <!-- Revenue Chart Card -->
+            <div class="dashboard-items">
+                <h3>Revenue Chart</h3>
+                <canvas id="revenueChart" width="400" height="200"></canvas>
+            </div>
+
+            <!-- Today's Revenue Chart Card -->
+            <div class="dashboard-items">
+                <h3>Today's Revenue</h3>
+                <canvas id="todayRevenueChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+
+        <div id="content" class="p-4">
+            <h1 class="mb-4">Conductor Dashboard</h1>
+
+            <!-- Dashboard Metrics -->
             <div class="dashboard">
-                <div class="dashboard-item">
-                    <i class="fas fa-users"></i>
-                    <h3>Registered Users</h3>
-                    <p><?php echo $userCount; ?></p>
+                <div class="card text-center text-white bg-primary">
+                    <div class="card-body">
+                        <h3><i class="fas fa-users"></i></h3>
+                        <h4>Total Users</h4>
+                        <p class="h2"><?php echo $userCount; ?></p>
+                    </div>
                 </div>
-                <div class="dashboard-item">
-                    <i class="fas fa-desktop"></i>
-                    <h3>Total Terminals</h3>
+                <div class="card text-center text-white bg-success">
+                    <div class="card-body">
+                        <h3><i class="fas fa-coins"></i></h3>
+                        <h4>Total Revenue</h4>
+                        <p class="h2">₱<?php echo number_format($totalRevenue, 2); ?></p>
+                    </div>
                 </div>
-                <div class="dashboard-item">
-                    <i class="fas fa-money-bill-wave"></i>
-                    <h3>Total Revenue</h3>
-                    <p>₱<?php echo number_format($totalRevenue, 2); ?></p>
+                <div class="card text-center text-white bg-info">
+                    <div class="card-body">
+                        <h3><i class="fas fa-bus"></i></h3>
+                        <h4>Passengers Today</h4>
+                        <p class="h2"><?php echo $totalPassengers; ?></p>
+                    </div>
                 </div>
-                <div class="dashboard-item">
-                    <i class="fas fa-car"></i>
-                    <h3>Total Bus</h3>
-                </div>
-
-                <!-- Revenue Chart Card -->
-                <div class="dashboard-items">
-                    <h3>Revenue Chart</h3>
-                    <h3>Monthly Revenue Chart</h3>
-                    <canvas id="revenueChart" width="400" height="200"></canvas>
-
-                </div>
-
-                <!-- Today's Revenue Chart Card -->
-                <div class="dashboard-items">
-                    <h3>Today's Revenue</h3>
-                    <canvas id="todayRevenueChart" width="400" height="200"></canvas>
-                </div>
-
             </div>
 
+            <!-- Revenue and Passenger Count Charts -->
+            <div class="row">
+                <div class="col-md-6 col-12">
+                    <div class="card mt-4">
+                        <div class="card-body">
+                            <h4 class="card-title">Revenue Trends</h4>
+                            <div class="chart-container" id="revenueCharts"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-12">
+                    <div class="card mt-4">
+                        <div class="card-body">
+                            <h4 class="card-title">Passenger Count Trends</h4>
+                            <div class="chart-container" id="passengerCharts"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Ensure jQuery is loaded first -->
+    <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="../js/popper.js"></script>
     <script src="../js/bootstrap.min.js"></script>
     <script src="../js/main.js"></script>
 
-    <!-- Your custom AJAX script -->
+    <!-- Custom JavaScript -->
     <script>
-        function loadContent(page) {
-            $.ajax({
-                url: page,
-                method: 'GET',
-                success: function (data) {
-                    $('#main-content').html(data);
+
+        // Revenue chart
+        const revenueData = <?php echo json_encode($revenueData); ?>;
+        const revenueLabels = revenueData.map(item => item.date);
+        const revenueValues = revenueData.map(item => item.total);
+
+        // Set up the Revenue Chart
+        const revenueOptions = {
+            chart: {
+                type: 'line',  // Set the chart type
+                height: 400,
+            },
+            series: [{
+                name: 'Revenue (₱)',
+                data: revenueValues
+            }],
+            xaxis: {
+                categories: revenueLabels,
+            },
+            stroke: {
+                curve: 'smooth',
+                width: 3,
+            },
+            markers: {
+                size: 5,
+            },
+            title: {
+                text: 'Revenue Trends',
+                align: 'center',
+            },
+            yaxis: {
+                title: {
+                    text: 'Revenue (₱)',
                 },
-                error: function () {
-                    alert('Failed to load content');
+                min: 0,
+            },
+            tooltip: {
+                y: {
+                    formatter: function (val) {
+                        return '₱' + val.toFixed(2);  // Format the tooltip to show currency
+                    }
                 }
-            });
-        }
+            },
+        };
 
-        function toggleSidebar(event) {
-            event.preventDefault(); // Prevent default action when clicking toggle button
-            $('#sidebar').toggleClass('active');
-        }
+        // Initialize and render the Revenue chart
+        const revenueCharts = new ApexCharts(document.querySelector("#revenueCharts"), revenueOptions);
+        revenueCharts.render();
 
-        // Initial call to bind the sidebar toggle button
-        $(document).ready(function () {
-            $('#sidebarCollapse').on('click', toggleSidebar);
-        });
+        // Passenger count chart
+        const passengerData = <?php echo json_encode($passengerData); ?>;
+        const passengerLabels = passengerData.map(item => item.date);
+        const passengerCounts = passengerData.map(item => item.total);
+
+        // Set up the Passenger Count Chart
+        const passengerOptions = {
+            chart: {
+                type: 'bar',
+                height: 400,
+            },
+            series: [{
+                name: 'Passengers',
+                data: passengerCounts
+            }],
+            xaxis: {
+                categories: passengerLabels,
+            },
+            stroke: {
+                curve: 'smooth',
+                width: 3,
+            },
+            markers: {
+                size: 5,
+            },
+            title: {
+                text: 'Passenger Count Trends',
+                align: 'center',
+            },
+            yaxis: {
+                title: {
+                    text: 'Passenger Count',
+                },
+                min: 0,
+            },
+            tooltip: {
+                y: {
+                    formatter: function (val) {
+                        return val + ' Passengers';  // Show the number of passengers
+                    }
+                }
+            },
+        };
+
+        // Initialize and render the Passenger Count chart
+        const passengerCharts = new ApexCharts(document.querySelector("#passengerCharts"), passengerOptions);
+        passengerCharts.render();
 
         // Initialize Revenue Chart
         var ctx = document.getElementById('revenueChart').getContext('2d');
         var revenueChart = new Chart(ctx, {
-            type: 'bar', // You can change this to 'bar' or 'pie' if you prefer
+            type: 'bar',
             data: {
                 labels: <?php echo json_encode($months); ?>,
                 datasets: [{
@@ -277,9 +420,7 @@ $todayRevenue = $todayRevenueRow['todayRevenue'] ?? 0;
             options: {
                 responsive: true,
                 scales: {
-                    y: {
-                        beginAtZero: true
-                    }
+                    y: { beginAtZero: true }
                 }
             }
         });
@@ -287,12 +428,12 @@ $todayRevenue = $todayRevenueRow['todayRevenue'] ?? 0;
         // Initialize Today's Revenue Chart
         var todayRevenueCtx = document.getElementById('todayRevenueChart').getContext('2d');
         var todayRevenueChart = new Chart(todayRevenueCtx, {
-            type: 'bar', // You can change this to 'bar' or 'pie' if you prefer
+            type: 'bar',
             data: {
-                labels: ['Today'], // You can change this label as needed
+                labels: ['Today'],
                 datasets: [{
                     label: 'Today\'s Revenue',
-                    data: [<?php echo $todayRevenue; ?>], // Today's revenue from PHP
+                    data: [<?php echo $todayRevenue; ?>],
                     backgroundColor: 'rgba(153, 102, 255, 0.2)',
                     borderColor: 'rgba(153, 102, 255, 1)',
                     borderWidth: 1,
@@ -302,9 +443,7 @@ $todayRevenue = $todayRevenueRow['todayRevenue'] ?? 0;
             options: {
                 responsive: true,
                 scales: {
-                    y: {
-                        beginAtZero: true
-                    }
+                    y: { beginAtZero: true }
                 }
             }
         });

@@ -190,7 +190,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 icon: 'success',
                 confirmButtonText: 'OK'
             }).then(() => {
-                window.location.href = 'index.php#register';
+                window.location.href = '/Newram/superadmin/superadmin.php';
             });
         </script>
     <?php elseif ($error_message): ?>
