@@ -81,8 +81,8 @@ $base_path = "/Newram/superadmin/";
                         <span class="fa fa-bus"></span> Conductor
                     </a>
                     <ul class="collapse list-unstyled" id="conductorSubmenu">
-                        <!-- <li><a href="<?php echo $base_path; ?>conductor/conductordashboard.php"><span
-                                    class="fa fa-tachometer-alt"></span> Dashboard</a></li> -->
+                         <li><a href="<?php echo $base_path; ?>conductor/conductordashboard.php"><span
+                                    class="fa fa-tachometer-alt"></span> Dashboard</a></li> 
                         <li><a href="<?php echo $base_path; ?>conductor/busfare.php"><span class="fa fa-bus"></span> Bus
                                 Fare</a></li>
                         <li><a href="<?php echo $base_path; ?>conductor/passengerlists.php"><span

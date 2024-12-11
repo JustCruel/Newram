@@ -12,7 +12,7 @@ if (isset($_POST['confirm_logout']) && $_POST['confirm_logout'] === 'true') {
 		$email = $_SESSION['email'];
 
 		// Update the bus status to 'Available'
-		$updateBusStmt = $conn->prepare("UPDATE businfo SET status = 'Available', driverName = '', conductorName = '' WHERE bus_number = ?");
+		$updateBusStmt = $conn->prepare("UPDATE businfo SET status = 'Available' WHERE bus_number = ?");
 		if ($updateBusStmt) {
 			$updateBusStmt->bind_param("s", $bus_number);
 			if ($updateBusStmt->execute()) {
