@@ -23,7 +23,7 @@ if (isset($_POST['bus_number']) && isset($_POST['driver_name'])) {
     UPDATE businfo 
     SET driverName = '$driver_name', 
         conductorName = '$conductor_name', 
-        status = 'assigned' 
+        status = ' In Transit' 
     WHERE bus_number = '$bus_number'
 ";
 
