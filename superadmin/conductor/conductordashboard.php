@@ -278,7 +278,7 @@ if (!$bus_number || !$driverac) {
 
 
     </div>
-
+    <script src="../js/main.js"></script>
     <script>
         // Revenue chart
         const revenueData = <?php echo json_encode($revenueData); ?>;

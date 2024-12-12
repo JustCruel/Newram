@@ -1,7 +1,6 @@
 <?php
 session_start();
 include '../config/connection.php';
-include_once '../check_role.php';
 
 // Check if the user is logged in
 if (!isset($_SESSION['email']) || ($_SESSION['role'] != 'Cashier' && $_SESSION['role'] != 'Superadmin')) {
@@ -109,9 +108,11 @@ if (isset($_GET['generate_pdf'])) {
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
     <link rel="stylesheet" href="../css/style.css">
     <style>
         html,
@@ -211,37 +212,7 @@ if (isset($_GET['generate_pdf'])) {
     ?>
 
     <!-- Page Content  -->
-    <div id="content" class="p-4 p-md-5">
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            <div class="container-fluid">
-                <button type="button" id="sidebarCollapse" class="btn btn-primary" onclick="toggleSidebar(event)">
-                    <i class="fa fa-bars"></i>
-                    <span class="sr-only">Toggle Menu</span>
-                </button>
-                <button class="btn btn-dark d-inline-block d-lg-none ml-auto" type="button" data-toggle="collapse"
-                    data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
-                    aria-label="Toggle navigation">
-                    <i class="fa fa-bars"></i>
-                </button>
-
-                <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                    <ul class="nav navbar-nav ml-auto">
-                        <li class="nav-item active">
-                            <a class="nav-link" href="#" onclick="loadContent('home.php');">Dashboard</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">About</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Portfolio</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Contact</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
+  
 
         <div class="main-content">
             <h1 class="mb-4">Load Transaction Report</h1>
@@ -307,12 +278,9 @@ if (isset($_GET['generate_pdf'])) {
 
         </div>
     </div>
-
+    <script src="../js/main.js"></script>
     <script>
-        function toggleSidebar(event) {
-            event.preventDefault();
-            $("#sidebar").toggleClass('active');
-        }
+       
 
         // Enable day selection if the checkbox is checked
         $('#include_day').change(function () {

@@ -24,6 +24,12 @@ function fetchUserByRFID($conn, $rfidCode)
 
 function loadUserBalance($conn, $userAccountNumber, $balanceToLoad)
 {
+    // Fetch session variables for bus_number and conductor_id
+    session_start();
+    $busNumber = isset($_SESSION['bus_number']) ? $_SESSION['bus_number'] : null;
+    $conductorId = isset($_SESSION['driver_account_number']) ? $_SESSION['driver_account_number'] : null;
+
+    // Sanitize inputs
     $userAccountNumber = mysqli_real_escape_string($conn, $userAccountNumber);
 
     // Fetch the user ID
@@ -48,15 +54,17 @@ function loadUserBalance($conn, $userAccountNumber, $balanceToLoad)
             $pointsStmt->bind_param("is", $pointsEarned, $userAccountNumber);
 
             // Insert transaction record
-            $insertTransactionQuery = "INSERT INTO transactions (user_id, account_number, amount, transaction_type) VALUES (?, ?, ?, 'Load')";
+            $insertTransactionQuery = "INSERT INTO transactions (user_id, account_number, amount, transaction_type, bus_number, conductor_id) 
+                                       VALUES (?, ?, ?, 'Load', ?, ?)";
             $transactionStmt = $conn->prepare($insertTransactionQuery);
-            $transactionStmt->bind_param("isd", $userId, $userAccountNumber, $balanceToLoad);
+            $transactionStmt->bind_param("isdss", $userId, $userAccountNumber, $balanceToLoad, $busNumber, $conductorId);
 
             return $pointsStmt->execute() && $transactionStmt->execute();
         }
     }
     return false;
 }
+
 
 function convertPointsToPesos($conn, $userAccountNumber, $pointsToConvert)
 {

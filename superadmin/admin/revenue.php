@@ -69,7 +69,11 @@ $dailyRevenue = $dailyRevenue ?? [];
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script> <!-- Load ApexCharts -->
+    <!-- jQuery CDN link -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
     <link rel="stylesheet" href="../css/style.css">
+    
     <style>
         h1 {
             color: black;
@@ -103,7 +107,9 @@ $dailyRevenue = $dailyRevenue ?? [];
         <!-- Chart for daily revenue -->
         <div id="revenueChart"></div> <!-- ApexCharts container -->
     </div>
-
+    <script src="../js/popper.js"></script>
+    <script src="../js/bootstrap.min.js"></script>
+    <script src="../js/main.js"></script>
     <script>
         // Update the chart using ApexCharts
         function updateChart(dailyRevenue) {

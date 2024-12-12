@@ -123,13 +123,7 @@ $transactions = fetchTransactions($conn);
         </div>
     </div>
 
-    <script>
-        function toggleSidebar(event) {
-            event.preventDefault(); // Prevent default action when clicking toggle button
-            $('#sidebar').toggleClass('active');
-        }
-    </script>
-
+    <script src="../js/main.js"></script>
 </body>
 
 </html>

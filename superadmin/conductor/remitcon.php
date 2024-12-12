@@ -163,7 +163,7 @@ if (!isset($_SESSION['bus_number']) || !isset($_SESSION['driver_account_number']
 
 $bus_number = $_SESSION['bus_number']; // Get bus number from session
 $conductor_id = $_SESSION['driver_account_number']; // Get conductor ID from session
-var_dump($bus_number, $conductor_id, $conductor_name);
+
 ?>
 
 

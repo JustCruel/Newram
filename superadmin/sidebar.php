@@ -53,8 +53,10 @@ $base_path = "/Newram/superadmin/";
                                 Fare Update</a></li>
                         <li><a href="<?php echo $base_path; ?>admin/businfo.php"><span class="fa fa-bus"></span> Reg Bus
                                 Info</a></li>
-                        <li><a href="<?php echo $base_path; ?>admin/busviewinfo.php"><span class="fa fa-eye"></span> View
-                                Bus Info</a></li>
+                        <li><a href="<?php echo $base_path; ?>admin/busviewinfo.php"><span class="fa fa-eye"></span>
+                                Todays Bus Info</a></li>
+                                <li><a href="<?php echo $base_path; ?>admin/viewregbus.php"><span class="fa fa-eye"></span>
+                               View registered Bus Info</a></li>
                     </ul>
                 </li>
 
@@ -104,18 +106,22 @@ $base_path = "/Newram/superadmin/";
                         <span class="fa fa-coins"></span> User
                     </a>
                     <ul class="collapse list-unstyled" id="userSubmenu">
-                        <li><a href="">User Dashboard</a></li>
-                        <li><a href="recent_trips.php">Recent Trips</a></li>
-                        <li><a href="bus_tracking.php">Track Bus</a></li>
-                        <li><a href="convert_points.php">View Balance</a></li>
-                        <li><a href="">Transaction History</a></li>
-                        <li><a href="">Update Profile</a></li>
+                    <li><a href="<?php echo $base_path; ?>users/userdashboard.php"><span
+                                    class="fa fa-tachometer-alt"></span> Dashboard</a></li> 
+                        <li><a href="<?php echo $base_path; ?>users/recent_trips.php"><span class="fa fa-id-card"></span> Recent Trips</a></li>
+                       
+                        <li><a href="<?php echo $base_path; ?>users/convert_points.php"><span
+                                    class="fa fa-coins"></span> Convert Points</a></li>
+                        <li><a href="<?php echo $base_path; ?>users/updatepass.php"><span
+                                    class="fa fa-file-alt"></span> Upgate Password</a></li>
+                        <li><a href="<?php echo $base_path; ?>users/transactionlogs.php"><span
+                                    class="fa fa-paper-plane"></span> Transaction Logs</a></li>
                     </ul>
                 </li>
 
                 <!-- Logout -->
                 <li class="nav-item">
-                    <a href="<?php echo $base_path; ?>/Newram/logout.php">
+                    <a href="/Newram/logout.php">
                         <span class="fa fa-sign-out-alt"></span> Logout
                     </a>
                 </li>

@@ -1,6 +1,3 @@
-<?php
-include 'sidebar.php';
-?>
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 
@@ -161,7 +158,7 @@ include 'sidebar.php';
 </script>
 
 <body>
-
+<?php include '../sidebar.php'; ?>
     <div class="container mt-5 pt-5">
         <div class="row justify-content-center">
             <div class="col-md-6">

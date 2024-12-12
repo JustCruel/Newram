@@ -3,7 +3,7 @@ session_start();
 include '../config/connection.php';
 
 // Check if the user is logged in
-if (!isset($_SESSION['email']) || !isset($_SESSION['account_number']) || $_SESSION['role'] != 'User') {
+if (!isset($_SESSION['email']) || ($_SESSION['role'] != 'Conductor' && $_SESSION['role'] != 'Superadmin')) {
     header("Location: ../index.php");
     exit();
 }
@@ -128,7 +128,7 @@ $recentTripsStmt->close(); // Close the statement
 
 <body>
 
-    <?php include "sidebar.php"; ?>
+    <?php include "../sidebar.php"; ?>
 
     <div id="content" class="p-4 p-md-5">
         <nav class="navbar navbar-expand-lg navbar-light bg-light">

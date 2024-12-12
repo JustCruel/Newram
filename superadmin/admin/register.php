@@ -87,6 +87,7 @@ $lastname = $_SESSION['lastname'];
             /* Prevent overflow */
         }
     </style>
+     <script src="../js/main.js"></script>
     <script>
         $(document).ready(function () {
             let confirmationShown = false; // To track confirmation dialog
