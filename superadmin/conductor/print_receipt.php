@@ -17,8 +17,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $distance = isset($_POST['distance']) ? $_POST['distance'] : 'Unknown Distance';
     $driverName = isset($_POST['driverName']) ? $_POST['driverName'] : 'unknown driver';
     $paymentMethod = isset($_POST['paymentMethod']) ? $_POST['paymentMethod'] : 'unknown paymet method';
+    $passengerQuantity = isset($_POST['passengerQuantity']) ? $_POST['passengerQuantity'] : 'unknown Passenger Quantity';
     // Call the printReceipt function with the gathered data
-    printReceipt($fromRoute, $toRoute, $fareType, $totalFare, $conductorName, $busNumber, $transactionNumber, $distance, $driverName, $paymentMethod);
+    printReceipt($fromRoute, $toRoute, $fareType, $totalFare, $conductorName, $busNumber, $transactionNumber, $distance, $driverName, $paymentMethod, $passengerQuantity);
 }
 
 // Debugging line to check the transaction number (this can be removed in production)

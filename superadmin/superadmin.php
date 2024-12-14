@@ -58,6 +58,18 @@ $bus_number = isset($_SESSION['bus_number']) ? $_SESSION['bus_number'] : null;  
 $conductorac = isset($_SESSION['conductor_name']) ? $_SESSION['conductor_name'] : 'unknown conductor account number';
 $driverac = isset($_SESSION['driver_name']) ? $_SESSION['driver_name'] : null;  // Check if driver name is in session
 
+
+$busCountQuery = "SELECT COUNT(*) AS busCount FROM businfo";
+$busCountResult = mysqli_query($conn, $busCountQuery);
+$busCount = mysqli_fetch_assoc($busCountResult)['busCount'] ?? 0;
+
+$passengerCountQuery = "SELECT COUNT(*) as totalPassengers 
+                        FROM passenger_logs
+                        WHERE DATE(timestamp) = CURDATE();";
+
+$passengerCountResult = mysqli_query($conn, $passengerCountQuery);
+$totalPassengers = mysqli_fetch_assoc($passengerCountResult)['totalPassengers'] ?? 0;
+
 // Fetch metrics
 $userCountQuery = "SELECT COUNT(*) as userCount FROM useracc";
 $userCountResult = mysqli_query($conn, $userCountQuery);
@@ -93,10 +105,9 @@ while ($row = mysqli_fetch_assoc($passengerCountByDateResult)) {
 }
 
 // Fetch revenue by date for chart
-$revenueByDateQuery = "SELECT DATE(transaction_date) as date, SUM(amount) as total 
-                       FROM revenue 
-                       WHERE transaction_type = 'debit' 
-                       GROUP BY DATE(transaction_date)";
+$revenueByDateQuery = "SELECT DATE(timestamp) as date, SUM(fare) as total 
+                       FROM passenger_logs 
+                       GROUP BY DATE(timestamp)";
 $revenueByDateResult = mysqli_query($conn, $revenueByDateQuery);
 $revenueData = [];
 while ($row = mysqli_fetch_assoc($revenueByDateResult)) {
@@ -158,6 +169,12 @@ while ($row = mysqli_fetch_assoc($revenueByDateResult)) {
             min-height: 300px;
         }
 
+        p {
+            font-size: 25px;
+        }
+
+
+
         /* Responsive Design */
         @media (max-width: 1200px) {
             .dashboard {
@@ -218,19 +235,19 @@ while ($row = mysqli_fetch_assoc($revenueByDateResult)) {
                 <p><?php echo $userCount; ?></p>
             </div>
             <div class="dashboard-item">
-                <i class="fas fa-desktop"></i>
-                <h3>Total Terminals</h3>
-                <p>--</p>
-            </div>
-            <div class="dashboard-item">
                 <i class="fas fa-money-bill-wave"></i>
-                <h3>Total Revenue</h3>
+                <h3>Total Load(Today)</h3>
                 <p>₱<?php echo number_format($totalRevenue, 2); ?></p>
             </div>
             <div class="dashboard-item">
                 <i class="fas fa-car"></i>
                 <h3>Total Bus</h3>
-                <p>--</p>
+                <p><?php echo number_format($busCount); ?></p>
+            </div>
+            <div class="dashboard-item">
+                <i class="fas fa-desktop"></i>
+                <h3>Total Passenger Today(All Bus)</h3>
+                <p><?php echo $totalPassengers; ?></p>
             </div>
 
             <!-- Revenue Chart Card -->
@@ -247,32 +264,8 @@ while ($row = mysqli_fetch_assoc($revenueByDateResult)) {
         </div>
 
         <div id="content" class="p-4">
-            <h1 class="mb-4">Conductor Dashboard</h1>
 
-            <!-- Dashboard Metrics -->
-            <div class="dashboard">
-                <div class="card text-center text-white bg-primary">
-                    <div class="card-body">
-                        <h3><i class="fas fa-users"></i></h3>
-                        <h4>Total Users</h4>
-                        <p class="h2"><?php echo $userCount; ?></p>
-                    </div>
-                </div>
-                <div class="card text-center text-white bg-success">
-                    <div class="card-body">
-                        <h3><i class="fas fa-coins"></i></h3>
-                        <h4>Total Revenue</h4>
-                        <p class="h2">₱<?php echo number_format($totalRevenue, 2); ?></p>
-                    </div>
-                </div>
-                <div class="card text-center text-white bg-info">
-                    <div class="card-body">
-                        <h3><i class="fas fa-bus"></i></h3>
-                        <h4>Passengers Today</h4>
-                        <p class="h2"><?php echo $totalPassengers; ?></p>
-                    </div>
-                </div>
-            </div>
+
 
             <!-- Revenue and Passenger Count Charts -->
             <div class="row">
@@ -305,6 +298,8 @@ while ($row = mysqli_fetch_assoc($revenueByDateResult)) {
 
     <!-- Custom JavaScript -->
     <script>
+
+
 
         // Revenue chart
         const revenueData = <?php echo json_encode($revenueData); ?>;

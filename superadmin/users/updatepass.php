@@ -1,3 +1,11 @@
+<?php
+session_start();
+include '../config/connection.php';
+
+if (!isset($_SESSION['email']) || ($_SESSION['role'] != 'Superadmin')) {
+    header("Location: ../index.php");
+    exit();
+} ?>
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 
@@ -68,6 +76,10 @@
 
         .indicator .strong.active {
             background: green;
+        }
+
+        h4 {
+            color: black;
         }
     </style>
 </head>
@@ -158,7 +170,7 @@
 </script>
 
 <body>
-<?php include '../sidebar.php'; ?>
+    <?php include '../sidebar.php'; ?>
     <div class="container mt-5 pt-5">
         <div class="row justify-content-center">
             <div class="col-md-6">

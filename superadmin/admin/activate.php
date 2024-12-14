@@ -71,6 +71,76 @@ $userQuery = "SELECT id, firstname, middlename, lastname, birthday, age, gender,
               FROM useracc";
 
 $userResult = mysqli_query($conn, $userQuery);
+
+if (isset($_POST['fetch_users'])) {
+    // Initialize the query
+    $userQuery = "SELECT id, firstname, middlename, lastname, birthday, age, gender, address, account_number, balance, province, municipality, barangay, is_activated FROM useracc WHERE 1=1";
+
+    // Check if search term is set
+    if (isset($_POST['search']) && !empty($_POST['search'])) {
+        $search = $_POST['search'];
+        $userQuery .= " AND (firstname LIKE ? OR middlename LIKE ? OR lastname LIKE ?)";
+        $searchTerm = "%$search%";
+    }
+
+    // Check if status filter is set
+    if (isset($_POST['statusFilter']) && $_POST['statusFilter'] !== '') {
+        $statusFilter = $_POST['statusFilter'];
+        $userQuery .= " AND is_activated = ?";
+    }
+
+    // Prepare the statement
+    $stmt = $conn->prepare($userQuery);
+
+    // Bind parameters
+    if (isset($search)) {
+        if (isset($statusFilter)) {
+            $stmt->bind_param('ssi', $searchTerm, $searchTerm, $statusFilter);
+        } else {
+            $stmt->bind_param('sss', $searchTerm, $searchTerm, $searchTerm);
+        }
+    } else if (isset($statusFilter)) {
+        $stmt->bind_param('i', $statusFilter);
+    }
+
+    $stmt->execute();
+    $userResult = $stmt->get_result();
+
+    // Generate the table rows
+    $output = '';
+    while ($row = $userResult->fetch_assoc()) {
+        $output .= '<tr id="user-row-' . $row['id'] . '">';
+        $output .= '<td>' . $row['id'] . '</td>';
+        $output .= '<td>' . htmlspecialchars($row['firstname']) . '</td>';
+        $output .= '<td>' . htmlspecialchars($row['middlename']) . '</td>';
+        $output .= '<td>' . htmlspecialchars($row['lastname']) . '</td>';
+        $output .= '<td>' . date('F j, Y', strtotime($row['birthday'])) . '</td>';
+        $output .= '<td>' . $row['age'] . '</td>';
+        $output .= '<td>' . htmlspecialchars($row['gender']) . '</td>';
+        $output .= '<td>' . htmlspecialchars($row['address']) . '</td>';
+        $output .= '<td>' . htmlspecialchars($row['province']) . '</td>';
+        $output .= '<td>' . htmlspecialchars($row['municipality']) . '</td>';
+        $output .= '<td>' . htmlspecialchars($row['barangay']) . '</td>';
+        $output .= '<td>' . htmlspecialchars($row['account_number']) . '</td>';
+        $output .= '<td>₱' . number_format($row['balance'], 2) . '</td>';
+        $output .= '<td>' . ($row['is_activated'] == 1 ? 'Activated' : 'Disabled') . '</td>';
+        $output .= '<td>
+                        <form id="actionForm' . $row['id'] . '" method="POST">
+                            <input type="hidden" name="user_id" value="' . $row['id'] . '">
+                            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
+                                data-bs-target="#actionModal"
+                                onclick="prepareActions(' . $row['id'] . ', ' . $row['is_activated'] . ')">
+                                Action
+                            </button>
+                        </form>
+                    </td>';
+        $output .= '</tr>';
+    }
+
+    // Return the generated rows
+    echo $output;
+    exit(); // Stop further execution after handling AJAX request
+}
 ?>
 
 <!DOCTYPE html>
@@ -160,9 +230,15 @@ $userResult = mysqli_query($conn, $userQuery);
         </h3>
 
 
+
         <form method="POST" action="">
             <div class="input-group mb-3">
                 <input type="text" class="form-control" id="search" name="search" placeholder="Search users...">
+                <select class="form-select" id="statusFilter" name="statusFilter">
+                    <option value="">All Users</option>
+                    <option value="1">Activated</option>
+                    <option value="0">Disabled</option>
+                </select>
             </div>
         </form>
         <!-- Feedback Message -->
@@ -266,6 +342,36 @@ $userResult = mysqli_query($conn, $userQuery);
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
     <script>
+        $(document).ready(function () {
+            // Function to fetch users based on search and filter
+            function fetchUsers() {
+                var search = $('#search').val();
+                var statusFilter = $('#statusFilter').val();
+
+                $.ajax({
+                    url: '', // Current file
+                    method: 'POST',
+                    data: {
+                        search: search,
+                        statusFilter: statusFilter,
+                        fetch_users: true // Indicate that we want to fetch users
+                    },
+                    success: function (data) {
+                        $('#userTableBody').html(data); // Update the table body with the response
+                    }
+                });
+            }
+
+            // Trigger fetch on search input change
+            $('#search').on('keyup', function () {
+                fetchUsers();
+            });
+
+            // Trigger fetch on dropdown change
+            $('#statusFilter').on('change', function () {
+                fetchUsers();
+            });
+        });
         function prepareActions(userId, isActivated) {
             // Store the user ID in the modal
             $('#actionModal').data('userId', userId);
@@ -276,7 +382,8 @@ $userResult = mysqli_query($conn, $userQuery);
                 $('#disableBtn').prop('disabled', false); // Enable 'Disable' if the user is activated
             } else {
                 $('#activateBtn').prop('disabled', false); // Enable 'Activate' if the user is not activated
-                $('#disableBtn').prop('disabled', false); // Enable 'Disable' if the user is not activated
+                $('#disableBtn').prop('disabled', true);
+                $('#transferFundsBtn').prop('disabled', true); // Enable 'Disable' if the user is not activated
             }
         }
 

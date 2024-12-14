@@ -239,7 +239,7 @@ if (!$bus_number || !$driverac) {
             <div class="card text-center text-white bg-success">
                 <div class="card-body">
                     <h3><i class="fas fa-coins"></i></h3>
-                    <h4>Total Revenue</h4>
+                    <h4>Total Load(Today)</h4>
                     <p class="h2">₱<?php echo number_format($totalRevenue, 2); ?></p>
                 </div>
             </div>

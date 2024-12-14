@@ -11822,16 +11822,16 @@ h5,
 
 /* Sidebar styles */
 #sidebar {
-  min-width: 270px;
-  max-width: 270px;
+  min-width: 280px;
+  max-width: 280px;
   background: #3e64ff;
   color: #fff;
   transition: all 0.3s;
 }
 
 #sidebar.active {
-  min-width: 80px;
-  max-width: 80px;
+  min-width: 85px;
+  max-width: 85px;
   text-align: center;
 }
 
@@ -11858,6 +11858,44 @@ h5,
   /* Center the logo horizontally */
   padding: 10px 30px;
   /* Add padding for spacing around the logo */
+}
+
+.nav-item a {
+  padding: 10px 15px;
+  color: #333;
+  transition: background-color 0.5s, color 0.3s;
+
+}
+
+.nav-item a:hover {
+  background-color: #f8f9fa;
+  color: #007bff;
+
+}
+
+.user-profile h3 {
+  font-size: 1.2rem;
+  margin: 0;
+}
+
+.user-profile h4 {
+  font-size: 1rem;
+  color: #6c757d;
+}
+
+.components {
+  border-top: 1px solid #e9ecef;
+  padding-top: 15px;
+}
+
+.nav-item:hover .collapse {
+  display: block;
+  /* Show submenu on hover */
+}
+
+.collapse {
+  display: none;
+  /* Hide submenu by default */
 }
 
 /* Adjustments when the sidebar is active (collapsed) */

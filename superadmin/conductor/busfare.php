@@ -99,48 +99,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $fare += ($distance - 4) * $fareSettings['additional_fare'];
         }
 
-       // Calculate total fare with passenger quantity
-$totalFare = $fare * $passengerQuantity;
+        // Calculate total fare with passenger quantity
+        $totalFare = $fare * $passengerQuantity;
 
-// Apply discount if applicable
-if ($fareType === 'discounted') {
-    $totalFare *= 0.8; // 20% discount
-}
+        // Apply discount if applicable
+        if ($fareType === 'discounted') {
+            $totalFare *= 0.8; // 20% discount
+        }
 
-if (empty($rfid)) { // Check if payment is made in cash
-    $totalFare = round($totalFare); // Round to the nearest whole number
-}
+        if (empty($rfid)) { // Check if payment is made in cash
+            $totalFare = round($totalFare); // Round to the nearest whole number
+        }
 
-// If RFID and balance are sufficient, deduct the fare
-if (empty($rfid) || $balance >= $totalFare) {
-    if (!empty($rfid)) {
-        deductFare($rfid, $totalFare, $conn);
-    }
+        // If RFID and balance are sufficient, deduct the fare
+        if (empty($rfid) || $balance >= $totalFare) {
+            if (!empty($rfid)) {
+                deductFare($rfid, $totalFare, $conn);
+            }
 
-    // Track the passenger
- // Track the passenger
-$_SESSION['passengers'][] = [
-    'rfid' => $rfid,
-    'fromRoute' => $fromRoute,
-    'toRoute' => $toRoute,
-    'fare' => $totalFare, // Store the discounted fare
-    'status' => 'onBoard',
-    'quantity' => $passengerQuantity // Store the quantity of passengers
-];
+            // Track the passenger
+            // Track the passenger
+            $_SESSION['passengers'][] = [
+                'rfid' => $rfid,
+                'fromRoute' => $fromRoute,
+                'toRoute' => $toRoute,
+                'fare' => $totalFare, // Store the discounted fare
+                'status' => 'onBoard',
+                'quantity' => $passengerQuantity // Store the quantity of passengers
+            ];
 
-    $loggedRfid = !empty($rfid) ? $rfid : 'cash'; // Use 'cash' if payment is made in cash
-    logPassengerEntry($loggedRfid, $fromRoute['route_name'], $toRoute['route_name'], $totalFare, $conductorName, $bus_number, $transactionNumber, $conn);
+            $loggedRfid = !empty($rfid) ? $rfid : 'cash'; // Use 'cash' if payment is made in cash
+            logPassengerEntry($loggedRfid, $fromRoute['route_name'], $toRoute['route_name'], $totalFare, $conductorName, $bus_number, $transactionNumber, $conn);
 
-    echo json_encode([
-        'status' => 'success',
-        'message' => 'Fare deducted successfully.',
-        'new_balance' => $balance - $totalFare,
-        'fare' => $totalFare, // This should be the discounted fare
-        'distance' => $distance
-    ]);
-} else {
-    echo json_encode(['status' => 'error', 'message' => 'Insufficient balance. Please load your account.']);
-}
+            echo json_encode([
+                'status' => 'success',
+                'message' => 'Fare deducted successfully.',
+                'new_balance' => $balance - $totalFare,
+                'fare' => $totalFare, // This should be the discounted fare
+                'distance' => $distance
+            ]);
+        } else {
+            echo json_encode(['status' => 'error', 'message' => 'Insufficient balance. Please load your account.']);
+        }
     } else {
         echo json_encode(['status' => 'error', 'message' => 'Missing required data.']);
     }
@@ -154,34 +154,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['dashboard'])) {
     $passengers = $_SESSION['passengers'];
 
     // Group passengers by destination and count them
-   // Group passengers by destination and count them
-$destinationCount = [];
+    // Group passengers by destination and count them
+    $destinationCount = [];
 
-foreach ($passengers as $passenger) {
-    $destination = $passenger['toRoute']['route_name'];
-    $quantity = $passenger['quantity']; // Get the quantity of this passenger
+    foreach ($passengers as $passenger) {
+        $destination = $passenger['toRoute']['route_name'];
+        $quantity = $passenger['quantity']; // Get the quantity of this passenger
 
-    // Initialize the destination count if not already set
-    if (!isset($destinationCount[$destination])) {
-        $destinationCount[$destination] = 0;
+        // Initialize the destination count if not already set
+        if (!isset($destinationCount[$destination])) {
+            $destinationCount[$destination] = 0;
+        }
+
+        // Add the quantity of this passenger to the destination count
+        $destinationCount[$destination] += $quantity;
+
+        // Check if this passenger has already been counted as gotten off
+        if (isset($passenger['getOff']) && $passenger['getOff'] === true) {
+            $destinationCount[$destination] -= $quantity; // Remove the quantity of this passenger
+        }
+
+
+        // Ensure the count doesn't go negative
+        foreach ($destinationCount as $destination => $count) {
+            if ($count < 0) {
+                $destinationCount[$destination] = 0; // Reset to zero if negative
+            }
+        }
     }
-
-    // Add the quantity of this passenger to the destination count
-    $destinationCount[$destination] += $quantity;
-
-    // Check if this passenger has already been counted as gotten off
-    if (isset($passenger['getOff']) && $passenger['getOff'] === true) {
-        $destinationCount[$destination] -= $quantity; // Remove the quantity of this passenger
-    }
-
-
-// Ensure the count doesn't go negative
-foreach ($destinationCount as $destination => $count) {
-    if ($count < 0) {
-        $destinationCount[$destination] = 0; // Reset to zero if negative
-    }
-}
-}
 
     // Return the grouped data to the driver
     echo json_encode([
@@ -197,15 +197,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['removePassenger'])) {
 
     // Logic to find and update the passenger's 'getOff' status
     $passengers = &$_SESSION['passengers'];
+    $found = false; // Flag to check if we found a passenger
 
     foreach ($passengers as &$passenger) {
         if ($passenger['toRoute']['route_name'] === $destination && !isset($passenger['getOff'])) {
             $passenger['getOff'] = true; // Mark the passenger as gotten off
-            break;
+            $found = true; // Set the flag to true
+            break; // Exit the loop after removing one passenger
         }
     }
 
-    echo json_encode(['status' => 'success']);
+    if ($found) {
+        echo json_encode(['status' => 'success']);
+    } else {
+        echo json_encode(['status' => 'error', 'message' => 'No passenger found to remove.']);
+    }
     exit;
 }
 
@@ -214,14 +220,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['removeAllPassengerDesti
 
     // Logic to update all passengers' 'getOff' status for the destination
     $passengers = &$_SESSION['passengers'];
+    $removedCount = 0; // Count how many passengers were removed
 
     foreach ($passengers as &$passenger) {
         if ($passenger['toRoute']['route_name'] === $destination && !isset($passenger['getOff'])) {
             $passenger['getOff'] = true; // Mark the passenger as gotten off
+            $removedCount++; // Increment the count of removed passengers
         }
     }
 
-    echo json_encode(['status' => 'success']);
+    if ($removedCount > 0) {
+        echo json_encode(['status' => 'success', 'message' => "$removedCount passengers removed."]);
+    } else {
+        echo json_encode(['status' => 'error', 'message' => 'No passengers found to remove.']);
+    }
     exit;
 }
 
@@ -279,7 +291,8 @@ $conn->close();
         #calculateFare {
             width: 100%;
         }
-        h4{
+
+        h4 {
             color: black;
         }
     </style>
@@ -364,12 +377,12 @@ $conn->close();
             </div> -->
         </form>
         <!-- Fare Result -->
-       
 
-    
-                 
-            
-        
+
+
+
+
+
         <div class="d-flex justify-content-center align-items-center mb-4" style="min-height: 120px;">
             <!-- Card for Distance -->
             <div class="card shadow-sm text-center p-3 mx-2">
@@ -385,16 +398,16 @@ $conn->close();
         </div>
 
         <div class="card shadow-sm mb-5">
-    <div class="card-header d-flex align-items-center">
-        <h4 class="mb-0">Passenger Destinations</h4>
-        <button class="btn btn-danger ms-auto" onclick="removeAllPassengers()">Remove All Passengers</button>
-    </div>
+            <div class="card-header d-flex align-items-center">
+                <h4 class="mb-0">Passenger Destinations</h4>
+                <button class="btn btn-danger ms-auto" onclick="removeAllPassengers()">Remove All Passengers</button>
+            </div>
 
 
-            
-           
+
+
             <div class="card-body">
-                
+
                 <table id="destinationTable" class="table table-bordered">
                     <thead>
                         <tr>
@@ -425,48 +438,48 @@ $conn->close();
         document.getElementById('passengerQuantity').addEventListener('change', updateDistance);
 
         function updateDistance() {
-    const fromRouteValue = document.getElementById('fromRoute').value;
-    const toRouteValue = document.getElementById('toRoute').value;
-    const kmLabel = document.getElementById('kmLabel');
-    const fareLabel = document.getElementById('fareLabel');
-    const passengerQuantity = parseInt(document.getElementById('passengerQuantity').value, 10); // Get passenger quantity
+            const fromRouteValue = document.getElementById('fromRoute').value;
+            const toRouteValue = document.getElementById('toRoute').value;
+            const kmLabel = document.getElementById('kmLabel');
+            const fareLabel = document.getElementById('fareLabel');
+            const passengerQuantity = parseInt(document.getElementById('passengerQuantity').value, 10); // Get passenger quantity
 
-    if (fromRouteValue && toRouteValue) {
-        try {
-            const fromRoute = JSON.parse(fromRouteValue);
-            const toRoute = JSON.parse(toRouteValue);
+            if (fromRouteValue && toRouteValue) {
+                try {
+                    const fromRoute = JSON.parse(fromRouteValue);
+                    const toRoute = JSON.parse(toRouteValue);
 
-            // Calculate the distance in kilometers
-            const distance = Math.abs(fromRoute.post - toRoute.post);
-            kmLabel.textContent = `${distance} km`;
+                    // Calculate the distance in kilometers
+                    const distance = Math.abs(fromRoute.post - toRoute.post);
+                    kmLabel.textContent = `${distance} km`;
 
-            // Calculate the fare based on the distance
-            let totalFare = baseFare; // Start with the base fare for the first 4 km
-            if (distance > 4) {
-                // Add additional fare for kilometers beyond the first 4 km
-                totalFare += (distance - 4) * additionalFare;
+                    // Calculate the fare based on the distance
+                    let totalFare = baseFare; // Start with the base fare for the first 4 km
+                    if (distance > 4) {
+                        // Add additional fare for kilometers beyond the first 4 km
+                        totalFare += (distance - 4) * additionalFare;
+                    }
+
+                    // Apply discount if applicable
+                    const fareType = document.getElementById('fareType').value;
+                    if (fareType === 'discounted') {
+                        totalFare *= 0.8; // Apply 20% discount
+                    }
+
+                    // Calculate total fare with passenger quantity
+                    totalFare *= passengerQuantity; // Multiply by the number of passengers
+
+                    fareLabel.textContent = `₱${totalFare.toFixed(2)}`;
+                } catch (error) {
+                    console.error('Error parsing route data:', error);
+                    kmLabel.textContent = "Invalid route data";
+                    fareLabel.textContent = "₱0.00";
+                }
+            } else {
+                kmLabel.textContent = "0 km";
+                fareLabel.textContent = "₱0.00";
             }
-
-            // Apply discount if applicable
-            const fareType = document.getElementById('fareType').value;
-            if (fareType === 'discounted') {
-                totalFare *= 0.8; // Apply 20% discount
-            }
-
-            // Calculate total fare with passenger quantity
-            totalFare *= passengerQuantity; // Multiply by the number of passengers
-
-            fareLabel.textContent = `₱${totalFare.toFixed(2)}`;
-        } catch (error) {
-            console.error('Error parsing route data:', error);
-            kmLabel.textContent = "Invalid route data";
-            fareLabel.textContent = "₱0.00";
         }
-    } else {
-        kmLabel.textContent = "0 km";
-        fareLabel.textContent = "₱0.00";
-    }
-}
 
         function validateRoutes() {
             const fromRoute = document.getElementById('fromRoute').value;
@@ -509,15 +522,15 @@ $conn->close();
         }
 
         function updateDashboard(data) {
-    const tableBody = document.querySelector("#destinationTable tbody");
-    tableBody.innerHTML = ''; // Clear existing rows
+            const tableBody = document.querySelector("#destinationTable tbody");
+            tableBody.innerHTML = ''; // Clear existing rows
 
-    // Iterate through the destinations and passenger count
-    for (const [destination, count] of Object.entries(data.destination_count)) {
-        if (count > 0) {
-            const row = document.createElement("tr");
+            // Iterate through the destinations and passenger count
+            for (const [destination, count] of Object.entries(data.destination_count)) {
+                if (count > 0) {
+                    const row = document.createElement("tr");
 
-            row.innerHTML = `
+                    row.innerHTML = `
                 <td>${destination}</td>
                 <td>${count}</td>
                 <td>
@@ -525,38 +538,38 @@ $conn->close();
                     <button class="btn btn-danger btn-sm" onclick="removeAllPassengerDestination('${destination}')">--</button>
                 </td>
             `;
-            tableBody.appendChild(row);
+                    tableBody.appendChild(row);
+                }
+            }
         }
-    }
-}
 
         async function removeAllPassengerDestination(destination) {
-    const confirmation = await Swal.fire({
-        title: 'Are you sure?',
-        text: `You are about to remove all passengers going to ${destination}.`,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Yes, remove all',
-        cancelButtonText: 'Cancel'
-    });
-
-    if (confirmation.isConfirmed) {
-        const response = await fetch('<?= $_SERVER['PHP_SELF']; ?>?removeAllPassengerDestination=true&destination=' + destination, {
-            method: 'GET',
-        });
-
-        const data = await response.json();
-        if (data.status === 'success') {
-            fetchDashboardData(); // Refresh the passenger list
-        } else {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Failed to remove all passengers.',
+            const confirmation = await Swal.fire({
+                title: 'Are you sure?',
+                text: `You are about to remove all passengers going to ${destination}.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, remove all',
+                cancelButtonText: 'Cancel'
             });
+
+            if (confirmation.isConfirmed) {
+                const response = await fetch('<?= $_SERVER['PHP_SELF']; ?>?removeAllPassengerDestination=true&destination=' + destination, {
+                    method: 'GET',
+                });
+
+                const data = await response.json();
+                if (data.status === 'success') {
+                    fetchDashboardData(); // Refresh the passenger list
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Failed to remove all passengers.',
+                    });
+                }
+            }
         }
-    }
-}
 
 
         async function removePassenger(destination) {
@@ -588,32 +601,32 @@ $conn->close();
         }
 
         async function removeAllPassengers() {
-    const confirmation = await Swal.fire({
-        title: 'Are you sure?',
-        text: 'You are about to remove all passengers from the list.',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Yes, remove all',
-        cancelButtonText: 'Cancel'
-    });
-
-    if (confirmation.isConfirmed) {
-        const response = await fetch('<?= $_SERVER['PHP_SELF']; ?>?removeAllPassengers=true', {
-            method: 'GET',
-        });
-
-        const data = await response.json();
-        if (data.status === 'success') {
-            fetchDashboardData(); // Refresh the passenger list
-        } else {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Failed to remove passengers.',
+            const confirmation = await Swal.fire({
+                title: 'Are you sure?',
+                text: 'You are about to remove all passengers from the list.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, remove all',
+                cancelButtonText: 'Cancel'
             });
+
+            if (confirmation.isConfirmed) {
+                const response = await fetch('<?= $_SERVER['PHP_SELF']; ?>?removeAllPassengers=true', {
+                    method: 'GET',
+                });
+
+                const data = await response.json();
+                if (data.status === 'success') {
+                    fetchDashboardData(); // Refresh the passenger list
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Failed to remove passengers.',
+                    });
+                }
+            }
         }
-    }
-}
 
         // Automatically fetch data when modal is opened
         window.onload = function () {
@@ -713,87 +726,86 @@ $conn->close();
 
         // Updated getUserBalance function to handle both RFID and cash payments
         async function getUserBalance(rfid, fromRoute, toRoute, fareType, passengerQuantity, isCashPayment = false, transactionNumber, distance, paymentMethod) {
-    const conductorName = "<?= $conductorName; ?>";  // PHP variable
-    try {
-        const baseFare = <?php echo $base_fare; ?>;
-        const distance = Math.abs(fromRoute.post - toRoute.post);
-        let totalFare = 0;
+            const conductorName = "<?= $conductorName; ?>";  // PHP variable
+            try {
+                const baseFare = <?php echo $base_fare; ?>;
+                const distance = Math.abs(fromRoute.post - toRoute.post);
+                let totalFare = 0;
 
-        if (isCashPayment) {
-            // Cash payment logic
-            const response = await fetch('<?= $_SERVER['PHP_SELF']; ?>', {
-                method: 'POST',
-                body: JSON.stringify({
-                    rfid: rfid,
-                    fromRoute: fromRoute,
-                    toRoute: toRoute,
-                    fareType: fareType,
-                    passengerQuantity: passengerQuantity,
-                    transactionNumber: transactionNumber,
-                    distance: distance,
-                    driverName: driverName
-                }),
-                headers: {
-                    'Content-Type': 'application/json'
+                if (isCashPayment) {
+                    // Cash payment logic
+                    const response = await fetch('<?= $_SERVER['PHP_SELF']; ?>', {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            rfid: rfid,
+                            fromRoute: fromRoute,
+                            toRoute: toRoute,
+                            fareType: fareType,
+                            passengerQuantity: passengerQuantity,
+                            transactionNumber: transactionNumber,
+                            distance: distance,
+                            driverName: driverName
+                        }),
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    const data = await response.json();
+                    if (data.status === 'error') {
+                        Swal.fire('Error', data.message, 'error');
+                        return;
+                    }
+
+                    totalFare = data.fare; // Use the fare returned from the server
+                } else {
+                    // RFID payment logic
+                    const response = await fetch('<?= $_SERVER['PHP_SELF']; ?>', {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            rfid: rfid,
+                            fromRoute: fromRoute,
+                            toRoute: toRoute,
+                            fareType: fareType,
+                            passengerQuantity: passengerQuantity,
+                            transactionNumber: transactionNumber,
+                            distance: distance,
+                            driverName: driverName
+                        }),
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    const data = await response.json(); // Await the JSON response here
+
+                    if (data.status === 'error') {
+                        Swal.fire('Error', data.message, 'error');
+                        return;
+                    }
+
+                    totalFare = data.fare; // Use the fare returned from the server
                 }
-            });
 
-            const data = await response.json();
-            if (data.status === 'error') {
-                Swal.fire('Error', data.message, 'error');
-                return;
+                totalFare = totalFare.toFixed(2); // Ensure it's formatted correctly
+                showReceipt(fromRoute, toRoute, fareType, totalFare, conductorName, transactionNumber, distance, paymentMethod, passengerQuantity);
+            } catch (error) {
+                console.error('Error fetching balance and processing fare:', error);
+                Swal.fire('Error', 'An error occurred while processing your payment. Please try again.', 'error');
             }
-
-            totalFare = data.fare; // Use the fare returned from the server
-        } else {
-            // RFID payment logic
-            const response = await fetch('<?= $_SERVER['PHP_SELF']; ?>', {
-                method: 'POST',
-                body: JSON.stringify({
-                    rfid: rfid,
-                    fromRoute: fromRoute,
-                    toRoute: toRoute,
-                    fareType: fareType,
-                    passengerQuantity: passengerQuantity,
-                    transactionNumber: transactionNumber,
-                    distance: distance,
-                    driverName: driverName
-                }),
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            const data = await response.json(); // Await the JSON response here
-
-            if (data.status === 'error') {
-                Swal.fire('Error', data.message, 'error');
-                return;
-            }
-
-            totalFare = data.fare; // Use the fare returned from the server
         }
 
-        totalFare = totalFare.toFixed(2); // Ensure it's formatted correctly
-        showReceipt(fromRoute, toRoute, fareType, totalFare, conductorName, transactionNumber, distance, paymentMethod);
+        let receiptShown = false;
 
-    } catch(error) {
-        console.error('Error fetching balance and processing fare:', error);
-        Swal.fire('Error', 'An error occurred while processing your payment. Please try again.', 'error');
-    }
-}
+        function showReceipt(fromRoute, toRoute, fareType, totalFare, conductorName, transactionNumber, distance, paymentMethod, passengerQuantity) {
+            if (receiptShown) return; // Prevent showing the receipt again
 
-let receiptShown = false;
+            receiptShown = true;
+            const driverName = "<?= $_SESSION['driver_name']; ?>";  // PHP variable for driver name
+            const busNumber = "<?= $bus_number; ?>";  // PHP variable for bus number
 
-function showReceipt(fromRoute, toRoute, fareType, totalFare, conductorName, transactionNumber, distance, paymentMethod) {
-    if (receiptShown) return; // Prevent showing the receipt again
-
-    receiptShown = true;
-    const driverName = "<?= $_SESSION['driver_name']; ?>";  // PHP variable for driver name
-    const busNumber = "<?= $bus_number; ?>";  // PHP variable for bus number
-
-    Swal.fire({
-        html: `
+            Swal.fire({
+                html: `
         <h3>Receipt</h3>
         <strong>Transaction Number:</strong> ${transactionNumber}<br>
         <strong>Bus No.:</strong> ${busNumber}<br>
@@ -806,33 +818,35 @@ function showReceipt(fromRoute, toRoute, fareType, totalFare, conductorName, tra
         <strong>CONDUCTOR:</strong> ${conductorName}<br>
         <strong>Passenger Type:</strong> ${fareType}<br>
         <strong>Payment Method:</strong> ${paymentMethod}<br>
+         <strong>Passenger/s:</strong> ${passengerQuantity}<br> <!-- Added Passenger Quantity -->
         <div style="font-size: 22px; font-weight: bold;">₱${totalFare}</div><br>
         <p>Thank you for riding with us!</p>
         `,
-        didClose: () => {
-            // Trigger the PHP print function here using an AJAX request
-            $.post('print_receipt.php', {
-                fromRoute: fromRoute,
-                toRoute: toRoute,
-                fareType: fareType,
-                totalFare: totalFare,
-                conductorName: conductorName,
-                driverName: driverName, // Pass driver name to print if needed
-                busNumber: busNumber,
-                transactionNumber: transactionNumber,
-                distance: distance,
-                paymentMethod: paymentMethod
-            }, function (response) {
-                console.log("Receipt printed successfully!");
-                location.reload();
-            }).fail(function () {
-                console.error("Failed to print receipt.");
+                didClose: () => {
+                    // Trigger the PHP print function here using an AJAX request
+                    $.post('print_receipt.php', {
+                        fromRoute: fromRoute,
+                        toRoute: toRoute,
+                        fareType: fareType,
+                        totalFare: totalFare,
+                        conductorName: conductorName,
+                        driverName: driverName, // Pass driver name to print if needed
+                        busNumber: busNumber,
+                        transactionNumber: transactionNumber,
+                        distance: distance,
+                        paymentMethod: paymentMethod,
+                        passengerQuantity: passengerQuantity
+                    }, function (response) {
+                        console.log("Receipt printed successfully!");
+                        location.reload();
+                    }).fail(function () {
+                        console.error("Failed to print receipt.");
+                    });
+                }
+            }).then(() => {
+                //location.reload(); // Reload the page after the receipt is acknowledged
             });
         }
-    }).then(() => {
-        location.reload(); // Reload the page after the receipt is acknowledged
-    });
-}
 
     </script>
 </body>

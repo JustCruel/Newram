@@ -40,23 +40,23 @@ $base_path = "/Newram/superadmin/";
                     <a href="#adminSubmenu" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
                         <span class="fa fa-cogs"></span> Admin
                     </a>
-                    <ul class="collapse list-unstyled" id="adminSubmenu">
-                        <!-- <li><a href="<?php echo $base_path; ?>admin/admindashboard.php"><span class="fa fa-home"></span>
-                                Dashboard</a></li> -->
-                        <li><a href="<?php echo $base_path; ?>admin/register.php"><span class="fa fa-user"></span>
-                                Registration</a></li>
-                        <li><a href="<?php echo $base_path; ?>admin/activate.php"><span class="fa fa-sticky-note"></span>
-                                Accounts</a></li>
-                        <li><a href="<?php echo $base_path; ?>admin/revenue.php"><span class="fa fa-cogs"></span>
-                                Revenue</a></li>
-                        <li><a href="<?php echo $base_path; ?>admin/fareupdate.php"><span class="fa fa-arrow-up-1-9"></span>
-                                Fare Update</a></li>
-                        <li><a href="<?php echo $base_path; ?>admin/businfo.php"><span class="fa fa-bus"></span> Reg Bus
-                                Info</a></li>
-                        <li><a href="<?php echo $base_path; ?>admin/busviewinfo.php"><span class="fa fa-eye"></span>
-                                Todays Bus Info</a></li>
-                                <li><a href="<?php echo $base_path; ?>admin/viewregbus.php"><span class="fa fa-eye"></span>
-                               View registered Bus Info</a></li>
+                    <ul class="collapse list-unstyled ps-3" id="adminSubmenu">
+                        <li><a href="<?php echo $base_path; ?>superadmin.php" class="nav-link"><i
+                                    class="fa fa-home me-2"></i> Dashboard</a></li>
+                        <li><a href="<?php echo $base_path; ?>admin/register.php" class="nav-link"><i
+                                    class="fa fa-user me-2"></i> Registration</a></li>
+                        <li><a href="<?php echo $base_path; ?>admin/activate.php" class="nav-link"><i
+                                    class="fa fa-sticky-note me-2"></i> Accounts</a></li>
+                        <li><a href="<?php echo $base_path; ?>admin/revenue.php" class="nav-link"><i
+                                    class="fa fa-cogs me-2"></i> Revenue</a></li>
+                        <li><a href="<?php echo $base_path; ?>admin/fareupdate.php" class="nav-link"><i
+                                    class="fa fa-arrow-up-1-9 me-2"></i> Fare Update</a></li>
+                        <li><a href="<?php echo $base_path; ?>admin/businfo.php" class="nav-link"><i
+                                    class="fa fa-bus me-2"></i> Reg Bus Info</a></li>
+                        <li><a href="<?php echo $base_path; ?>admin/busviewinfo.php" class="nav-link"><i
+                                    class="fa fa-eye me-2"></i> Today's Bus Info</a></li>
+                        <li><a href="<?php echo $base_path; ?>admin/viewregbus.php" class="nav-link"><i
+                                    class="fa fa-eye me-2"></i> Registered Bus Info</a></li>
                     </ul>
                 </li>
 
@@ -65,15 +65,17 @@ $base_path = "/Newram/superadmin/";
                     <a href="#cashierSubmenu" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
                         <span class="fa fa-credit-card"></span> Cashier
                     </a>
-                    <ul class="collapse list-unstyled" id="cashierSubmenu">
-                        <!--   <li><a href="<?php echo $base_path; ?>cashier/cashierdashboard.php"><span
-                                    class="fa fa-tachometer-alt"></span> Dashboard</a></li> -->
-                        <li><a href="<?php echo $base_path; ?>cashier/loadrfidadmin.php"><span
-                                    class="fa fa-credit-card"></span> Load RFID</a></li>
-                        <li><a href="<?php echo $base_path; ?>cashier/translogscashier.php"><span
-                                    class="fa fa-list-alt"></span> Load Transaction</a></li>
-                        <li><a href="<?php echo $base_path; ?>cashier/loadtranscashier.php"><span
-                                    class="fa fa-chart-line"></span> Load Revenue</a></li>
+                    <ul class="collapse list-unstyled ps-3" id="cashierSubmenu">
+                        <li><a href="<?php echo $base_path; ?>cashier/loadrfidadmin.php" class="nav-link"><i
+                                    class="fa fa-credit-card me-2"></i> Load RFID</a></li>
+                        <li><a href="<?php echo $base_path; ?>cashier/remitcashier.php" class="nav-link"><i
+                                    class="fa fa-chart-line me-2"></i> Remit</a></li>
+                        <li><a href="<?php echo $base_path; ?>cashier/translogscashier.php" class="nav-link"><i
+                                    class="fa fa-list-alt me-2"></i> Load Transaction</a></li>
+                        <li><a href="<?php echo $base_path; ?>cashier/remit_logs.php" class="nav-link"><i
+                                    class="fa fa-list-alt me-2"></i> Remit Logs</a></li>
+                        <li><a href="<?php echo $base_path; ?>cashier/loadtranscashier.php" class="nav-link"><i
+                                    class="fa fa-chart-line me-2"></i> Load Revenue</a></li>
                     </ul>
                 </li>
 
@@ -82,21 +84,21 @@ $base_path = "/Newram/superadmin/";
                     <a href="#conductorSubmenu" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
                         <span class="fa fa-bus"></span> Conductor
                     </a>
-                    <ul class="collapse list-unstyled" id="conductorSubmenu">
-                         <li><a href="<?php echo $base_path; ?>conductor/conductordashboard.php"><span
-                                    class="fa fa-tachometer-alt"></span> Dashboard</a></li> 
-                        <li><a href="<?php echo $base_path; ?>conductor/busfare.php"><span class="fa fa-bus"></span> Bus
-                                Fare</a></li>
-                        <li><a href="<?php echo $base_path; ?>conductor/passengerlists.php"><span
-                                    class="fa fa-users"></span> Passenger Lists</a></li>
-                        <li><a href="<?php echo $base_path; ?>conductor/loadrfidconductor.php"><span
-                                    class="fa fa-id-badge"></span> Load RFID</a></li>
-                        <li><a href="<?php echo $base_path; ?>conductor/translogscon.php"><span
-                                    class="fa fa-history"></span> Load Transaction</a></li>
-                        <li><a href="<?php echo $base_path; ?>conductor/loadtranscon.php"><span
-                                    class="fa fa-dollar-sign"></span> Load Revenue</a></li>
-                        <li><a href="<?php echo $base_path; ?>conductor/remitcon.php"><span
-                                    class="fa fa-paper-plane"></span> Remit</a></li>
+                    <ul class="collapse list-unstyled ps-3" id="conductorSubmenu">
+                        <li><a href="<?php echo $base_path; ?>conductor/conductordashboard.php" class="nav-link"><i
+                                    class="fa fa-tachometer-alt me-2"></i> Dashboard</a></li>
+                        <li><a href="<?php echo $base_path; ?>conductor/busfare.php" class="nav-link"><i
+                                    class="fa fa-bus me-2"></i> Bus Fare</a></li>
+                        <li><a href="<?php echo $base_path; ?>conductor/passengerlists.php" class="nav-link"><i
+                                    class="fa fa-users me-2"></i> Passenger Lists</a></li>
+                        <li><a href="<?php echo $base_path; ?>conductor/loadrfidconductor.php" class="nav-link"><i
+                                    class="fa fa-id-badge me-2"></i> Load RFID</a></li>
+                        <li><a href="<?php echo $base_path; ?>conductor/translogscon.php" class="nav-link"><i
+                                    class="fa fa-history me-2"></i> Load Transaction</a></li>
+                        <li><a href="<?php echo $base_path; ?>conductor/loadtranscon.php" class="nav-link"><i
+                                    class="fa fa-dollar-sign me-2"></i> Load Revenue</a></li>
+                        <li><a href="<?php echo $base_path; ?>conductor/remitcon.php" class="nav-link"><i
+                                    class="fa fa-paper-plane me-2"></i> Remit</a></li>
                     </ul>
                 </li>
 
@@ -105,17 +107,17 @@ $base_path = "/Newram/superadmin/";
                     <a href="#userSubmenu" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
                         <span class="fa fa-coins"></span> User
                     </a>
-                    <ul class="collapse list-unstyled" id="userSubmenu">
-                    <li><a href="<?php echo $base_path; ?>users/userdashboard.php"><span
-                                    class="fa fa-tachometer-alt"></span> Dashboard</a></li> 
-                        <li><a href="<?php echo $base_path; ?>users/recent_trips.php"><span class="fa fa-id-card"></span> Recent Trips</a></li>
-                       
-                        <li><a href="<?php echo $base_path; ?>users/convert_points.php"><span
-                                    class="fa fa-coins"></span> Convert Points</a></li>
-                        <li><a href="<?php echo $base_path; ?>users/updatepass.php"><span
-                                    class="fa fa-file-alt"></span> Upgate Password</a></li>
-                        <li><a href="<?php echo $base_path; ?>users/transactionlogs.php"><span
-                                    class="fa fa-paper-plane"></span> Transaction Logs</a></li>
+                    <ul class="collapse list-unstyled ps-3" id="userSubmenu">
+                        <li><a href="<?php echo $base_path; ?>users/userdashboard.php" class="nav-link"><i
+                                    class="fa fa-tachometer-alt me-2"></i> Dashboard</a></li>
+                        <li><a href="<?php echo $base_path; ?>users/recent_trips.php" class="nav-link"><i
+                                    class="fa fa-id-card me-2"></i> Recent Trips</a></li>
+                        <li><a href="<?php echo $base_path; ?>users/convert_points.php" class="nav-link"><i
+                                    class="fa fa-coins me-2"></i> Convert Points</a></li>
+                        <li><a href="<?php echo $base_path; ?>users/updatepass.php" class="nav-link"><i
+                                    class="fa fa-file-alt me-2"></i> Update Password</a></li>
+                        <li><a href="<?php echo $base_path; ?>users/transactionlogs.php" class="nav-link"><i
+                                    class="fa fa-paper-plane me-2"></i> Transaction Logs</a></li>
                     </ul>
                 </li>
 
