@@ -81,6 +81,20 @@ if (!isset($_SESSION['email']) || ($_SESSION['role'] != 'Superadmin')) {
         h4 {
             color: black;
         }
+
+        .btn-success {
+            background-color: #007BFF;
+            /* New background color */
+            color: white;
+            /* Text color */
+            border: none;
+            /* Optional: Remove border */
+        }
+
+        .btn-success:hover {
+            background-color: #0056b3;
+            /* Darker shade for hover effect */
+        }
     </style>
 </head>
 

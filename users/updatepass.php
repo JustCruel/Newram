@@ -1,6 +1,11 @@
 <?php
-include 'sidebar.php';
-?>
+session_start();
+include '../config/connection.php';
+
+if (!isset($_SESSION['email']) || ($_SESSION['role'] != 'Superadmin')) {
+    header("Location: ../index.php");
+    exit();
+} ?>
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 
@@ -71,6 +76,24 @@ include 'sidebar.php';
 
         .indicator .strong.active {
             background: green;
+        }
+
+        h4 {
+            color: black;
+        }
+
+        .btn-success {
+            background-color: #007BFF;
+            /* New background color */
+            color: white;
+            /* Text color */
+            border: none;
+            /* Optional: Remove border */
+        }
+
+        .btn-success:hover {
+            background-color: #0056b3;
+            /* Darker shade for hover effect */
         }
     </style>
 </head>
@@ -161,7 +184,7 @@ include 'sidebar.php';
 </script>
 
 <body>
-
+    <?php include '../sidebar.php'; ?>
     <div class="container mt-5 pt-5">
         <div class="row justify-content-center">
             <div class="col-md-6">

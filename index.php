@@ -163,12 +163,7 @@
                 <h1>Ramstar Bus Transportation Cooperative</h1> <!-- Updated text -->
             </div>
             <nav>
-                <ul class="nav-links">
-                    <li><a href="index.php">Home</a></li>
-                    <li><a href="login.php">Login</a></li>
-                    <li><a href="register.php">Register</a></li>
-                    <li><a href="about.php">About</a></li>
-                </ul>
+
             </nav>
         </div>
     </header>

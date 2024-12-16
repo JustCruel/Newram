@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Table headers with wider columns
         $pdf->SetFont('Arial', 'B', 12);
         $pdf->Cell(60, 12, 'Date', 1, 0, 'C'); // Wider column for date
-        $pdf->Cell(120, 12, 'Total Revenue (₱)', 1, 1, 'C'); // Wider column for revenue
+        $pdf->Cell(120, 12, 'Total Revenue (PHP)', 1, 1, 'C'); // Wider column for revenue
 
         // Add the data rows
         $pdf->SetFont('Arial', '', 12);

@@ -114,6 +114,41 @@ while ($row = mysqli_fetch_assoc($revenueByDateResult)) {
     $revenueData[] = $row;
 }
 
+
+$balanceQuery = "SELECT balance FROM useracc WHERE account_number = ?";
+$stmt = $conn->prepare($balanceQuery);
+$stmt->bind_param('s', $account_number); // Use 's' for string
+$stmt->execute();
+$stmt->bind_result($balance);
+$stmt->fetch();
+$stmt->close(); // Close the statement
+
+// Fetch total fare spent by the user
+$totalFareQuery = "SELECT SUM(fare) as totalFare FROM passenger_logs WHERE rfid = ?";
+$totalFareStmt = $conn->prepare($totalFareQuery);
+$totalFareStmt->bind_param('s', $account_number); // Use 's' for string
+$totalFareStmt->execute();
+$totalFareStmt->bind_result($totalFare);
+$totalFareStmt->fetch();
+$totalFareStmt->close(); // Close the statement
+$totalFare = $totalFare ?? 0;
+
+// Fetch the total number of trips for the user
+$totalTripsQuery = "SELECT COUNT(*) as totalTrips FROM passenger_logs WHERE rfid = ?";
+$totalTripsStmt = $conn->prepare($totalTripsQuery);
+$totalTripsStmt->bind_param('s', $account_number); // Assuming account_number is used in the rfid field
+$totalTripsStmt->execute();
+$totalTripsStmt->bind_result($totalTrips);
+$totalTripsStmt->fetch();
+$totalTripsStmt->close(); // Close the statement
+
+$currentDate = date('Y-m-d'); // Get today's date in 'YYYY-MM-DD' format
+$recentTripsQuery = "SELECT * FROM passenger_logs WHERE rfid = ? AND DATE(timestamp) = ?";
+$recentTripsStmt = $conn->prepare($recentTripsQuery);
+$recentTripsStmt->bind_param('ss', $account_number, $currentDate); // Bind account number and current date
+$recentTripsStmt->execute();
+$recentTripsResult = $recentTripsStmt->get_result(); // Get the result
+$recentTripsStmt->close(); // Close the statement
 ?>
 <!doctype html>
 <html lang="en">
@@ -250,44 +285,76 @@ while ($row = mysqli_fetch_assoc($revenueByDateResult)) {
                 <p><?php echo $totalPassengers; ?></p>
             </div>
 
-            <!-- Revenue Chart Card -->
-            <div class="dashboard-items">
-                <h3>Revenue Chart</h3>
-                <canvas id="revenueChart" width="400" height="200"></canvas>
+
+            <div class="dashboard-item">
+                <i class="fas fa-wallet"></i>
+                <h3>Your Balance</h3>
+                <p>₱<?php echo number_format($balance, 2); ?></p>
+            </div>
+            <div class="dashboard-item">
+                <i class="fas fa-money-bill-wave"></i>
+                <h3>Total Fare Spent</h3>
+                <p>₱<?php echo number_format($totalFare, 2); ?></p>
+            </div>
+            <div class="dashboard-item">
+                <i class="fas fa-car"></i>
+                <h3>Recent Trips</h3>
+                <p><?php echo number_format($totalTrips); ?> Trips</p>
+            </div>
+        </div>
+
+        <!-- Revenue Chart Card -->
+
+    </div>
+
+    <div id="content" class="p-4">
+
+        <!-- Revenue Chart Card -->
+        <div class="row">
+            <div class="col-md-6 col-12">
+                <div class="card mt-4">
+                    <div class="card-body">
+                        <h4 class="card-title">Revenue Chart</h4>
+                        <div class="chart-container">
+                            <canvas id="revenueChart" width="400" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Today's Revenue Chart Card -->
-            <div class="dashboard-items">
-                <h3>Today's Revenue</h3>
-                <canvas id="todayRevenueChart" width="400" height="200"></canvas>
-            </div>
-        </div>
-
-        <div id="content" class="p-4">
-
-
-
-            <!-- Revenue and Passenger Count Charts -->
-            <div class="row">
-                <div class="col-md-6 col-12">
-                    <div class="card mt-4">
-                        <div class="card-body">
-                            <h4 class="card-title">Revenue Trends</h4>
-                            <div class="chart-container" id="revenueCharts"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-md-6 col-12">
-                    <div class="card mt-4">
-                        <div class="card-body">
-                            <h4 class="card-title">Passenger Count Trends</h4>
-                            <div class="chart-container" id="passengerCharts"></div>
+            <div class="col-md-6 col-12">
+                <div class="card mt-4">
+                    <div class="card-body">
+                        <h4 class="card-title">Today's Revenue</h4>
+                        <div class="chart-container">
+                            <canvas id="todayRevenueChart" width="400" height="200"></canvas>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+        <!-- Revenue and Passenger Count Charts -->
+        <div class="row">
+            <div class="col-md-6 col-12">
+                <div class="card mt-4">
+                    <div class="card-body">
+                        <h4 class="card-title">Revenue Trends</h4>
+                        <div class="chart-container" id="revenueCharts"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-12">
+                <div class="card mt-4">
+                    <div class="card-body">
+                        <h4 class="card-title">Passenger Count Trends</h4>
+                        <div class="chart-container" id="passengerCharts"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     </div>
 
     <!-- Scripts -->

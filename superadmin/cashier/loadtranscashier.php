@@ -2,8 +2,8 @@
 session_start();
 include '../config/connection.php';
 
-// Check if the user is logged in
-if (!isset($_SESSION['email']) || ($_SESSION['role'] != 'Cashier' && $_SESSION['role'] != 'Superadmin')) {
+// Check if the user is logged in and has the correct role
+if (!isset($_SESSION['email']) || !in_array($_SESSION['role'], ['Cashier', 'Superadmin'])) {
     header("Location: ../index.php");
     exit();
 }
@@ -12,55 +12,55 @@ if (!isset($_SESSION['email']) || ($_SESSION['role'] != 'Cashier' && $_SESSION['
 $firstname = $_SESSION['firstname'];
 $lastname = $_SESSION['lastname'];
 
-// Assuming you have the user id in session
-// Ensure you have user_id in the session
 
+// Fetch user details from the database
 $query = "SELECT firstname, lastname FROM useracc WHERE id = ?";
 $stmt = $conn->prepare($query);
 $stmt->bind_param('i', $user_id);
 $stmt->execute();
 $stmt->bind_result($firstname, $lastname);
 $stmt->fetch();
-$stmt->close(); // Close statement
+$stmt->close();
 
-// Initialize variables for the current year, month, and day
-$currentYear = date('Y');
-$currentMonth = date('m');
-$currentDay = date('d'); // Get current 
+// Initialize variables for the current date
+$currentDate = new DateTime();
+$currentYear = $currentDate->format('Y');
+$currentMonth = $currentDate->format('m');
+$currentDay = $currentDate->format('d');
 $dailyRevenue = [];
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Get the selected year and month
-    $currentYear = mysqli_real_escape_string($conn, $_POST['year']);
-    $currentMonth = mysqli_real_escape_string($conn, $_POST['month']);
-    $includeDay = isset($_POST['include_day']) ? true : false;
 
-    // Fetch daily revenue data for the selected year and month
+// Handle form submission
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Get the selected date
+    $selectedDate = mysqli_real_escape_string($conn, $_POST['date']);
+    $currentDate = new DateTime($selectedDate);
+    $currentYear = $currentDate->format('Y');
+    $currentMonth = $currentDate->format('m');
+    $currentDay = $currentDate->format('d');
+
+    // Fetch daily revenue data for the selected date
     $dailyRevenueQuery = "SELECT DAY(transaction_date) AS day, SUM(amount) AS total_revenue 
                           FROM transactions 
-                          WHERE YEAR(transaction_date) = '$currentYear' 
-                          AND MONTH(transaction_date) = '$currentMonth' 
+                          WHERE DATE(transaction_date) = ? 
                           AND transaction_type = 'Load'
                           GROUP BY DAY(transaction_date)";
-    $dailyRevenueResult = mysqli_query($conn, $dailyRevenueQuery);
+    $stmt = $conn->prepare($dailyRevenueQuery);
+    $stmt->bind_param('s', $selectedDate);
+    $stmt->execute();
+    $dailyRevenueResult = $stmt->get_result();
 
     if (!$dailyRevenueResult) {
         die("Database query failed: " . mysqli_error($conn));
     }
 
-    $dailyRevenue = array_fill(1, date('t', strtotime("$currentYear-$currentMonth-01")), 0);
+    $dailyRevenue = array_fill(1, $currentDate->format('t'), 0);
 
-    while ($row = mysqli_fetch_assoc($dailyRevenueResult)) {
+    while ($row = $dailyRevenueResult->fetch_assoc()) {
         $dailyRevenue[$row['day']] = $row['total_revenue'];
     }
 
-    if ($includeDay && isset($_POST['day'])) {
-        $currentDay = mysqli_real_escape_string($conn, $_POST['day']);
-    } else {
-        $currentDay = null;
-    }
-
     // Calculate selected day revenue
-    $selectedDayRevenue = $currentDay !== null && isset($dailyRevenue[$currentDay]) ? $dailyRevenue[$currentDay] : array_sum($dailyRevenue);
+    $selectedDayRevenue = $dailyRevenue[$currentDay] ?? 0;
 } else {
     // Default selected day revenue is the total revenue for the current month
     $selectedDayRevenue = array_sum($dailyRevenue);
@@ -91,7 +91,6 @@ if (isset($_GET['generate_pdf'])) {
     $pdf->Output('D', 'revenue_report.pdf'); // Force download the PDF
     exit;
 }
-
 ?>
 
 <!DOCTYPE html>
@@ -105,11 +104,10 @@ if (isset($_GET['generate_pdf'])) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800,900" rel="stylesheet">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href=" https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
-
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
@@ -121,28 +119,7 @@ if (isset($_GET['generate_pdf'])) {
             margin: 0;
         }
 
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f0f0f0;
-            display: flex;
-        }
 
-        .sidebar {
-            width: 250px;
-            background-color: #ffffff;
-            padding: 20px;
-            color: #001f3f;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            border-right: 1px solid #e0e0e0;
-        }
-
-        .sidebar img {
-            width: 100%;
-            height: auto;
-            margin-bottom: 20px;
-        }
 
         .button-card {
             display: flex;
@@ -183,6 +160,7 @@ if (isset($_GET['generate_pdf'])) {
         }
 
         /* Responsive Design */
+        /* Responsive Design */
         @media (max-width: 768px) {
             .sidebar {
                 width: 200px;
@@ -212,83 +190,41 @@ if (isset($_GET['generate_pdf'])) {
     ?>
 
     <!-- Page Content  -->
-  
 
-        <div class="main-content">
-            <h1 class="mb-4">Load Transaction Report</h1>
+    <h1 class="mb-4">Load Transaction Report</h1>
 
-            <!-- Year and Month Selection Form -->
-            <form method="POST" action="">
-                <div class="row mb-3">
-                    <div class="col-md-4">
-                        <label for="year" class="form-label">Select Year</label>
-                        <select name="year" id="year" class="form-select" required>
-                            <?php
-                            for ($i = 2020; $i <= date('Y'); $i++) {
-                                $selected = ($i == $currentYear) ? 'selected' : '';
-                                echo "<option value='$i' $selected>$i</option>";
-                            }
-                            ?>
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <label for="month" class="form-label">Select Month</label>
-                        <select name="month" id="month" class="form-select" required>
-                            <?php
-                            for ($i = 1; $i <= 12; $i++) {
-                                $selected = ($i == $currentMonth) ? 'selected' : '';
-                                echo "<option value='$i' $selected>" . date("F", mktime(0, 0, 0, $i, 1)) . "</option>";
-                            }
-                            ?>
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <label for="day" class="form-label">Select Day</label>
-                        <input type="checkbox" id="include_day" name="include_day" <?php echo ($currentDay ? 'checked' : ''); ?>>
-                        <label for="day" class="form-label">Include Day</label>
-                        <select name="day" id="day" class="form-select" <?php echo (!$currentDay ? 'disabled' : ''); ?>>
-                            <?php
-                            if ($currentDay) {
-                                for ($d = 1; $d <= date('t', strtotime("$currentYear-$currentMonth-01")); $d++) {
-                                    $selected = ($d == $currentDay) ? 'selected' : '';
-                                    echo "<option value='$d' $selected>$d</option>";
-                                }
-                            } else {
-                                // Generate days for the selected month regardless of the checkbox state
-                                for ($d = 1; $d <= date('t', strtotime("$currentYear-$currentMonth-01")); $d++) {
-                                    echo "<option value='$d'>$d</option>";
-                                }
-                            }
-                            ?>
-                        </select>
-                    </div>
-                </div>
-                <button type="submit" class="btn btn-primary">Generate Report</button>
-            </form>
-            <!-- Chart Container -->
-            <canvas id="revenueChart"></canvas>
-            <!-- Display the Revenue -->
-            <h2 class="mt-5">Revenue for
-                <?php echo date("F", mktime(0, 0, 0, $currentMonth, 1)) . ' ' . $currentYear; ?>
-            </h2>
-            <h1>Total Revenue: ₱<?php echo number_format($selectedDayRevenue, 2); ?></h1>
-
-            <a href="?generate_pdf=true" class="btn btn-danger">Download PDF</a>
-
-
+    <!-- Year and Month Selection Form -->
+    <form method="POST" action="">
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label for="date" class="form-label">Select Date</label>
+                <input type="date" id="date" name="date" class="form-control"
+                    value="<?php echo $currentYear . '-' . $currentMonth . '-' . $currentDay; ?>" <?php echo (!$currentDay ? 'disabled' : ''); ?>>
+            </div>
         </div>
-    </div>
+        <button type="submit" class="btn btn-primary">Generate Report</button>
+    </form>
+    <!-- Chart Container -->
+    <canvas id="revenueChart"></canvas>
+    <!-- Display the Revenue -->
+    <h2 class="mt-5">Revenue for
+        <?php echo date("F", mktime(0, 0, 0, $currentMonth, 1)) . ' ' . $currentYear; ?>
+    </h2>
+    <h1>Total Revenue: ₱<?php echo number_format($selectedDayRevenue, 2); ?></h1>
+
+    <a href="?generate_pdf=true" class="btn btn-danger">Download PDF</a>
+
     <script src="../js/main.js"></script>
     <script>
-       
-
-        // Enable day selection if the checkbox is checked
-        $('#include_day').change(function () {
-            if ($(this).is(':checked')) {
-                $('#day').prop('disabled', false);
-            } else {
-                $('#day').prop('disabled', true);
-            }
+        $(document).ready(function () {
+            $('#date').datepicker({
+                format: 'yyyy-mm-dd',
+                autoclose: true,
+                todayHighlight: true
+            }).on('changeDate', function (e) {
+                // Enable the form submission when a date is selected
+                $(this).closest('form').submit();
+            });
         });
 
         // Chart.js configuration

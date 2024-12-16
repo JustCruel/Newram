@@ -87,6 +87,7 @@ $lastname = $_SESSION['lastname'];
             /* Prevent overflow */
         }
     </style>
+    <script src="../js/main.js"></script>
     <script>
         $(document).ready(function () {
             let confirmationShown = false; // To track confirmation dialog
@@ -411,29 +412,12 @@ $lastname = $_SESSION['lastname'];
                     </select>
                 </div>
                 <div class="col-md-6">
-                    <label for="id_type" class="form-label">ID Type</label>
-                    <select class="form-select" id="id_type" name="id_type" required>
-                        <option value="">-- Select ID Type --</option>
-                        <option value="National ID">National ID</option>
-                        <option value="Passport">Passport</option>
-                        <option value="Driver's License">Driver's License</option>
-                        <option value="PSA Original">PSA Original</option>
-                        <option value="Postal ID">Postal ID</option>
-                        <option value="PhilHealth">PhilHealth</option>
-                    </select>
-                </div>
-            </div>
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <label for="id_file" class="form-label">Upload ID</label>
-                    <input type="file" class="form-control" id="id_file" name="id_file" accept="image/*" required>
-                </div>
-                <div class="col-md-6">
                     <label for="email" class="form-label">Email</label>
                     <input type="email" class="form-control" id="email" name="email" required>
                     <div id="emailFeedback" class="invalid-feedback"></div>
                 </div>
             </div>
+
             <div class="row mb-3">
                 <div class="col-md-6">
                     <label for="phone" class="form-label">Contact Number</label>

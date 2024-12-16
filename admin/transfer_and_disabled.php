@@ -5,6 +5,16 @@ include '../config/connection.php';
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
+// Function to log activities
+function logActivity($conn, $user_id, $action, $performed_by)
+{
+    $logQuery = "INSERT INTO activity_logs (user_id, action, performed_by) VALUES (?, ?, ?)";
+    $stmt = $conn->prepare($logQuery);
+    $stmt->bind_param("iss", $user_id, $action, $performed_by);
+    $stmt->execute();
+    $stmt->close();
+}
+
 // Disable user action
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['user_id']) && isset($_POST['new_account_number'])) {
     $user_id = $_POST['user_id'];
@@ -36,7 +46,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['user_id']) && isset($_
                     echo json_encode(['success' => false, 'message' => "The current RFID already exists in active user accounts."]);
                     exit;
                 }
-
 
                 // Check if the current RFID (or corresponding identifier) exists in deactivated accounts
                 $checkDeactivatedQuery = "SELECT * FROM deactivated_accounts WHERE original_account_number = ?";
@@ -95,11 +104,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['user_id']) && isset($_
                 $stmt->bind_param("i", $user_id);
                 $stmt->execute();
 
+                // Log the activity of disabling the user
+                logActivity($conn, $user_id, 'Transferred Funds And Disabled', $_SESSION['firstname'] . ' ' . $_SESSION['lastname']);
+
                 // Commit the transaction
                 $conn->commit();
 
                 // Fetch updated list of users
-                $userListQuery = "SELECT id, firstname, middlename, lastname, birthday, age, gender, address,province,municipality,barangay, account_number, balance 
+                $userListQuery = "SELECT id, firstname, middlename, lastname, birthday, age, gender, address, province, municipality, barangay, account_number, balance 
                                   FROM useracc WHERE is_activated = 1";
                 $userResult = mysqli_query($conn, $userListQuery);
 
@@ -134,7 +146,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['user_id']) && isset($_
                 echo json_encode(['success' => true, 'tableData' => $updatedTableData]);
 
             } else {
-                throw new Exception("User not found or already disabled.");
+                throw new Exception("User  not found or already disabled.");
             }
 
         } catch (Exception $e) {
@@ -146,7 +158,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['user_id']) && isset($_
         // Close the statement
         $stmt->close();
     } else {
-        echo json_encode(['success' => false, 'message' => "User ID or new account number is missing."]);
+        echo json_encode(['success' => false, 'message' => "User  ID or new account number is missing."]);
     }
     exit;
 }

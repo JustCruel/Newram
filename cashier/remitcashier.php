@@ -49,14 +49,11 @@ if (!$bus_number) {
 }
 
 
-// Fetch total load and total cash based on bus number
-// Fetch total load and total cash based on bus number
-$total_load = 0;
-$total_cash = 0;
+
 
 if ($bus_number) {
     // Fetch total load transactions
-    $stmtLoad = $conn->prepare("SELECT SUM(amount) FROM transactions WHERE bus_number = ? AND conductor_id = ?");
+    $stmtLoad = $conn->prepare("SELECT SUM(amount) FROM transactions WHERE status = 'notremitted' AND bus_number = ? AND conductor_id = ? AND DATE(transaction_date) = CURDATE()");
     $stmtLoad->bind_param("ss", $bus_number, $conductor_id);
     $stmtLoad->execute();
     $stmtLoad->bind_result($total_load);
@@ -64,21 +61,21 @@ if ($bus_number) {
     $stmtLoad->close();
 
     // Fetch total cash transactions (including the fare)
-    $stmtCash = $conn->prepare("SELECT SUM(fare) FROM passenger_logs WHERE bus_number = ? AND conductor_name = ? AND rfid = 'cash'");
+    $stmtCash = $conn->prepare("SELECT SUM(fare) FROM passenger_logs WHERE status = 'notremitted' AND bus_number = ? AND conductor_name = ? AND rfid = 'cash' AND DATE(timestamp) = CURDATE()");
     $stmtCash->bind_param("ss", $bus_number, $conductor_name);
     $stmtCash->execute();
     $stmtCash->bind_result($total_cash);
     $stmtCash->fetch();
     $stmtCash->close();
+    // Default to 0 if NULL
+
+    $total_cash = $total_cash ?? 0; // Default to 0 if NULL
 }
 
-// Total earnings combining load and cash
+
+
+
 $total_earnings = $total_load + $total_cash;
-
-
-// Total earnings combining load and cash
-$total_earnings = $total_load + $total_cash;
-
 // Rest of your remittance logic here (e.g., deductions, net amount)
 $net_amount = $total_earnings; // Default to total earnings
 
@@ -88,9 +85,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['generate_remittance'])
     $bus_no = $_POST['bus_no'];
     $deduction_desc = $_POST['deduction_desc'] ?? [];
     $deduction_amount = $_POST['deduction_amount'] ?? [];
+    $total_cash = (float) $_POST['total_fare'];  // Ensure total load is a float
     $total_deductions = array_sum(array_map('floatval', $deduction_amount));
-
-    // Calculate Net Amount (subtract deductions from total earnings)
     $net_amount = $total_earnings - $total_deductions;
 
     // Display the remittance receipt (before saving)
@@ -98,7 +94,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['generate_remittance'])
     echo "<h3>Remittance Receipt Preview</h3>";
     echo "<p><strong>Bus No:</strong> " . htmlspecialchars($bus_no) . "</p>";
     echo "<p><strong>Conductor:</strong> " . htmlspecialchars($conductor_name) . "</p>";
-    echo "<p><strong>Total Earnings (₱):</strong> " . number_format($total_earnings, 2) . "</p>";
+    echo "<p><strong>Total Fare (₱):</strong> " . number_format($total_cash, 2) . "</p>";
+    echo "<p><strong>Total Earnings (₱):</strong> " . number_format($net_amount, 2) . "</p>";
 
     echo "<h4>Deductions:</h4>";
     if (!empty($deduction_desc)) {
@@ -111,18 +108,27 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['generate_remittance'])
     }
 
     echo "<p><strong>Net Amount (₱):</strong> " . number_format((float) $net_amount, 2) . "</p>";
+    echo "<form method='POST' action=''>";
+    echo "<input type='hidden' name='bus_no' value='" . htmlspecialchars($bus_no) . "'>";
+    echo "<input type='hidden' name='conductor_id' value='" . htmlspecialchars($conductor_id) . "'>";
+    echo "<input type='hidden' name='total_load' value='" . htmlspecialchars($total_load) . "'>";
+    echo "<input type='hidden' name='total_load' value='" . htmlspecialchars($total_cash) . "'>";
+    echo "<input type='hidden' name='deduction_desc' value='" . htmlspecialchars(implode(',', $deduction_desc)) . "'>";
+    echo "<input type='hidden' name='deduction_amount' value='" . htmlspecialchars(implode(',', $deduction_amount)) . "'>";
+    echo "<input type='hidden' name='net_amount' value='" . htmlspecialchars($net_amount) . "'>";
+    echo "<button type='submit' name='confirm_remittance' class='btn-confirm'>Confirm & Save</button>";
+    echo "</form>";
     echo "</div>";
 
     // Exit after displaying receipt preview
     exit;
 }
-
-
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['confirm_remittance'])) {
     // Confirm and save the remittance
     $bus_no = $_POST['bus_no'];
-    $conductor_id = $_POST['conductor_id'];
+    $conductor_id = (string) $_POST['conductor_id'];
     $total_load = (float) $_POST['total_load'];  // Ensure total load is a float
+    $total_cash = (float) $_POST['total_fare'];  // Ensure total load is a float
     $deduction_desc = explode(',', $_POST['deduction_desc']);
     $deduction_amount = array_map('floatval', explode(',', $_POST['deduction_amount']));  // Convert deductions to floats
     $net_amount = (float) $_POST['net_amount'];  // Ensure net amount is a float
@@ -131,9 +137,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['confirm_remittance']))
     $remitDate = date('Y-m-d');
     $stmt = $conn->prepare("INSERT INTO remittances (bus_no, conductor_id, remit_date, total_earning, total_deductions, net_amount) VALUES (?, ?, ?, ?, ?, ?)");
     $total_deductions = array_sum($deduction_amount);
-    $stmt->bind_param("sisdds", $bus_no, $conductor_id, $remitDate, $total_load, $total_deductions, $net_amount);
+    $stmt->bind_param("sssdds", $bus_no, $conductor_id, $remitDate, $total_load, $total_deductions, $net_amount);
     $stmt->execute();
     $remit_id = $stmt->insert_id;
+
+    // Insert remittance log into remit_logs table
+    $stmtRemitLog = $conn->prepare("INSERT INTO remit_logs (remit_id, bus_no, conductor_id, total_load, total_cash, total_deductions, net_amount, remit_date) VALUES (?, ?,?, ?, ?, ?, ?, ?)");
+    $stmtRemitLog->bind_param("issdddds", $remit_id, $bus_no, $conductor_id, $total_load, $total_cash, $total_deductions, $net_amount, $remitDate);
+    $stmtRemitLog->execute();
 
     // Insert deductions
     $stmtDeduction = $conn->prepare("INSERT INTO deductions (remit_id, description, amount) VALUES (?, ?, ?)");
@@ -144,9 +155,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['confirm_remittance']))
     }
 
     // Reset the daily revenue to 0 after remittance
-    $resetRevenueStmt = $conn->prepare("UPDATE transactions SET amount = 0 WHERE bus_number = ? AND DATE(transaction_date) = CURDATE()");
+    $resetRevenueStmt = $conn->prepare("UPDATE transactions SET status = 'remitted' WHERE bus_number = ? AND DATE(transaction_date) = CURDATE()");
     $resetRevenueStmt->bind_param("s", $bus_no);
     $resetRevenueStmt->execute();
+
+    $resetPassengerLogsStmt = $conn->prepare("UPDATE passenger_logs SET status = 'remitted' WHERE bus_number = ? AND DATE(timestamp) = CURDATE()");
+    $resetPassengerLogsStmt->bind_param("s", $bus_no);
+    $resetPassengerLogsStmt->execute();
 
     // Pass conductor name to printremit.php via POST
     $_POST['conductor_name'] = $conductor_name;
@@ -175,7 +190,7 @@ if (!isset($_SESSION['bus_number']) || !isset($_SESSION['driver_account_number']
     exit;
 }
 
-
+var_dump($conductor_id);
 
 ?>
 
@@ -355,8 +370,9 @@ if (!isset($_SESSION['bus_number']) || !isset($_SESSION['driver_account_number']
         // Automatically calculate the net amount when deductions are added or changed
         document.getElementById('remittanceForm').addEventListener('input', function (event) {
             // Check if the event target is a deduction amount input
-            if (event.target.classList.contains('deduction-amount')) {
+            if (event.target.classList.contains('deduction-amount') || event.target.id === 'total_load' || event.target.id === 'total_fare') {
                 let totalLoad = parseFloat(document.getElementById('total_load').value) || 0;
+                let totalFare = parseFloat(document.getElementById('total_fare').value) || 0;
                 let totalDeductions = 0;
 
                 // Sum all deduction amounts
@@ -368,7 +384,7 @@ if (!isset($_SESSION['bus_number']) || !isset($_SESSION['driver_account_number']
                 });
 
                 // Update the net amount field
-                document.getElementById('net_amount').value = (totalLoad - totalDeductions).toFixed(2);
+                document.getElementById('net_amount').value = (totalLoad + totalFare - totalDeductions).toFixed(2);
             }
         });
         document.getElementById('rfid_input').addEventListener('change', function () {

@@ -2,7 +2,7 @@
 session_start();
 include '../config/connection.php'; // Include your database connection file
 include 'includes/functions.php';
-include 'sidebar.php';// Include your functions file
+
 
 // Check if the user is logged in
 if (!isset($_SESSION['account_number'])) {
@@ -60,6 +60,7 @@ $transactions = fetchTransactions($conn, $accountNumber, $limit, $offset);
 </head>
 
 <body>
+<?php include '../sidebar.php'; ?>
     <div class="container mt-5">
         <h2 class="text-center">Load Transaction Logs</h2>
         <table class="table table-bordered mt-4">

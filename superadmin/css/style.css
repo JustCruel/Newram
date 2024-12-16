@@ -12033,6 +12033,36 @@ h5,
   }
 }
 
+.nav-header {
+  font-weight: bold;
+  color: #f8f9fa;
+  padding: 10px 15px;
+  background-color: #007bff;
+}
+
+
+
+.nav-item a {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.nav-item a:hover {
+  background-color: #0056b3;
+  color: #ffffff;
+}
+
+.collapse {
+  padding-left: 15px;
+}
+
+.user-profile img {
+  transition: transform 0.3s;
+}
+
+.user-profile img:hover {
+  transform: scale(1.1);
+}
+
 
 a[data-toggle="collapse"] {
   position: relative;

@@ -61,6 +61,8 @@ $base_path = "/Newram/superadmin/";
                                     class="fa fa-home me-2"></i> Activity Logs</a></li>
                     </ul>
                 </li>
+                <hr style="border: 1px solid white;">
+
 
                 <!-- Cashier Menu -->
                 <li class="nav-item">
@@ -80,6 +82,8 @@ $base_path = "/Newram/superadmin/";
                                     class="fa fa-chart-line me-2"></i> Load Revenue</a></li>
                     </ul>
                 </li>
+                <hr style="border: 1px solid white;">
+
 
                 <!-- Conductor Menu -->
                 <li class="nav-item">
@@ -87,12 +91,8 @@ $base_path = "/Newram/superadmin/";
                         <span class="fa fa-bus"></span> Conductor
                     </a>
                     <ul class="collapse list-unstyled ps-3" id="conductorSubmenu">
-                        <li><a href="<?php echo $base_path; ?>conductor/conductordashboard.php" class="nav-link"><i
-                                    class="fa fa-tachometer-alt me-2"></i> Dashboard</a></li>
                         <li><a href="<?php echo $base_path; ?>conductor/busfare.php" class="nav-link"><i
                                     class="fa fa-bus me-2"></i> Bus Fare</a></li>
-                        <li><a href="<?php echo $base_path; ?>conductor/passengerlists.php" class="nav-link"><i
-                                    class="fa fa-users me-2"></i> Passenger Lists</a></li>
                         <li><a href="<?php echo $base_path; ?>conductor/loadrfidconductor.php" class="nav-link"><i
                                     class="fa fa-id-badge me-2"></i> Load RFID</a></li>
                         <li><a href="<?php echo $base_path; ?>conductor/translogscon.php" class="nav-link"><i
@@ -103,6 +103,8 @@ $base_path = "/Newram/superadmin/";
                                     class="fa fa-paper-plane me-2"></i> Remit</a></li>
                     </ul>
                 </li>
+                <hr style="border: 1px solid white;">
+
 
                 <!-- User Menu -->
                 <li class="nav-item">
@@ -110,8 +112,6 @@ $base_path = "/Newram/superadmin/";
                         <span class="fa fa-coins"></span> User
                     </a>
                     <ul class="collapse list-unstyled ps-3" id="userSubmenu">
-                        <li><a href="<?php echo $base_path; ?>users/userdashboard.php" class="nav-link"><i
-                                    class="fa fa-tachometer-alt me-2"></i> Dashboard</a></li>
                         <li><a href="<?php echo $base_path; ?>users/recent_trips.php" class="nav-link"><i
                                     class="fa fa-id-card me-2"></i> Recent Trips</a></li>
                         <li><a href="<?php echo $base_path; ?>users/convert_points.php" class="nav-link"><i
@@ -122,6 +122,8 @@ $base_path = "/Newram/superadmin/";
                                     class="fa fa-paper-plane me-2"></i> Transaction Logs</a></li>
                     </ul>
                 </li>
+                <hr style="border: 1px solid white;">
+
 
                 <!-- Logout -->
                 <li class="nav-item">
@@ -129,6 +131,8 @@ $base_path = "/Newram/superadmin/";
                         <span class="fa fa-sign-out-alt"></span> Logout
                     </a>
                 </li>
+                <hr style="border: 1px solid white;">
+
             <?php } ?>
         </ul>
     </nav>
@@ -147,21 +151,6 @@ $base_path = "/Newram/superadmin/";
                     <i class="fa fa-bars"></i>
                 </button>
 
-                <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                    <ul class="nav navbar-nav ml-auto">
-                        <li class="nav-item active">
-                            <a class="nav-link" href="#" onclick="loadContent('home.php');">Dashboard</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">About</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Portfolio</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Contact</a>
-                        </li>
-                    </ul>
-                </div>
+
             </div>
         </nav>

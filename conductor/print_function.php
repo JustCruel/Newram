@@ -10,7 +10,7 @@ date_default_timezone_set('Asia/Manila'); // Replace 'Asia/Manila' with your des
 $busNumber = isset($_POST['busNumber']) ? $_POST['busNumber'] : 'Unknown Bus Number';
 $transactionNumber = isset($_POST['transactionNumber']) ? $_POST['transactionNumber'] : 'Unknown Transaction Number';
 
-function printReceipt($fromRoute, $toRoute, $fareType, $totalFare, $conductorName, $busNumber, $transactionNumber, $distance, $driverName, $paymentMethod)
+function printReceipt($fromRoute, $toRoute, $fareType, $totalFare, $conductorName, $busNumber, $transactionNumber, $distance, $driverName, $paymentMethod, $passengerQuantity)
 {
     try {
         // Set up the printer (replace 'YourPrinterName' with your actual printer name)
@@ -83,6 +83,7 @@ function printReceipt($fromRoute, $toRoute, $fareType, $totalFare, $conductorNam
         printAlignedLabelValue($printer, "Driver    :  ", htmlspecialchars($driverName));
         printAlignedLabelValue($printer, "Conductor :  ", htmlspecialchars($conductorName));
         printAlignedLabelValue($printer, "TYPE      :  ", $paymentMethod);
+        printAlignedLabelValue($printer, "Passenger/s:  ", $passengerQuantity);
         $printer->feed();
 
         $printer->setJustification(Printer::JUSTIFY_CENTER); // Center alignment for fare

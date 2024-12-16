@@ -3,10 +3,6 @@ session_start();
 // transaction_logs.php
 include '../config/connection.php'; // Include your database connection file
 include 'includes/functions.php'; // Include your functions file
-if (!isset($_SESSION['email']) || ($_SESSION['role'] != 'Cashier' && $_SESSION['role'] != 'Superadmin')) {
-    header("Location: ../index.php");
-    exit();
-}
 
 // Assuming you have the user id in session
 $account_number = $_SESSION['account_number']; // Fetch account number from session
@@ -20,7 +16,7 @@ $stmt->bind_result($firstname, $lastname, $role);
 $stmt->fetch();
 $stmt->close(); // Close the prepared statement after fetching user data
 
-// Fetch all transactions// Fetch all transactions
+// Fetch all transactions
 function fetchTransactions($conn)
 {
     $transactionQuery = "SELECT 
@@ -40,12 +36,16 @@ function fetchTransactions($conn)
     JOIN useracc u ON t.user_id = u.id
     LEFT JOIN useracc c ON t.conductor_id = c.account_number  -- Change here: join on account_number
     ORDER BY t.transaction_date DESC";
-    return mysqli_query($conn, $transactionQuery);
+
+    $stmt = $conn->prepare($transactionQuery);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $stmt->close();
+
+    return $result;
 }
 
-
 $transactions = fetchTransactions($conn);
-
 ?>
 
 <!DOCTYPE html>
@@ -54,9 +54,6 @@ $transactions = fetchTransactions($conn);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="path/to/bootstrap.min.css"> <!-- Adjust the path -->
-    <link rel="stylesheet" href="path/to/your-custom-styles.css"> <!-- Adjust the path -->
-    <title>Transaction Logs</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -64,16 +61,23 @@ $transactions = fetchTransactions($conn);
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
     <link rel="stylesheet" href="../css/style.css">
-    <style>
-        h2 {
+    <title>Transaction Logs</title>
+    <style> 
+        h2{
             color: black;
-            margin-bottom: 20px;
-            font-size: 24px;
         }
     </style>
+    <script>
+        $(document).ready(function () {
+            $('#transactionTable').DataTable();
+        });
+    </script>
 </head>
 
 <body>
@@ -82,41 +86,10 @@ $transactions = fetchTransactions($conn);
     ?>
 
     <!-- Page Content  -->
-    <div id="content" class="p-4 p-md-5">
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            <div class="container-fluid">
-                <button type="button" id="sidebarCollapse" class="btn btn-primary" onclick="toggleSidebar(event)">
-                    <i class="fa fa-bars"></i>
-                    <span class="sr-only">Toggle Menu</span>
-                </button>
-                <button class="btn btn-dark d-inline-block d-lg-none ml-auto" type="button" data-toggle="collapse"
-                    data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
-                    aria-label="Toggle navigation">
-                    <i class="fa fa-bars"></i>
-                </button>
-
-                <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                    <ul class="nav navbar-nav ml-auto">
-                        <li class="nav-item active">
-                            <a class="nav-link" href="#" onclick="loadContent('home.php');">Dashboard</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">About</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Portfolio</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Contact</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-
+    
         <div class="container mt-5">
             <h2 class="text-center">Transaction Logs</h2>
-            <table class="table table-bordered mt-4">
+            <table id="transactionTable" class="table table-bordered mt-4">
                 <thead class="thead-light">
                     <tr>
                         <th>Account Number</th>
@@ -137,17 +110,12 @@ $transactions = fetchTransactions($conn);
                                 <td><?php echo number_format($row['amount'], 2); ?></td>
                                 <td><?php echo htmlspecialchars(ucfirst($row['transaction_type'])); ?></td>
                                 <td>
-                                    <?php
-                                    echo date('Y-F-d h:i:s A', strtotime($row['transaction_date']));
-                                    ?>
+                                    <?php echo date('F-d-Y h:i:s A', strtotime($row['transaction_date'])); ?>
                                 </td>
-
                                 <td>
-                                    <?php echo htmlspecialchars($row['conductor_firstname'] . ' ' . $row['conductor_lastname'] . ''); ?>
+                                    <?php echo htmlspecialchars($row['conductor_firstname'] . ' ' . $row['conductor_lastname']); ?>
                                 </td>
                                 <td><?php echo htmlspecialchars($row['loaded_by_role']); ?></td>
-
-                                <!-- Display Role of the one who loaded -->
                             </tr>
                         <?php endwhile; ?>
                     <?php else: ?>
@@ -158,14 +126,9 @@ $transactions = fetchTransactions($conn);
                 </tbody>
             </table>
         </div>
+    </div>
 
-        <script>
-            function toggleSidebar(event) {
-                event.preventDefault(); // Prevent default action when clicking toggle button
-                $('#sidebar').toggleClass('active');
-            }
-        </script>
-
+    <script src="../js/main.js"></script>
 </body>
 
 </html>

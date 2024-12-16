@@ -2,13 +2,23 @@
 session_start();
 include '../config/connection.php';
 
-
 if (!isset($_SESSION['email']) || ($_SESSION['role'] != 'Admin' && $_SESSION['role'] != 'Superadmin')) {
     header("Location: ../index.php");
     exit();
 }
+
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
+
+// Function to log activities
+function logActivity($conn, $user_id, $action, $performed_by)
+{
+    $logQuery = "INSERT INTO activity_logs (user_id, action, performed_by) VALUES (?, ?, ?)";
+    $stmt = $conn->prepare($logQuery);
+    $stmt->bind_param("iss", $user_id, $action, $performed_by);
+    $stmt->execute();
+    $stmt->close();
+}
 
 // Activate user action
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['user_id'])) {
@@ -22,8 +32,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['user_id'])) {
         if ($stmt) {
             $stmt->bind_param("i", $user_id); // Bind the user ID as an integer parameter
             if ($stmt->execute()) {
+                // Log the activity
+                logActivity($conn, $user_id, 'Activated', $_SESSION['firstname'] . ' ' . $_SESSION['lastname']);
+
                 // Fetch the updated list of users
-                $userQuery = "SELECT id, firstname, middlename, lastname, birthday, age, gender, address,province,municipality,barangay, account_number, balance 
+                $userQuery = "SELECT id, firstname, middlename, lastname, birthday, age, gender, address, province, municipality, barangay, account_number, balance 
                               FROM useracc WHERE is_activated = 0"; // Fetch only activated users
                 $userResult = mysqli_query($conn, $userQuery);
 
@@ -40,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['user_id'])) {
                         <td>' . htmlspecialchars($row['age']) . '</td>
                         <td>' . htmlspecialchars($row['gender']) . '</td>
                         <td>' . htmlspecialchars($row['address']) . '</td>
-                             <td>' . htmlspecialchars($row['province']) . '</td>
+                        <td>' . htmlspecialchars($row['province']) . '</td>
                         <td>' . htmlspecialchars($row['municipality']) . '</td>
                         <td>' . htmlspecialchars($row['barangay']) . '</td>
                         <td>' . htmlspecialchars($row['account_number']) . '</td>
@@ -64,7 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['user_id'])) {
             echo json_encode(['success' => false, 'message' => "Error preparing statement: " . $conn->error]);
         }
     } else {
-        echo json_encode(['success' => false, 'message' => "User ID is missing."]);
+        echo json_encode(['success' => false, 'message' => "User  ID is missing."]);
     }
     exit;
 }

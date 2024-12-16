@@ -169,11 +169,11 @@ if (!$bus_number || !$driverac) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800,900" rel="stylesheet">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <link rel="stylesheet" href="../css/style.css">
     <style>
         .dashboard {
@@ -239,7 +239,7 @@ if (!$bus_number || !$driverac) {
             <div class="card text-center text-white bg-success">
                 <div class="card-body">
                     <h3><i class="fas fa-coins"></i></h3>
-                    <h4>Total Revenue</h4>
+                    <h4>Total Load(Today)</h4>
                     <p class="h2">₱<?php echo number_format($totalRevenue, 2); ?></p>
                 </div>
             </div>
@@ -278,7 +278,7 @@ if (!$bus_number || !$driverac) {
 
 
     </div>
-
+    <script src="../js/main.js"></script>
     <script>
         // Revenue chart
         const revenueData = <?php echo json_encode($revenueData); ?>;

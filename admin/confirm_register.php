@@ -42,51 +42,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $municipality_id = $_POST['municipality'];
     $barangay_id = $_POST['barangay'];
     $address = $_POST['address'];
-    $id_type = $_POST['id_type']; // New field for ID type
 
-    // Initialize upload flag
-    $uploadOk = 1;
-
-    // Validate ID file upload
-    $id_file = $_FILES['id_file']['name'];
-    $target_directory = ''; // Your upload directory
-    $target_file = $target_directory . basename($id_file);
-
-    // Check for upload errors
-    if ($_FILES['id_file']['error'] !== UPLOAD_ERR_OK) {
-        $error_message = "File upload error. Code: " . $_FILES['id_file']['error'];
-        $uploadOk = 0;
-    } else {
-        // Check if file is an image
-        $check = getimagesize($_FILES['id_file']['tmp_name']);
-        if ($check === false) {
-            $error_message = "File is not an image.";
-            $uploadOk = 0;
-        }
-    }
-
-    // Check file size (5MB limit)
-    if ($_FILES['id_file']['size'] > 5000000) {
-        $error_message = "Sorry, your file is too large.";
-        $uploadOk = 0;
-    }
 
     // Allow certain file formats
-    $imageFileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
-    if (!in_array($imageFileType, ['jpg', 'png', 'jpeg', 'gif'])) {
-        $error_message = "Sorry, only JPG, JPEG, PNG & GIF files are allowed.";
-        $uploadOk = 0;
-    }
 
-    // Check if $uploadOk is set to 0 by an error
-    if ($uploadOk == 0) {
-        $error_message = "Sorry, your file was not uploaded: " . $error_message;
-    } else {
-        // Attempt to upload the file
-        if (!move_uploaded_file($_FILES['id_file']['tmp_name'], $target_file)) {
-            $error_message = "Sorry, there was an error uploading your file.";
-        }
-    }
 
     // Only proceed if no errors encountered
     if (empty($error_message)) {
@@ -127,11 +86,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $mail->send();
 
             // Only insert into database if email was successfully sent
-            $stmt = $conn->prepare("INSERT INTO useracc (account_number, firstname, lastname, middlename, suffix, birthday, age, gender, email, contactnumber, province, municipality, barangay, address, password, balance, role, id_type, id_file, points) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt = $conn->prepare("INSERT INTO useracc (account_number, firstname, lastname, middlename, suffix, birthday, age, gender, email, contactnumber, province, municipality, barangay, address, password, balance, role, points) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
             // Ensure you have 20 variables here
             $stmt->bind_param(
-                "sssssssssiiiissdsssd",
+                "sssssssssiiiissdsd",
                 $account_number,
                 $firstname,
                 $lastname,
@@ -149,8 +108,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $hashed_password,
                 $balance,
                 $role,
-                $id_type,
-                $target_file,
                 $points
             );
 
@@ -190,7 +147,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 icon: 'success',
                 confirmButtonText: 'OK'
             }).then(() => {
-                window.location.href = 'index.php#register';
+                window.location.href = '/Newram/superadmin/superadmin.php';
             });
         </script>
     <?php elseif ($error_message): ?>

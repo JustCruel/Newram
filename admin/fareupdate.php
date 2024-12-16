@@ -104,7 +104,9 @@ $conn->close();
             </div>
         </form>
     </div>
-
+    <script src="../js/popper.js"></script>
+    <script src="../js/bootstrap.min.js"></script>
+    <script src="../js/main.js"></script>
     <script>
         document.querySelector('form').addEventListener('submit', function (e) {
             e.preventDefault(); // Prevent the form from submitting immediately

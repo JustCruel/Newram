@@ -68,13 +68,33 @@ foreach ($buses as $bus) {
         echo "<script>alert('Error preparing query for passenger count');</script>";
         continue;
     }
+ // Query to get driver and conductor information
+ $driverConductorQuery = "SELECT driverName, conductorName, status 
+ FROM businfo
+ WHERE bus_number = ?";
 
-    // Store the data for each bus
-    $busData[] = [
-        'bus_number' => $bus,
-        'total_fare' => $totalFare,
-        'passenger_count' => $passengerCount
-    ];
+if ($stmt = $conn->prepare($driverConductorQuery)) {
+$stmt->bind_param("s", $bus);
+$stmt->execute();
+$stmt->bind_result($driverName, $conductorName, $status);
+$stmt->fetch();
+$stmt->close();
+} else {
+echo "<script>alert('Error preparing query for driver and conductor info');</script>";
+$driverName = 'N/A';
+$conductorName = 'N/A';
+$status = 'Unknown';
+}
+
+// Store the data for each bus
+$busData[] = [
+'status' => $status,
+'bus_number' => $bus,
+'total_fare' => $totalFare,
+'passenger_count' => $passengerCount,
+'driverName' => $driverName,
+'conductorName' => $conductorName
+];
 }
 ?>
 
@@ -88,6 +108,11 @@ foreach ($buses as $bus) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800,900" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <!-- jQuery CDN link -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
     <link rel="stylesheet" href="../css/style.css">
     <style>
         h2 {
@@ -104,23 +129,32 @@ foreach ($buses as $bus) {
         <table class="table table-bordered">
             <thead>
                 <tr>
+                    <th>Status</th>
                     <th>Bus Number</th>
                     <th>Total Fare Collected Today</th>
                     <th>Number of Passengers</th>
+                    <th>Driver</th>
+                    <th>Conductor</th>
                 </tr>
             </thead>
             <tbody>
                 <?php foreach ($busData as $data): ?>
                     <tr>
+                    <td><?php echo htmlspecialchars($data['status']); ?></td>
                         <td><?php echo htmlspecialchars($data['bus_number']); ?></td>
                         <td>₱<?php echo number_format($data['total_fare'], 2); ?></td>
                         <td><?php echo $data['passenger_count']; ?></td>
+                        <td><?php echo htmlspecialchars($data['driverName']); ?></td>
+                        <td><?php echo htmlspecialchars($data['conductorName']); ?></td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
         </table>
 
     </div>
+    <script src="../js/popper.js"></script>
+    <script src="../js/bootstrap.min.js"></script>
+    <script src="../js/main.js"></script>
 </body>
 
 </html>

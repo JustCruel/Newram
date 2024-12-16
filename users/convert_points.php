@@ -1,7 +1,7 @@
 <?php
 session_start();
 include '../config/connection.php';
-include 'sidebar.php';
+
 // Check if the user is logged in or has appropriate permissions to access this form
 if (!isset($_SESSION['account_number'])) {
     $_SESSION['error_message'] = "You must be logged in to access this page.";
@@ -43,6 +43,7 @@ $availablePoints = $user['points'];
 </head>
 
 <body>
+<?php include '../sidebar.php'; ?>
     <div class="container mt-5">
         <div class="card">
             <div class="card-header">

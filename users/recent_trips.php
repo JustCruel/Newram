@@ -5,7 +5,7 @@ error_reporting(E_ALL);
 
 session_start();
 include '../config/connection.php';
-include 'sidebar.php';
+
 
 
 // Check if the user is logged in
@@ -106,6 +106,7 @@ $recentTripsStmt->close();
 </head>
 
 <body>
+<?php include '../sidebar.php'; ?>
     <div id="content" class="container p-4 p-md-5">
         <h2>Your Recent Trips</h2>
         <?php if (!empty($recentTrips)): ?>

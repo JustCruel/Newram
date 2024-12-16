@@ -13,6 +13,8 @@ $bus_number = isset($_SESSION['bus_number']) ? $_SESSION['bus_number'] : 'Unknow
 $conductorac = isset($_SESSION['driver_account_number']) ? $_SESSION['driver_account_number'] : 'unknown conductor account number';
 $driverName = isset($_SESSION['driver_name']) ? $_SESSION['driver_name'] : 'unknown driver name';
 $conductorName = isset($_SESSION['conductor_name']) ? $_SESSION['conductor_name'] : 'unknown conductor name';
+$driverac = isset($_SESSION['driver_name']) ? $_SESSION['driver_name'] : null;  // Check if driver name is in session
+
 
 $conductorName = $firstname . ' ' . $lastname;
 
@@ -258,6 +260,105 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['removeAllPassengers']))
     $_SESSION['passengers'] = [];
     echo json_encode(['status' => 'success']);
     exit;
+}
+
+
+
+// Check if bus number and driver name are not set in the session
+if (!$bus_number || !$driverac) {
+
+    $bus_query = "SELECT bus_number FROM businfo WHERE status = 'available'";
+    $bus_result = mysqli_query($conn, $bus_query);
+
+    // Prepare options for SweetAlert
+    $bus_options = "";
+    while ($bus = mysqli_fetch_assoc($bus_result)) {
+        $bus_options .= "<option value=\"" . $bus['bus_number'] . "\">" . $bus['bus_number'] . "</option>";
+    }
+
+
+    // Show the SweetAlert modal
+    echo "
+    <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+    <script>
+    window.onload = function() {
+        // Step 1: Select Bus
+        Swal.fire({
+            icon: 'question',
+            title: 'Select Bus',
+            html: '<form id=\"busForm\" method=\"POST\" action=\"select_bus.php\">' +
+                  '<select name=\"bus_number\" id=\"bus_number\" required style=\"' + 
+                  'width: 100%;' +
+                  'padding: 10px;' +
+                  'border: 2px solid #ddd;' +
+                  'border-radius: 5px;' +
+                  'font-size: 16px;' +
+                  'box-sizing: border-box;' +
+                  'background-color: #f9f9f9;' +
+                  '\" class=\"swal2-input\">' + 
+                  '" . $bus_options . "' +
+                  '</select><br><br>' +
+                  '</form>',
+            showCancelButton: false,
+            confirmButtonText: 'Next',
+            preConfirm: function() {
+                return new Promise((resolve) => {
+                    const selectedBus = document.getElementById('bus_number').value;
+                    if (selectedBus) {
+                        resolve(selectedBus);
+                    } else {
+                        Swal.showValidationMessage('Please select a bus');
+                    }
+                });
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const busNumber = result.value;
+
+                // Step 2: Enter Driver Name
+                Swal.fire({
+                    icon: 'question',
+                    title: 'Enter Driver Name',
+                    input: 'text',
+                    inputPlaceholder: 'Driver Name',
+                    showCancelButton: false,
+                    confirmButtonText: 'OK',
+                    preConfirm: (driverName) => {
+                        if (!driverName) {
+                            Swal.showValidationMessage('Driver name is required');
+                        }
+                        return { busNumber, driverName };
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const { busNumber, driverName } = result.value;
+
+                        // Submit form with bus number and driver name
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = 'select_bus.php';
+
+                        const busInput = document.createElement('input');
+                        busInput.type = 'hidden';
+                        busInput.name = 'bus_number';
+                        busInput.value = busNumber;
+
+                        const driverInput = document.createElement('input');
+                        driverInput.type = 'hidden';
+                        driverInput.name = 'driver_name';
+                        driverInput.value = driverName;
+
+                        form.appendChild(busInput);
+                        form.appendChild(driverInput);
+
+                        document.body.appendChild(form);
+                        form.submit();
+                    }
+                });
+            }
+        });
+    };
+    </script>";
 }
 $conn->close();
 ?>
