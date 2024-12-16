@@ -1,6 +1,20 @@
 <?php
-// disable_user_only.php
-require '../config/connection.php'; // Ensure database connection
+session_start();
+include '../config/connection.php';
+
+if (!isset($_SESSION['email']) || ($_SESSION['role'] != 'Admin' && $_SESSION['role'] != 'Superadmin')) {
+    header("Location: ../index.php");
+    exit();
+}
+
+function logActivity($conn, $user_id, $action, $performed_by)
+{
+    $logQuery = "INSERT INTO activity_logs (user_id, action, performed_by) VALUES (?, ?, ?)";
+    $stmt = $conn->prepare($logQuery);
+    $stmt->bind_param("iss", $user_id, $action, $performed_by);
+    $stmt->execute();
+    $stmt->close();
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $userId = $_POST['user_id'];
@@ -18,6 +32,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->bind_param("i", $userId); // Assuming user_id is an integer
 
         if ($stmt->execute()) {
+            logActivity($conn, $userId, 'Deactivated', $_SESSION['firstname'] . ' ' . $_SESSION['lastname']);
+
             // Fetch updated data to refresh the table
             $tableData = fetchUpdatedTableData($conn);
 

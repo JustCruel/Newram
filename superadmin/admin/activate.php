@@ -21,6 +21,14 @@ $stmt->execute();
 $stmt->bind_result($firstname, $lastname);
 $stmt->fetch();
 
+function logActivity($conn, $user_id, $action, $performed_by)
+{
+    $logQuery = "INSERT INTO activity_logs (user_id, action, performed_by) VALUES (?, ?, ?)";
+    $stmt = $conn->prepare($logQuery);
+    $stmt->bind_param("iss", $user_id, $action, $performed_by);
+    $stmt->execute();
+    $stmt->close();
+}
 
 
 // Fetch user count
@@ -46,8 +54,8 @@ if (isset($_POST['activate_user'])) {
         if ($stmt) {
             $stmt->bind_param("i", $user_id);
             if ($stmt->execute()) {
-                // Success
-                $_SESSION['message'] = "User activated successfully.";
+                logActivity($conn, $user_id, 'Activated', $firstname . ' ' . $lastname);
+                $_SESSION['message'] = "User  activated successfully.";
             } else {
                 // Error executing statement
                 $_SESSION['message'] = "Error activating user.";
@@ -545,6 +553,7 @@ if (isset($_POST['fetch_users'])) {
         }
 
         function confirmTransferDisable(userId) {
+            $('#actionModal').modal('hide');
             var userId = $('#actionModal').data('userId'); // Get the stored user ID
 
             // Set the user_id in the hidden form input for submitting
@@ -552,6 +561,7 @@ if (isset($_POST['fetch_users'])) {
 
             // Submit the form to activate the user
             $('#actionForm').submit();
+
             Swal.fire({
                 title: 'Enter New Account Number',
                 input: 'text',

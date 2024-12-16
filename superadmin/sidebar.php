@@ -57,6 +57,8 @@ $base_path = "/Newram/superadmin/";
                                     class="fa fa-eye me-2"></i> Today's Bus Info</a></li>
                         <li><a href="<?php echo $base_path; ?>admin/viewregbus.php" class="nav-link"><i
                                     class="fa fa-eye me-2"></i> Registered Bus Info</a></li>
+                        <li><a href="<?php echo $base_path; ?>admin/activity_logs.php" class="nav-link"><i
+                                    class="fa fa-home me-2"></i> Activity Logs</a></li>
                     </ul>
                 </li>
 
