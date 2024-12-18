@@ -13,6 +13,8 @@ $bus_number = isset($_SESSION['bus_number']) ? $_SESSION['bus_number'] : 'Unknow
 $conductorac = isset($_SESSION['driver_account_number']) ? $_SESSION['driver_account_number'] : 'unknown conductor account number';
 $driverName = isset($_SESSION['driver_name']) ? $_SESSION['driver_name'] : 'unknown driver name';
 $conductorName = isset($_SESSION['conductor_name']) ? $_SESSION['conductor_name'] : 'unknown conductor name';
+$driverac = isset($_SESSION['driver_name']) ? $_SESSION['driver_name'] : null;  // Check if driver name is in session
+
 
 $conductorName = $firstname . ' ' . $lastname;
 
@@ -53,9 +55,11 @@ function getUserBalance($rfid, $conn)
     $stmt->bind_param("s", $rfid);
     $stmt->execute();
     $stmt->bind_result($balance);
-    $stmt->fetch();
+    $result = $stmt->fetch();
     $stmt->close();
-    return $balance;
+    
+    // Return balance if found, otherwise return false
+    return $result ? $balance : false;
 }
 
 // Function to deduct fare from user's balance
@@ -117,7 +121,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 deductFare($rfid, $totalFare, $conn);
             }
 
-            // Track the passenger
             // Track the passenger
             $_SESSION['passengers'][] = [
                 'rfid' => $rfid,
@@ -258,6 +261,105 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['removeAllPassengers']))
     $_SESSION['passengers'] = [];
     echo json_encode(['status' => 'success']);
     exit;
+}
+
+
+
+// Check if bus number and driver name are not set in the session
+if (!$bus_number || !$driverac) {
+
+    $bus_query = "SELECT bus_number FROM businfo WHERE status = 'available'";
+    $bus_result = mysqli_query($conn, $bus_query);
+
+    // Prepare options for SweetAlert
+    $bus_options = "";
+    while ($bus = mysqli_fetch_assoc($bus_result)) {
+        $bus_options .= "<option value=\"" . $bus['bus_number'] . "\">" . $bus['bus_number'] . "</option>";
+    }
+
+
+    // Show the SweetAlert modal
+    echo "
+    <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+    <script>
+    window.onload = function() {
+        // Step 1: Select Bus
+        Swal.fire({
+            icon: 'question',
+            title: 'Select Bus',
+            html: '<form id=\"busForm\" method=\"POST\" action=\"select_bus.php\">' +
+                  '<select name=\"bus_number\" id=\"bus_number\" required style=\"' + 
+                  'width: 100%;' +
+                  'padding: 10px;' +
+                  'border: 2px solid #ddd;' +
+                  'border-radius: 5px;' +
+                  'font-size: 16px;' +
+                  'box-sizing: border-box;' +
+                  'background-color: #f9f9f9;' +
+                  '\" class=\"swal2-input\">' + 
+                  '" . $bus_options . "' +
+                  '</select><br><br>' +
+                  '</form>',
+            showCancelButton: false,
+            confirmButtonText: 'Next',
+            preConfirm: function() {
+                return new Promise((resolve) => {
+                    const selectedBus = document.getElementById('bus_number').value;
+                    if (selectedBus) {
+                        resolve(selectedBus);
+                    } else {
+                        Swal.showValidationMessage('Please select a bus');
+                    }
+                });
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const busNumber = result.value;
+
+                // Step 2: Enter Driver Name
+                Swal.fire({
+                    icon: 'question',
+                    title: 'Enter Driver Name',
+                    input: 'text',
+                    inputPlaceholder: 'Driver Name',
+                    showCancelButton: false,
+                    confirmButtonText: 'OK',
+                    preConfirm: (driverName) => {
+                        if (!driverName) {
+                            Swal.showValidationMessage('Driver name is required');
+                        }
+                        return { busNumber, driverName };
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const { busNumber, driverName } = result.value;
+
+                        // Submit form with bus number and driver name
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = 'select_bus.php';
+
+                        const busInput = document.createElement('input');
+                        busInput.type = 'hidden';
+                        busInput.name = 'bus_number';
+                        busInput.value = busNumber;
+
+                        const driverInput = document.createElement('input');
+                        driverInput.type = 'hidden';
+                        driverInput.name = 'driver_name';
+                        driverInput.value = driverName;
+
+                        form.appendChild(busInput);
+                        form.appendChild(driverInput);
+
+                        document.body.appendChild(form);
+                        form.submit();
+                    }
+                });
+            }
+        });
+    };
+    </script>";
 }
 $conn->close();
 ?>
@@ -641,55 +743,58 @@ $conn->close();
         }
 
         function promptRFIDInput() {
-            const fromRouteValue = document.getElementById('fromRoute').value;
-            const toRouteValue = document.getElementById('toRoute').value;
-            // Generate the transaction number before opening the Swal prompt
-            const distance = Math.abs(fromRoute.post - toRoute.post);
-            const transactionNumber = generateTransactionNumber();
-            const paymentMethod = 'RFID';
-            console.log("Generated Transaction Number:", transactionNumber); // Debugging line
-            console.log("Generated Transaction Number:", distance); // Debugging line
-            console.log("Generated Transaction Number:", paymentMethod);
-            if (!validateRoutes()) {
-                // Stop execution if routes are not selected
-                return;
-            }
+    const fromRouteValue = document.getElementById('fromRoute').value;
+    const toRouteValue = document.getElementById('toRoute').value;
+    const distance = Math.abs(fromRoute.post - toRoute.post);
+    const transactionNumber = generateTransactionNumber();
+    const paymentMethod = 'RFID';
+    
+    console.log("Generated Transaction Number:", transactionNumber); // Debugging line
+    console.log("Distance:", distance); // Debugging line
+    console.log("Payment Method:", paymentMethod);
+    
+    if (!validateRoutes()) {
+        // Stop execution if routes are not selected
+        return;
+    }
 
-            Swal.fire({
-                title: 'Enter RFID',
-                input: 'text',
-                inputAttributes: {
-                    autocapitalize: 'off'
-                },
-                showCancelButton: true,
-                cancelButtonText: 'Cancel',
-                inputPlaceholder: 'Scan your RFID here',
-                didOpen: () => {
-                    const inputField = Swal.getInput();
-                    inputField.addEventListener('input', async () => {
-                        const rfid = inputField.value.trim();
-                        if (rfid) {
-                            // If RFID is entered, automatically process the fare
-                            const fromRoute = JSON.parse(document.getElementById('fromRoute').value);
-                            const toRoute = JSON.parse(document.getElementById('toRoute').value);
-                            const fareType = document.getElementById('fareType').value;
-                            const passengerQuantity = parseInt(document.getElementById('passengerQuantity').value, 10);
-                            const paymentMethod = 'RFID';
-                            if (!fromRoute || !toRoute) {
-                                Swal.fire('Error', 'Please select both starting point and destination.', 'error');
-                                return;
-                            }
-
-                            console.log("Transaction Number before calling getUserBalance:", transactionNumber); // Debugging line
-
-                            // Call the function to get user balance and process the fare
-
-                            getUserBalance(rfid, fromRoute, toRoute, fareType, passengerQuantity, true, transactionNumber, distance, paymentMethod);
+    Swal.fire({
+        title: 'Enter RFID',
+        input: 'text',
+        inputAttributes: {
+            autocapitalize: 'off'
+        },
+        showCancelButton: true,
+        cancelButtonText: 'Cancel',
+        inputPlaceholder: 'Scan your RFID here',
+        didOpen: () => {
+            const inputField = Swal.getInput();
+            inputField.addEventListener('keydown', async (event) => {
+                // Check if the Enter key is pressed
+                if (event.key === 'Enter') {
+                    const rfid = inputField.value.trim();
+                    if (rfid) {
+                        // If RFID is entered, automatically process the fare
+                        const fromRoute = JSON.parse(document.getElementById('fromRoute').value);
+                        const toRoute = JSON.parse(document.getElementById('toRoute').value);
+                        const fareType = document.getElementById('fareType').value;
+                        const passengerQuantity = parseInt(document.getElementById('passengerQuantity').value, 10);
+                        
+                        if (!fromRoute || !toRoute) {
+                            Swal.fire('Error', 'Please select both starting point and destination.', 'error');
+                            return;
                         }
-                    });
+
+                        console.log("Transaction Number before calling getUser Balance:", transactionNumber); // Debugging line
+
+                        // Call the function to get user balance and process the fare
+                        getUserBalance(rfid, fromRoute, toRoute, fareType, passengerQuantity, true, transactionNumber, distance, paymentMethod);
+                    }
                 }
             });
         }
+    });
+}
 
 
 

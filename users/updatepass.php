@@ -2,7 +2,7 @@
 session_start();
 include '../config/connection.php';
 
-if (!isset($_SESSION['email']) || ($_SESSION['role'] != 'Superadmin')) {
+if (!isset($_SESSION['email']) || ($_SESSION['role'] != 'User')) {
     header("Location: ../index.php");
     exit();
 } ?>

@@ -10,7 +10,6 @@ if (isset($_SESSION['firstname']) && isset($_SESSION['lastname'])) {
     $role = 'Guest';
 }
 ?>
-<!--
 <!-- Bootstrap 4 CSS -->
 <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 
@@ -55,11 +54,7 @@ if (isset($_SESSION['firstname']) && isset($_SESSION['lastname'])) {
                     </li>
                     <li>
                         <a href="activate.php"><span class="fa fa-sticky-note"></span>
-                            Activation</a>
-                    </li>
-                    <li>
-                        <a href="deactivate.php"><span class="fa fa-sticky-note"></span>
-                            Deactivation</a>
+                            Accounts</a>
                     </li>
 
                     <li>
@@ -122,9 +117,7 @@ if (isset($_SESSION['firstname']) && isset($_SESSION['lastname'])) {
                     <li>
                         <a href="./busfare.php"><span class="fa fa-bus"></span> Bus Fare</a>
                     </li>
-                    <li>
-                        <a href="./passengerlists.php"><span class="fa fa-users"></span> Passenger Lists</a>
-                    </li>
+                   
                     <li>
                         <a href="./loadrfidconductor.php"><span class="fa fa-id-badge"></span> Load RFID</a>
                     </li>
@@ -134,28 +127,32 @@ if (isset($_SESSION['firstname']) && isset($_SESSION['lastname'])) {
                     <li>
                         <a href="./loadtranscon.php"><span class="fa fa-dollar-sign"></span> Load Revenue</a>
                     </li>
-                    <li>
-                        <a href="./remitcon.php"><span class="fa fa-paper-plane"></span> Remit</a>
-                    </li>
+                  
                     <li>
                         <a href="../logout.php"><span class="fa fa-sign-out-alt"></span> Logout</a>
                     </li>
                 <?php } ?>
 
                 <?php if ($role === 'User') { ?>
-                    <li>
-                        <a href="#userSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle"><span
-                                class="fa fa-coins"></span> User</a>
-                        <ul class="collapse list-unstyled" id="userSubmenu">
-                            <li><a href="">User Dashboard</a></li>
-                            <li><a href="recent_trips.php">Recent Trips</a></li>
-                            <li><a href="bus_tracking.php">Track Bus</a></li>
-                            <li><a href="convert_points.php">View Balance</a></li>
-                            <li><a href="">Transaction History</a></li>
-                            <li><a href="">Update Profile</a></li>
-                        </ul>
+                  
+                    <ul class="list-unstyled components mb-5">
+                    <li class="active">
+                        <a href="index.php"><span class="fa fa-tachometer-alt"></span> Dashboard</a>
                     </li>
-
+                    <li>
+                        <a href="recent_trips.php"><span class="fa fa-id-card me-2"></span> Recent Trips</a>
+                    </li>
+                    <li>
+                        <a href="convert_points.php"><span class="fa fa-coins me-2"></span> Convert points</a>
+                    </li>
+                    <li>
+                        <a href="updatepass.php"><span class="fa fa-file-alt me-2"></span> Update Password</a>
+                    </li>
+                    <li>
+                        <a href="transactionlogs.php"><span class="fa fa-paper-plane me-2"></span> Transaction Logs</a>
+                    </li>
+                     
+                  
                     <li>
                         <a href="../logout.php"><span class="fa fa-sign-out-alt"></span> Logout</a>
                     </li>
@@ -237,4 +234,21 @@ if (isset($_SESSION['firstname']) && isset($_SESSION['lastname'])) {
                 <?php } ?>
             </ul>
 
-    </nav> -->
+    </nav> 
+
+    <div id="content" class="p-4 p-md-5">
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <div class="container-fluid">
+                <button type="button" id="sidebarCollapse" class="btn btn-primary" onclick="toggleSidebar(event)">
+                    <i class="fa fa-bars"></i>
+                    <span class="sr-only">Toggle Menu</span>
+                </button>
+                <button class="btn btn-dark d-inline-block d-lg-none ml-auto" type="button" data-toggle="collapse"
+                    data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
+                    aria-label="Toggle navigation">
+                    <i class="fa fa-bars"></i>
+                </button>
+
+
+            </div>
+        </nav>

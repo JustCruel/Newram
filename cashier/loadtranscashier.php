@@ -2,8 +2,13 @@
 session_start();
 include '../config/connection.php';
 
-// Check if the user is logged in and has the correct role
-if (!isset($_SESSION['email']) || !in_array($_SESSION['role'], ['Cashier', 'Superadmin'])) {
+if (!isset($_SESSION['email']) || ($_SESSION['role'] != 'Cashier' && $_SESSION['role'] != 'Superadmin')) {
+    header("Location: ../index.php");
+    exit();
+}
+
+// Check if the user is logged in
+if (!isset($_SESSION['email'])) {
     header("Location: ../index.php");
     exit();
 }
@@ -12,63 +17,91 @@ if (!isset($_SESSION['email']) || !in_array($_SESSION['role'], ['Cashier', 'Supe
 $firstname = $_SESSION['firstname'];
 $lastname = $_SESSION['lastname'];
 
-
-// Fetch user details from the database
-$query = "SELECT firstname, lastname FROM useracc WHERE id = ?";
-$stmt = $conn->prepare($query);
-$stmt->bind_param('i', $user_id);
-$stmt->execute();
-$stmt->bind_result($firstname, $lastname);
-$stmt->fetch();
-$stmt->close();
-
-// Initialize variables for the current date
-$currentDate = new DateTime();
-$currentYear = $currentDate->format('Y');
-$currentMonth = $currentDate->format('m');
-$currentDay = $currentDate->format('d');
+// Initialize variables for the current year, month, and day
+$currentYear = date('Y');
+$currentMonth = date('m');
+$currentDay = date('d'); // Get current day
 $dailyRevenue = [];
+$selectedDayRevenue = 0;
 
-// Handle form submission
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Get the selected date
-    $selectedDate = mysqli_real_escape_string($conn, $_POST['date']);
-    $currentDate = new DateTime($selectedDate);
-    $currentYear = $currentDate->format('Y');
-    $currentMonth = $currentDate->format('m');
-    $currentDay = $currentDate->format('d');
+// Set the default date to current date if not set
+$selectedDate = isset($_POST['selected_date']) ? $_POST['selected_date'] : $currentYear . '-' . $currentMonth . '-' . $currentDay;
+$selectedYear = date('Y', strtotime($selectedDate));
+$selectedMonth = date('m', strtotime($selectedDate));
+$selectedDay = date('d', strtotime($selectedDate));
 
-    // Fetch daily revenue data for the selected date
+// Check if checkbox is checked to show whole month
+$showWholeMonth = isset($_POST['show_whole_month']) ? true : false;
+
+// Fetch daily revenue data for the selected year and month
+// Fetch revenue for the selected day or month
+if ($showWholeMonth) {
+    // Fetch monthly revenue data
     $dailyRevenueQuery = "SELECT DAY(transaction_date) AS day, SUM(amount) AS total_revenue 
                           FROM transactions 
-                          WHERE DATE(transaction_date) = ? 
+                          WHERE MONTH(transaction_date) = '$selectedMonth' AND YEAR(transaction_date) = '$selectedYear'
                           AND transaction_type = 'Load'
                           GROUP BY DAY(transaction_date)";
-    $stmt = $conn->prepare($dailyRevenueQuery);
-    $stmt->bind_param('s', $selectedDate);
-    $stmt->execute();
-    $dailyRevenueResult = $stmt->get_result();
+    $dailyRevenueResult = mysqli_query($conn, $dailyRevenueQuery);
 
     if (!$dailyRevenueResult) {
         die("Database query failed: " . mysqli_error($conn));
     }
 
-    $dailyRevenue = array_fill(1, $currentDate->format('t'), 0);
-
-    while ($row = $dailyRevenueResult->fetch_assoc()) {
-        $dailyRevenue[$row['day']] = $row['total_revenue'];
+    // Initialize daily revenue for the selected month
+    $dailyRevenue = [];
+    for ($i = 1; $i <= 31; $i++) {
+        $dailyRevenue[$i] = 0;  // Ensure every day of the month has a default value
     }
 
-    // Calculate selected day revenue
-    $selectedDayRevenue = $dailyRevenue[$currentDay] ?? 0;
+    while ($row = mysqli_fetch_assoc($dailyRevenueResult)) {
+        $dailyRevenue[$row['day']] = $row['total_revenue'];
+    }
 } else {
-    // Default selected day revenue is the total revenue for the current month
-    $selectedDayRevenue = array_sum($dailyRevenue);
+    // Fetch revenue for the selected day
+    $dailyRevenueQuery = "SELECT SUM(amount) AS total_revenue 
+    FROM transactions 
+    WHERE DATE(transaction_date) = '$selectedDate'
+    AND transaction_type = 'Load'";
+    $dailyRevenueResult = mysqli_query($conn, $dailyRevenueQuery);
+
+    if (!$dailyRevenueResult) {
+        die("Database query failed: " . mysqli_error($conn));
+    }
+
+    // Initialize the array with all zeros
+    $dailyRevenue = array_fill(1, 31, 0);
+    $row = mysqli_fetch_assoc($dailyRevenueResult);
+    $dailyRevenue[$selectedDay] = isset($row['total_revenue']) ? $row['total_revenue'] : 0;
 }
+
+// Calculate selected day revenue
+$selectedDayRevenue = isset($row['total_revenue']) ? $row['total_revenue'] : 0;
 
 // Function to generate PDF
 if (isset($_GET['generate_pdf'])) {
     require('../fpdf/fpdf.php'); // Adjust the path to the fpdf.php file
+
+    // Get the selected date from the URL if available
+    $selectedDate = isset($_GET['selected_date']) ? $_GET['selected_date'] : $currentYear . '-' . $currentMonth . '-' . $currentDay;
+    $selectedYear = date('Y', strtotime($selectedDate));
+    $selectedMonth = date('m', strtotime($selectedDate));
+    $selectedDay = date('d', strtotime($selectedDate));
+
+    // Fetch revenue for the selected day (recalculate here)
+    $dailyRevenueQuery = "SELECT SUM(amount) AS total_revenue 
+                          FROM transactions 
+                          WHERE DATE(transaction_date) = '$selectedDate'
+                          AND transaction_type = 'Load'";
+
+    $dailyRevenueResult = mysqli_query($conn, $dailyRevenueQuery);
+
+    if (!$dailyRevenueResult) {
+        die("Database query failed: " . mysqli_error($conn));
+    }
+
+    $row = mysqli_fetch_assoc($dailyRevenueResult);
+    $selectedDayRevenue = isset($row['total_revenue']) ? $row['total_revenue'] : 0;
 
     $pdf = new FPDF();
     $pdf->AddPage();
@@ -76,21 +109,22 @@ if (isset($_GET['generate_pdf'])) {
     $pdf->Cell(40, 10, 'Revenue Report');
     $pdf->Ln(10);
     $pdf->SetFont('Arial', 'B', 12);
-    $pdf->Cell(40, 10, 'Year: ' . $currentYear);
+    $pdf->Cell(40, 10, 'Year: ' . $selectedYear);
     $pdf->Ln(10);
-    $pdf->Cell(40, 10, 'Month: ' . date("F", mktime(0, 0, 0, $currentMonth, 1)));
+    $pdf->Cell(40, 10, 'Month: ' . date("F", mktime(0, 0, 0, $selectedMonth, 1)));
 
-    if ($currentDay !== null) {
+    if ($selectedDay !== null) {
         $pdf->Ln(10);
-        $pdf->Cell(40, 10, 'Day: ' . $currentDay);
+        $pdf->Cell(40, 10, 'Day: ' . date("F j, Y", strtotime($selectedDate)));
     }
 
     $pdf->Ln(10);
-    $pdf->Cell(40, 10, 'Total Revenue: ₱' . number_format($selectedDayRevenue, 2));
+    $pdf->Cell(40, 10, 'Total Revenue: P' . number_format($selectedDayRevenue, 2));
 
     $pdf->Output('D', 'revenue_report.pdf'); // Force download the PDF
     exit;
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -104,13 +138,11 @@ if (isset($_GET['generate_pdf'])) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800,900" rel="stylesheet">
-    <link rel="stylesheet" href=" https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script> <!-- Added ApexCharts -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
     <link rel="stylesheet" href="../css/style.css">
     <style>
         html,
@@ -119,7 +151,28 @@ if (isset($_GET['generate_pdf'])) {
             margin: 0;
         }
 
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+        }
 
+        .sidebar {
+            width: 250px;
+            background-color: #ffffff;
+            padding: 20px;
+            color: #001f3f;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            border-right: 1px solid #e0e0e0;
+        }
+
+        .sidebar img {
+            width: 100%;
+            height: auto;
+            margin-bottom: 20px;
+        }
 
         .button-card {
             display: flex;
@@ -160,7 +213,6 @@ if (isset($_GET['generate_pdf'])) {
         }
 
         /* Responsive Design */
-        /* Responsive Design */
         @media (max-width: 768px) {
             .sidebar {
                 width: 200px;
@@ -175,7 +227,7 @@ if (isset($_GET['generate_pdf'])) {
 
         /* Chart styles */
         #revenueChart {
-            width: 500px;
+            width: 100%;
             height: auto;
             max-width: 1000px;
             margin: 20px auto;
@@ -190,79 +242,95 @@ if (isset($_GET['generate_pdf'])) {
     ?>
 
     <!-- Page Content  -->
+    
 
-    <h1 class="mb-4">Load Transaction Report</h1>
+        <div class="main-content">
+            <h1 class="mb-4">Load Transaction Report</h1>
 
-    <!-- Year and Month Selection Form -->
-    <form method="POST" action="">
-        <div class="row mb-3">
-            <div class="col-md-4">
-                <label for="date" class="form-label">Select Date</label>
-                <input type="date" id="date" name="date" class="form-control"
-                    value="<?php echo $currentYear . '-' . $currentMonth . '-' . $currentDay; ?>" <?php echo (!$currentDay ? 'disabled' : ''); ?>>
-            </div>
+            <!-- Date Selection Form -->
+            <form method="POST" action="">
+                <div class="form-row">
+                    <div class="col-md-3 mb-3">
+                        <label for="selected_date">Select Date</label>
+                        <input type="date" name="selected_date" class="form-control" id="selected_date"
+                            value="<?= $selectedDate ?>">
+                    </div>
+
+
+
+                    <div class="col-md-3 mb-3">
+                        <button type="submit" class="btn btn-primary mt-4">Generate Report</button>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Chart -->
+            <div id="revenueChart"></div>
+
+            <h2 class="mt-5">Revenue for <?php echo date("F j, Y", strtotime($selectedDate)); ?></h2>
+
+            <p>Total Revenue for the day: P<?= number_format($selectedDayRevenue, 2) ?></p>
+
+            <a href="?generate_pdf=true&selected_date=<?= $selectedDate ?>" class="btn btn-danger">Download PDF</a>
         </div>
-        <button type="submit" class="btn btn-primary">Generate Report</button>
-    </form>
-    <!-- Chart Container -->
-    <canvas id="revenueChart"></canvas>
-    <!-- Display the Revenue -->
-    <h2 class="mt-5">Revenue for
-        <?php echo date("F", mktime(0, 0, 0, $currentMonth, 1)) . ' ' . $currentYear; ?>
-    </h2>
-    <h1>Total Revenue: ₱<?php echo number_format($selectedDayRevenue, 2); ?></h1>
-
-    <a href="?generate_pdf=true" class="btn btn-danger">Download PDF</a>
-
+    </div>
     <script src="../js/main.js"></script>
+    <!-- Chart JS -->
     <script>
         $(document).ready(function () {
-            $('#date').datepicker({
-                format: 'yyyy-mm-dd',
-                autoclose: true,
-                todayHighlight: true
-            }).on('changeDate', function (e) {
-                // Enable the form submission when a date is selected
-                $(this).closest('form').submit();
-            });
-        });
+            // Fetch the daily revenue data from PHP
+            var chartData = <?php echo json_encode($dailyRevenue); ?>;
+            var categories = [];
+            var isWholeMonth = <?= $showWholeMonth ? 'true' : 'false'; ?>;
 
-        // Chart.js configuration
-        const ctx = document.getElementById('revenueChart').getContext('2d');
-        const revenueData = <?php echo json_encode(array_values($dailyRevenue)); ?>; // Daily revenue data
-        const labels = Array.from({ length: revenueData.length }, (_, i) => i + 1); // Create labels for days
-
-        const revenueChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Daily Revenue',
-                    data: revenueData,
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        title: {
-                            display: true,
-                            text: 'Revenue (₱)'
-                        }
-                    },
-                    x: {
-                        title: {
-                            display: true,
-                            text: 'Days'
-                        }
-                    }
+            // Prepare categories for the whole month or just a selected day
+            if (isWholeMonth) {
+                for (var i = 1; i <= 31; i++) {
+                    categories.push(i);
                 }
+            } else {
+                categories = ['<?= $selectedDay ?>']; // Only show selected day for single date view
             }
+
+            // Make sure the chart data is an array of numbers
+            var seriesData = categories.map(function (day) {
+                return chartData[day] || 0; // Default to 0 if no data exists for a given day
+            });
+
+            var options = {
+                chart: {
+                    type: 'bar',
+                    height: 350
+                },
+                series: [{
+                    name: 'Revenue',
+                    data: seriesData
+                }],
+                xaxis: {
+                    categories: categories,
+                    title: {
+                        text: 'Day'
+                    }
+                },
+                yaxis: {
+                    title: {
+                        text: 'Revenue (₱)'
+                    }
+                },
+                title: {
+                    text: 'Revenue for ' + (isWholeMonth ? 'the whole month of ' + '<?= date("F, Y", strtotime($selectedDate)) ?>' : 'the selected day'),
+                    align: 'center'
+                }
+            };
+
+            // Render the chart
+            var chart = new ApexCharts(document.querySelector("#revenueChart"), options);
+            chart.render();
         });
+
+
     </script>
+
 </body>
 
 </html>

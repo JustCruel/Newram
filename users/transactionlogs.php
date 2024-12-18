@@ -57,10 +57,15 @@ $transactions = fetchTransactions($conn, $accountNumber, $limit, $offset);
     <link rel="stylesheet" href="../css/style.css"> <!-- Your custom CSS -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
     <title>Load Transaction Logs</title>
+    <style>
+        h2 {
+            color: black;
+        }
+    </style>
 </head>
 
 <body>
-<?php include '../sidebar.php'; ?>
+    <?php include '../sidebar.php'; ?>
     <div class="container mt-5">
         <h2 class="text-center">Load Transaction Logs</h2>
         <table class="table table-bordered mt-4">

@@ -174,14 +174,6 @@ if (isset($_POST['fetch_users'])) {
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="../css/style.css">
     <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            margin: 0;
-            background-color: #f0f0f0;
-            display: flex;
-            height: 100vh;
-        }
-
         .sidebar {
             width: 250px;
             background-color: #ffffff;
@@ -201,6 +193,19 @@ if (isset($_POST['fetch_users'])) {
         h3 {
             margin-bottom: 20px;
             font-size: 24px;
+        }
+
+
+        .table-responsive {
+            overflow-x: auto;
+            /* Enable horizontal scrolling */
+            -webkit-overflow-scrolling: touch;
+            /* Smooth scrolling on iOS */
+        }
+
+        .table {
+            min-width: 800px;
+            /* Set a minimum width for the table */
         }
 
         .table-container {
@@ -261,397 +266,398 @@ if (isset($_POST['fetch_users'])) {
 
         <!-- Table for Displaying Users -->
         <div class="table-container">
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Firstname</th>
-                        <th>Middlename</th>
-                        <th>Lastname</th>
-                        <th>Birthday</th>
-                        <th>Age</th>
-                        <th>Gender</th>
-                        <th>Address</th>
-                        <th>Province</th>
-                        <th>Municipality</th>
-                        <th>Barangay</th>
-                        <th>Account Number</th>
-                        <th>Balance</th>
-                        <th>Status</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody id="userTableBody">
-                    <?php while ($row = mysqli_fetch_assoc($userResult)): ?>
-                        <tr id="user-row-<?php echo $row['id']; ?>">
-                            <td><?php echo $row['id']; ?></td>
-                            <td><?php echo htmlspecialchars($row['firstname']); ?></td>
-                            <td><?php echo htmlspecialchars($row['middlename']); ?></td>
-                            <td><?php echo htmlspecialchars($row['lastname']); ?></td>
-                            <td><?php echo date('F j, Y', strtotime($row['birthday'])); ?></td>
-                            <td><?php echo $row['age']; ?></td>
-                            <td><?php echo htmlspecialchars($row['gender']); ?></td>
-                            <td><?php echo htmlspecialchars($row['address']); ?></td>
-                            <td id="province-<?php echo $row['id']; ?>">
-                                <?php echo htmlspecialchars($row['province']); ?>
-                            </td>
-                            <td id="municipality-<?php echo $row['id']; ?>">
-                                <?php echo htmlspecialchars($row['municipality']); ?>
-                            </td>
-                            <td id="barangay-<?php echo $row['id']; ?>">
-                                <?php echo htmlspecialchars($row['barangay']); ?>
-                            </td>
-                            <td><?php echo htmlspecialchars($row['account_number']); ?></td>
-
-                            <td>₱<?php echo number_format($row['balance'], 2); ?></td>
-                            <td> <?php echo isset($row['is_activated']) ? ($row['is_activated'] == 1 ? 'Activated' : 'Disabled') : 'N/A'; ?>
-                            </td>
-                            <td>
-                                <form id="actionForm<?php echo $row['id']; ?>" method="POST">
-                                    <input type="hidden" name="user_id" value="<?php echo $row['id']; ?>">
-                                    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
-                                        data-bs-target="#actionModal"
-                                        onclick="prepareActions(<?php echo $row['id']; ?>, <?php echo $row['is_activated']; ?>)">
-                                        Action
-                                    </button>
-                                </form>
-                            </td>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Firstname</th>
+                            <th>Middlename</th>
+                            <th>Lastname</th>
+                            <th>Birthday</th>
+                            <th>Age</th>
+                            <th>Gender</th>
+                            <th>Address</th>
+                            <th>Province</th>
+                            <th>Municipality</th>
+                            <th>Barangay</th>
+                            <th>Account Number</th>
+                            <th>Balance</th>
+                            <th>Status</th>
+                            <th>Action</th>
                         </tr>
-                    <?php endwhile; ?>
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody id="userTableBody">
+                        <?php while ($row = mysqli_fetch_assoc($userResult)): ?>
+                            <tr id="user-row-<?php echo $row['id']; ?>">
+                                <td><?php echo $row['id']; ?></td>
+                                <td><?php echo htmlspecialchars($row['firstname']); ?></td>
+                                <td><?php echo htmlspecialchars($row['middlename']); ?></td>
+                                <td><?php echo htmlspecialchars($row['lastname']); ?></td>
+                                <td><?php echo date('F j, Y', strtotime($row['birthday'])); ?></td>
+                                <td><?php echo $row['age']; ?></td>
+                                <td><?php echo htmlspecialchars($row['gender']); ?></td>
+                                <td><?php echo htmlspecialchars($row['address']); ?></td>
+                                <td id="province-<?php echo $row['id']; ?>">
+                                    <?php echo htmlspecialchars($row['province']); ?>
+                                </td>
+                                <td id="municipality-<?php echo $row['id']; ?>">
+                                    <?php echo htmlspecialchars($row['municipality']); ?>
+                                </td>
+                                <td id="barangay-<?php echo $row['id']; ?>">
+                                    <?php echo htmlspecialchars($row['barangay']); ?>
+                                </td>
+                                <td><?php echo htmlspecialchars($row['account_number']); ?></td>
+                                <td>₱<?php echo number_format($row['balance'], 2); ?></td>
+                                <td><?php echo isset($row['is_activated']) ? ($row['is_activated'] == 1 ? 'Activated' : 'Disabled') : 'N/A'; ?>
+                                </td>
+                                <td>
+                                    <form id="actionForm<?php echo $row['id']; ?>" method="POST">
+                                        <input type="hidden" name="user_id" value="<?php echo $row['id']; ?>">
+                                        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
+                                            data-bs-target="#actionModal"
+                                            onclick="prepareActions(<?php echo $row['id']; ?>, <?php echo $row['is_activated']; ?>)">
+                                            Action
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        <?php endwhile; ?>
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>
 
 
-    <!-- Action Modal -->
-    <div class="modal fade" id="actionModal" tabindex="-1" aria-labelledby="actionModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="actionModalLabel">User Actions</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <button id="activateBtn" class="btn btn-success btn-sm"
-                        onclick="confirmActivate()">Activate</button>
-                    <button id="disableBtn" class="btn btn-danger btn-sm" onclick="confirmDisable()">Disable</button>
-                    <button id="transferFundsBtn" class="btn btn-warning btn-sm"
-                        onclick="confirmTransferDisable()">Transfer
-                        Funds</button>
+        <!-- Action Modal -->
+        <div class="modal fade" id="actionModal" tabindex="-1" aria-labelledby="actionModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="actionModalLabel">User Actions</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <button id="activateBtn" class="btn btn-success btn-sm"
+                            onclick="confirmActivate()">Activate</button>
+                        <button id="disableBtn" class="btn btn-danger btn-sm"
+                            onclick="confirmDisable()">Disable</button>
+                        <button id="transferFundsBtn" class="btn btn-warning btn-sm"
+                            onclick="confirmTransferDisable()">Transfer
+                            Funds</button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
 
 
-    <!-- Confirmation Script -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
-    <script>
-        $(document).ready(function () {
-            // Function to fetch users based on search and filter
-            function fetchUsers() {
-                var search = $('#search').val();
-                var statusFilter = $('#statusFilter').val();
+        <!-- Confirmation Script -->
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+        <script>
+            $(document).ready(function () {
+                // Function to fetch users based on search and filter
+                function fetchUsers() {
+                    var search = $('#search').val();
+                    var statusFilter = $('#statusFilter').val();
 
-                $.ajax({
-                    url: '', // Current file
-                    method: 'POST',
-                    data: {
-                        search: search,
-                        statusFilter: statusFilter,
-                        fetch_users: true // Indicate that we want to fetch users
-                    },
-                    success: function (data) {
-                        $('#userTableBody').html(data); // Update the table body with the response
-                    }
-                });
-            }
-
-            // Trigger fetch on search input change
-            $('#search').on('keyup', function () {
-                fetchUsers();
-            });
-
-            // Trigger fetch on dropdown change
-            $('#statusFilter').on('change', function () {
-                fetchUsers();
-            });
-        });
-        function prepareActions(userId, isActivated) {
-            // Store the user ID in the modal
-            $('#actionModal').data('userId', userId);
-
-            // Enable or disable the buttons based on the user's status
-            if (isActivated == 1) {
-                $('#activateBtn').prop('disabled', true); // Disable 'Activate' if the user is already activated
-                $('#disableBtn').prop('disabled', false); // Enable 'Disable' if the user is activated
-            } else {
-                $('#activateBtn').prop('disabled', false); // Enable 'Activate' if the user is not activated
-                $('#disableBtn').prop('disabled', true);
-                $('#transferFundsBtn').prop('disabled', true); // Enable 'Disable' if the user is not activated
-            }
-        }
-
-
-        function toggleSidebar(event) {
-            event.preventDefault(); // Prevent default action when clicking toggle button
-            $('#sidebar').toggleClass('active');
-        }
-
-        $(document).ready(function () {
-            var provinceData = {};
-            var municipalityData = {};
-            var barangayData = {};
-
-            // Function to fetch provinces
-            function fetchProvinces() {
-                $.getJSON('https://psgc.gitlab.io/api/provinces/', function (data) {
-                    $.each(data, function (index, province) {
-                        provinceData[province.code] = province.name; // Map province code to name
-                    });
-                    updateProvinceNames();
-                }).fail(function () {
-                    console.error('Failed to fetch province data');
-                });
-            }
-
-            // Function to update province names in the table
-            function updateProvinceNames() {
-                $('tbody tr').each(function () {
-                    var rowId = $(this).attr('id').split('-')[2];
-                    var provinceCode = $('#province-' + rowId).text().trim();
-
-                    // Ensure the province code has 9 digits
-                    if (provinceCode.length === 8) {
-                        provinceCode = '0' + provinceCode; // Prepend '0' if it has 8 digits
-                    }
-
-                    // Update province name based on code
-                    if (provinceData[provinceCode]) {
-                        $('#province-' + rowId).text(provinceData[provinceCode]);
-                    } else {
-                        $('#province-' + rowId).text('N/A');
-                    }
-                });
-            }
-
-            // Function to fetch municipalities
-            function fetchMunicipalities() {
-                $.getJSON('https://psgc.gitlab.io/api/municipalities/', function (data) {
-                    $.each(data, function (index, municipality) {
-                        municipalityData[municipality.code] = municipality.name; // Map municipality code to name
-                    });
-                    updateMunicipalityNames();
-                }).fail(function () {
-                    console.error('Failed to fetch municipality data');
-                });
-            }
-
-            // Function to update municipality names in the table
-            function updateMunicipalityNames() {
-                $('tbody tr').each(function () {
-                    var rowId = $(this).attr('id').split('-')[2];
-                    var municipalityCode = $('#municipality-' + rowId).text().trim();
-
-                    // Ensure the municipality code has 9 digits
-                    if (municipalityCode.length === 8) {
-                        municipalityCode = '0' + municipalityCode; // Prepend '0' if it has 8 digits
-                    }
-
-                    // Update municipality name based on code
-                    if (municipalityData[municipalityCode]) {
-                        $('#municipality-' + rowId).text(municipalityData[municipalityCode]);
-                    } else {
-                        $('#municipality-' + rowId).text('N/A');
-                    }
-                });
-            }
-
-            // Function to fetch barangays
-            function fetchBarangays() {
-                $.getJSON('https://psgc.gitlab.io/api/barangays/', function (data) {
-                    $.each(data, function (index, barangay) {
-                        barangayData[barangay.code] = barangay.name; // Map barangay code to name
-                    });
-                    updateBarangayNames();
-                }).fail(function () {
-                    console.error('Failed to fetch barangay data');
-                });
-            }
-
-            // Function to update barangay names in the table
-            function updateBarangayNames() {
-                $('tbody tr').each(function () {
-                    var rowId = $(this).attr('id').split('-')[2];
-                    var barangayCode = $('#barangay-' + rowId).text().trim();
-
-                    // Ensure the barangay code has 9 digits
-                    if (barangayCode.length === 8) {
-                        barangayCode = '0' + barangayCode; // Prepend '0' if it has 8 digits
-                    }
-
-                    // Update barangay name based on code
-                    if (barangayData[barangayCode]) {
-                        $('#barangay-' + rowId).text(barangayData[barangayCode]);
-                    } else {
-                        $('#barangay-' + rowId).text('N/A');
-                    }
-                });
-            }
-
-            // Fetch all data
-            fetchProvinces();
-            fetchMunicipalities();
-            fetchBarangays();
-        });
-
-
-        function confirmActivate(userId) {
-
-            var userId = $('#actionModal').data('userId'); // Get the stored user ID
-
-            // Set the user_id in the hidden form input for submitting
-            $('#actionForm').find('input[name="user_id"]').val(userId);
-
-            // Submit the form to activate the user
-            $('#actionForm').submit();
-            Swal.fire({
-                title: 'Are you sure?',
-                text: "Do you really want to activate this user?",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Yes, activate it!',
-                cancelButtonText: 'No, cancel!'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    // Send AJAX request to activate the user
                     $.ajax({
-                        url: 'activate_user.php', // Ensure this points to your activate.php
+                        url: '', // Current file
                         method: 'POST',
-                        data: { user_id: userId }, // Send user ID
-                        success: function (response) {
-                            const result = JSON.parse(response); // Parse the JSON response
-                            if (result.success) {
-                                Swal.fire('Disabled!', 'User  has been activated', 'success').then(() => {
-                                    location.reload();
-                                });
-                            } else {
-                                Swal.fire('Error!', result.message, 'error');
-                            }
+                        data: {
+                            search: search,
+                            statusFilter: statusFilter,
+                            fetch_users: true // Indicate that we want to fetch users
                         },
-                        error: function () {
-                            Swal.fire('Error!', 'There was an error activating the user.', 'error');
+                        success: function (data) {
+                            $('#userTableBody').html(data); // Update the table body with the response
                         }
                     });
                 }
-            });
-        }
 
-        function confirmTransferDisable(userId) {
-            $('#actionModal').modal('hide');
-            var userId = $('#actionModal').data('userId'); // Get the stored user ID
+                // Trigger fetch on search input change
+                $('#search').on('keyup', function () {
+                    fetchUsers();
+                });
 
-            // Set the user_id in the hidden form input for submitting
-            $('#actionForm').find('input[name="user_id"]').val(userId);
-
-            // Submit the form to activate the user
-            $('#actionForm').submit();
-
-            Swal.fire({
-                title: 'Enter New Account Number',
-                input: 'text',
-                inputLabel: 'New Account Number for Fund Transfer',
-                inputPlaceholder: 'Enter account number...',
-                showCancelButton: true,
-                confirmButtonText: 'Confirm',
-                cancelButtonText: 'Cancel',
-                inputValidator: (value) => {
-                    if (!value) {
-                        return 'Please enter a new account number!';
-                    }
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    const newAccountNumber = result.value;
-                    $.ajax({
-                        url: 'transfer_and_disabled.php',
-                        method: 'POST',
-                        data: { user_id: userId, new_account_number: newAccountNumber },
-                        success: function (response) {
-                            const result = JSON.parse(response);
-                            if (result.success) {
-                                $('#userTableBody').html(result.tableData);
-                                Swal.fire('Disabled!', 'User  has been disabled and funds transferred.', 'success').then(() => {
-                                    location.reload();
-                                });
-                            } else {
-                                Swal.fire('Error!', result.message, 'error');
-                            }
-                        },
-                        error: function () {
-                            Swal.fire('Error!', 'There was an error disabling the user.', 'error');
-                        }
-                    });
-                }
-            });
-        }
-
-        function confirmDisable(userId) {
-            var userId = $('#actionModal').data('userId'); // Get the stored user ID
-
-            // Set the user_id in the hidden form input for submitting
-            $('#actionForm').find('input[name="user_id"]').val(userId);
-
-            // Submit the form to activate the user
-            $('#actionForm').submit();
-            Swal.fire({
-                title: 'Disabled Account?',
-                showCancelButton: true,
-                confirmButtonText: 'Confirm',
-                cancelButtonText: 'Cancel',
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $.ajax({
-                        url: 'disable_user_only.php',
-                        method: 'POST',
-                        data: { user_id: userId },
-                        success: function (response) {
-                            const result = JSON.parse(response);
-                            if (result.success) {
-                                Swal.fire('Disabled!', 'User  has been disabled', 'success').then(() => {
-                                    location.reload();
-                                });
-                            } else {
-                                Swal.fire('Error!', result.message, 'error');
-                            }
-                        },
-                        error: function () {
-                            Swal.fire('Error!', 'There was an error disabling the user.', 'error');
-                        }
-                    });
-                }
-            });
-        }
-
-        $(document).ready(function () {
-            $('#search').on('keyup', function () {
-                var query = $(this).val();
-                $.ajax({
-                    url: 'search_users.php',
-                    method: 'POST',
-                    data: { query: query },
-                    success: function (data) {
-                        $('#userTableBody').html(data);
-                    }
+                // Trigger fetch on dropdown change
+                $('#statusFilter').on('change', function () {
+                    fetchUsers();
                 });
             });
-        });
-    </script>
+            function prepareActions(userId, isActivated) {
+                // Store the user ID in the modal
+                $('#actionModal').data('userId', userId);
+
+                // Enable or disable the buttons based on the user's status
+                if (isActivated == 1) {
+                    $('#activateBtn').prop('disabled', true); // Disable 'Activate' if the user is already activated
+                    $('#disableBtn').prop('disabled', false); // Enable 'Disable' if the user is activated
+                } else {
+                    $('#activateBtn').prop('disabled', false); // Enable 'Activate' if the user is not activated
+                    $('#disableBtn').prop('disabled', true);
+                    $('#transferFundsBtn').prop('disabled', true); // Enable 'Disable' if the user is not activated
+                }
+            }
+
+
+            function toggleSidebar(event) {
+                event.preventDefault(); // Prevent default action when clicking toggle button
+                $('#sidebar').toggleClass('active');
+            }
+
+            $(document).ready(function () {
+                var provinceData = {};
+                var municipalityData = {};
+                var barangayData = {};
+
+                // Function to fetch provinces
+                function fetchProvinces() {
+                    $.getJSON('https://psgc.gitlab.io/api/provinces/', function (data) {
+                        $.each(data, function (index, province) {
+                            provinceData[province.code] = province.name; // Map province code to name
+                        });
+                        updateProvinceNames();
+                    }).fail(function () {
+                        console.error('Failed to fetch province data');
+                    });
+                }
+
+                // Function to update province names in the table
+                function updateProvinceNames() {
+                    $('tbody tr').each(function () {
+                        var rowId = $(this).attr('id').split('-')[2];
+                        var provinceCode = $('#province-' + rowId).text().trim();
+
+                        // Ensure the province code has 9 digits
+                        if (provinceCode.length === 8) {
+                            provinceCode = '0' + provinceCode; // Prepend '0' if it has 8 digits
+                        }
+
+                        // Update province name based on code
+                        if (provinceData[provinceCode]) {
+                            $('#province-' + rowId).text(provinceData[provinceCode]);
+                        } else {
+                            $('#province-' + rowId).text('N/A');
+                        }
+                    });
+                }
+
+                // Function to fetch municipalities
+                function fetchMunicipalities() {
+                    $.getJSON('https://psgc.gitlab.io/api/municipalities/', function (data) {
+                        $.each(data, function (index, municipality) {
+                            municipalityData[municipality.code] = municipality.name; // Map municipality code to name
+                        });
+                        updateMunicipalityNames();
+                    }).fail(function () {
+                        console.error('Failed to fetch municipality data');
+                    });
+                }
+
+                // Function to update municipality names in the table
+                function updateMunicipalityNames() {
+                    $('tbody tr').each(function () {
+                        var rowId = $(this).attr('id').split('-')[2];
+                        var municipalityCode = $('#municipality-' + rowId).text().trim();
+
+                        // Ensure the municipality code has 9 digits
+                        if (municipalityCode.length === 8) {
+                            municipalityCode = '0' + municipalityCode; // Prepend '0' if it has 8 digits
+                        }
+
+                        // Update municipality name based on code
+                        if (municipalityData[municipalityCode]) {
+                            $('#municipality-' + rowId).text(municipalityData[municipalityCode]);
+                        } else {
+                            $('#municipality-' + rowId).text('N/A');
+                        }
+                    });
+                }
+
+                // Function to fetch barangays
+                function fetchBarangays() {
+                    $.getJSON('https://psgc.gitlab.io/api/barangays/', function (data) {
+                        $.each(data, function (index, barangay) {
+                            barangayData[barangay.code] = barangay.name; // Map barangay code to name
+                        });
+                        updateBarangayNames();
+                    }).fail(function () {
+                        console.error('Failed to fetch barangay data');
+                    });
+                }
+
+                // Function to update barangay names in the table
+                function updateBarangayNames() {
+                    $('tbody tr').each(function () {
+                        var rowId = $(this).attr('id').split('-')[2];
+                        var barangayCode = $('#barangay-' + rowId).text().trim();
+
+                        // Ensure the barangay code has 9 digits
+                        if (barangayCode.length === 8) {
+                            barangayCode = '0' + barangayCode; // Prepend '0' if it has 8 digits
+                        }
+
+                        // Update barangay name based on code
+                        if (barangayData[barangayCode]) {
+                            $('#barangay-' + rowId).text(barangayData[barangayCode]);
+                        } else {
+                            $('#barangay-' + rowId).text('N/A');
+                        }
+                    });
+                }
+
+                // Fetch all data
+                fetchProvinces();
+                fetchMunicipalities();
+                fetchBarangays();
+            });
+
+
+            function confirmActivate(userId) {
+
+                var userId = $('#actionModal').data('userId'); // Get the stored user ID
+
+                // Set the user_id in the hidden form input for submitting
+                $('#actionForm').find('input[name="user_id"]').val(userId);
+
+                // Submit the form to activate the user
+                $('#actionForm').submit();
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "Do you really want to activate this user?",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, activate it!',
+                    cancelButtonText: 'No, cancel!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Send AJAX request to activate the user
+                        $.ajax({
+                            url: 'activate_user.php', // Ensure this points to your activate.php
+                            method: 'POST',
+                            data: { user_id: userId }, // Send user ID
+                            success: function (response) {
+                                const result = JSON.parse(response); // Parse the JSON response
+                                if (result.success) {
+                                    Swal.fire('Activated!', 'User  has been activated', 'success').then(() => {
+                                        location.reload();
+                                    });
+                                } else {
+                                    Swal.fire('Error!', result.message, 'error');
+                                }
+                            },
+                            error: function () {
+                                Swal.fire('Error!', 'There was an error activating the user.', 'error');
+                            }
+                        });
+                    }
+                });
+            }
+
+            function confirmTransferDisable(userId) {
+                $('#actionModal').modal('hide');
+                var userId = $('#actionModal').data('userId'); // Get the stored user ID
+
+                // Set the user_id in the hidden form input for submitting
+                $('#actionForm').find('input[name="user_id"]').val(userId);
+
+                // Submit the form to activate the user
+                $('#actionForm').submit();
+
+                Swal.fire({
+                    title: 'Enter New Account Number',
+                    input: 'text',
+                    inputLabel: 'New Account Number for Fund Transfer',
+                    inputPlaceholder: 'Enter account number...',
+                    showCancelButton: true,
+                    confirmButtonText: 'Confirm',
+                    cancelButtonText: 'Cancel',
+                    inputValidator: (value) => {
+                        if (!value) {
+                            return 'Please enter a new account number!';
+                        }
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const newAccountNumber = result.value;
+                        $.ajax({
+                            url: 'transfer_and_disabled.php',
+                            method: 'POST',
+                            data: { user_id: userId, new_account_number: newAccountNumber },
+                            success: function (response) {
+                                const result = JSON.parse(response);
+                                if (result.success) {
+                                    $('#userTableBody').html(result.tableData);
+                                    Swal.fire('Disabled!', 'User  has been disabled and funds transferred.', 'success').then(() => {
+                                        location.reload();
+                                    });
+                                } else {
+                                    Swal.fire('Error!', result.message, 'error');
+                                }
+                            },
+                            error: function () {
+                                Swal.fire('Error!', 'There was an error disabling the user.', 'error');
+                            }
+                        });
+                    }
+                });
+            }
+
+            function confirmDisable(userId) {
+                var userId = $('#actionModal').data('userId'); // Get the stored user ID
+
+                // Set the user_id in the hidden form input for submitting
+                $('#actionForm').find('input[name="user_id"]').val(userId);
+
+                // Submit the form to activate the user
+                $('#actionForm').submit();
+                Swal.fire({
+                    title: 'Disabled Account?',
+                    showCancelButton: true,
+                    confirmButtonText: 'Confirm',
+                    cancelButtonText: 'Cancel',
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: 'disable_user_only.php',
+                            method: 'POST',
+                            data: { user_id: userId },
+                            success: function (response) {
+                                const result = JSON.parse(response);
+                                if (result.success) {
+                                    Swal.fire('Disabled!', 'User  has been disabled', 'success').then(() => {
+                                        location.reload();
+                                    });
+                                } else {
+                                    Swal.fire('Error!', result.message, 'error');
+                                }
+                            },
+                            error: function () {
+                                Swal.fire('Error!', 'There was an error disabling the user.', 'error');
+                            }
+                        });
+                    }
+                });
+            }
+
+            $(document).ready(function () {
+                $('#search').on('keyup', function () {
+                    var query = $(this).val();
+                    $.ajax({
+                        url: 'search_users.php',
+                        method: 'POST',
+                        data: { query: query },
+                        success: function (data) {
+                            $('#userTableBody').html(data);
+                        }
+                    });
+                });
+            });
+        </script>
 
 </body>
 

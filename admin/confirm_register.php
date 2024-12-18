@@ -147,7 +147,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 icon: 'success',
                 confirmButtonText: 'OK'
             }).then(() => {
-                window.location.href = '/Newram/superadmin/superadmin.php';
+                window.location.href = '/Newram/admin/register.php';
             });
         </script>
     <?php elseif ($error_message): ?>

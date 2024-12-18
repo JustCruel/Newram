@@ -196,12 +196,7 @@ $conductor_id = $_SESSION['driver_account_number']; // Get conductor ID from ses
                                 </div>
                                 <input type="hidden" id="deduct_user_account_number" name="deduct_user_account_number">
                                 <div class="d-flex flex-wrap justify-content-center gap-2">
-                                    <?php
-                                    $loadAmounts = [100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 1000];
-                                    foreach ($loadAmounts as $amount) {
-                                        echo '<button type="button" class="btn btn-outline-primary m-1 load-amount-btn" data-amount="' . $amount . '">₱' . $amount . '</button>';
-                                    }
-                                    ?>
+                                   
                                 </div>
                                 <button type="submit" class="btn btn-danger">Deduct</button>
                             </form>

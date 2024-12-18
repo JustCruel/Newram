@@ -13,6 +13,7 @@ if (!isset($_SESSION['email']) || ($_SESSION['role'] != 'Cashier' && $_SESSION['
 $firstname = $_SESSION['firstname'];
 $lastname = $_SESSION['lastname'];
 
+
 // Fetch user data
 $query = "SELECT firstname, lastname FROM useracc WHERE id = ?";
 $stmt = $conn->prepare($query);
@@ -27,6 +28,16 @@ $userCount = fetchUserCount($conn);
 $successMessage = isset($_SESSION['success_message']) ? $_SESSION['success_message'] : null;
 $errorMessage = isset($_SESSION['error_message']) ? $_SESSION['error_message'] : null;
 unset($_SESSION['success_message'], $_SESSION['error_message']);
+
+
+if (!isset($_SESSION['role']) || !isset($_SESSION['account_number'])) {
+    echo json_encode(['error' => 'Bus number or conductor not set in session.']);
+    exit;
+}
+
+$bus_number = $_SESSION['role']; // Get bus number from session
+$conductor_id = $_SESSION['account_number']; // Get conductor ID from session
+var_dump($bus_number,$conductor_id);
 ?>
 
 <!DOCTYPE html>

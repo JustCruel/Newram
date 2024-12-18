@@ -26,8 +26,8 @@ function loadUserBalance($conn, $userAccountNumber, $balanceToLoad)
 {
     // Fetch session variables for bus_number and conductor_id
     session_start();
-    $busNumber = isset($_SESSION['bus_number']) ? $_SESSION['bus_number'] : null;
-    $conductorId = isset($_SESSION['driver_account_number']) ? $_SESSION['driver_account_number'] : null;
+    $busNumber = 'Cashier';
+    $conductorId = isset($_SESSION['account_number']) ? $_SESSION['account_number'] : null;
 
     // Sanitize inputs
     $userAccountNumber = mysqli_real_escape_string($conn, $userAccountNumber);
