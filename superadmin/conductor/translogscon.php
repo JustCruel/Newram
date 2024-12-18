@@ -68,6 +68,12 @@ $transactions = fetchTransactions($conn);
     <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
     <link rel="stylesheet" href="../css/style.css">
     <title>Transaction Logs</title>
+
+    <style>
+        h2{
+            color: black;
+        }
+    </style>
     <script>
         $(document).ready(function () {
             $('#transactionTable').DataTable();
