@@ -55,9 +55,11 @@ function getUserBalance($rfid, $conn)
     $stmt->bind_param("s", $rfid);
     $stmt->execute();
     $stmt->bind_result($balance);
-    $stmt->fetch();
+    $result = $stmt->fetch();
     $stmt->close();
-    return $balance;
+    
+    // Return balance if found, otherwise return false
+    return $result ? $balance : false;
 }
 
 // Function to deduct fare from user's balance
@@ -119,7 +121,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 deductFare($rfid, $totalFare, $conn);
             }
 
-            // Track the passenger
             // Track the passenger
             $_SESSION['passengers'][] = [
                 'rfid' => $rfid,
@@ -742,55 +743,58 @@ $conn->close();
         }
 
         function promptRFIDInput() {
-            const fromRouteValue = document.getElementById('fromRoute').value;
-            const toRouteValue = document.getElementById('toRoute').value;
-            // Generate the transaction number before opening the Swal prompt
-            const distance = Math.abs(fromRoute.post - toRoute.post);
-            const transactionNumber = generateTransactionNumber();
-            const paymentMethod = 'RFID';
-            console.log("Generated Transaction Number:", transactionNumber); // Debugging line
-            console.log("Generated Transaction Number:", distance); // Debugging line
-            console.log("Generated Transaction Number:", paymentMethod);
-            if (!validateRoutes()) {
-                // Stop execution if routes are not selected
-                return;
-            }
+    const fromRouteValue = document.getElementById('fromRoute').value;
+    const toRouteValue = document.getElementById('toRoute').value;
+    const distance = Math.abs(fromRoute.post - toRoute.post);
+    const transactionNumber = generateTransactionNumber();
+    const paymentMethod = 'RFID';
+    
+    console.log("Generated Transaction Number:", transactionNumber); // Debugging line
+    console.log("Distance:", distance); // Debugging line
+    console.log("Payment Method:", paymentMethod);
+    
+    if (!validateRoutes()) {
+        // Stop execution if routes are not selected
+        return;
+    }
 
-            Swal.fire({
-                title: 'Enter RFID',
-                input: 'text',
-                inputAttributes: {
-                    autocapitalize: 'off'
-                },
-                showCancelButton: true,
-                cancelButtonText: 'Cancel',
-                inputPlaceholder: 'Scan your RFID here',
-                didOpen: () => {
-                    const inputField = Swal.getInput();
-                    inputField.addEventListener('input', async () => {
-                        const rfid = inputField.value.trim();
-                        if (rfid) {
-                            // If RFID is entered, automatically process the fare
-                            const fromRoute = JSON.parse(document.getElementById('fromRoute').value);
-                            const toRoute = JSON.parse(document.getElementById('toRoute').value);
-                            const fareType = document.getElementById('fareType').value;
-                            const passengerQuantity = parseInt(document.getElementById('passengerQuantity').value, 10);
-                            const paymentMethod = 'RFID';
-                            if (!fromRoute || !toRoute) {
-                                Swal.fire('Error', 'Please select both starting point and destination.', 'error');
-                                return;
-                            }
-
-                            console.log("Transaction Number before calling getUserBalance:", transactionNumber); // Debugging line
-
-                            // Call the function to get user balance and process the fare
-
-                            getUserBalance(rfid, fromRoute, toRoute, fareType, passengerQuantity, true, transactionNumber, distance, paymentMethod);
+    Swal.fire({
+        title: 'Enter RFID',
+        input: 'text',
+        inputAttributes: {
+            autocapitalize: 'off'
+        },
+        showCancelButton: true,
+        cancelButtonText: 'Cancel',
+        inputPlaceholder: 'Scan your RFID here',
+        didOpen: () => {
+            const inputField = Swal.getInput();
+            inputField.addEventListener('keydown', async (event) => {
+                // Check if the Enter key is pressed
+                if (event.key === 'Enter') {
+                    const rfid = inputField.value.trim();
+                    if (rfid) {
+                        // If RFID is entered, automatically process the fare
+                        const fromRoute = JSON.parse(document.getElementById('fromRoute').value);
+                        const toRoute = JSON.parse(document.getElementById('toRoute').value);
+                        const fareType = document.getElementById('fareType').value;
+                        const passengerQuantity = parseInt(document.getElementById('passengerQuantity').value, 10);
+                        
+                        if (!fromRoute || !toRoute) {
+                            Swal.fire('Error', 'Please select both starting point and destination.', 'error');
+                            return;
                         }
-                    });
+
+                        console.log("Transaction Number before calling getUser Balance:", transactionNumber); // Debugging line
+
+                        // Call the function to get user balance and process the fare
+                        getUserBalance(rfid, fromRoute, toRoute, fareType, passengerQuantity, true, transactionNumber, distance, paymentMethod);
+                    }
                 }
             });
         }
+    });
+}
 
 
 
