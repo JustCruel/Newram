@@ -19,21 +19,6 @@ function printReceipt($fromRoute, $toRoute, $fareType, $totalFare, $conductorNam
 
         // --- Print Logo ---
         // --- Print Logo ---
-        try {
-            // Load logo image (ensure the path is correct)
-            $logoPath = 'D:/xammp/htdocs/Newram/conductor/escpos-php.png'; // Updated to PNG
-            if (!is_readable($logoPath)) {
-                echo "The logo file is not readable. Check permissions.\n";
-            } else {
-                echo "The logo file is readable.\n";
-            }
-            $logo = EscposImage::load($logoPath); // Use the new image path
-            $printer->setJustification(Printer::JUSTIFY_CENTER);
-            $printer->graphics($logo); // Print the logo
-        } catch (Exception $e) {
-            // If the logo file is not found or there is an error, handle it
-            echo "Error loading logo: " . $e->getMessage();
-        }
 
         // --- Centered Header ---
         $printer->setJustification(Printer::JUSTIFY_CENTER); // Center alignment
