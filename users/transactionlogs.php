@@ -31,12 +31,18 @@ $totalPages = ceil($totalTransactions / $limit); // Total number of pages
 // Fetch transactions for the logged-in user with pagination
 function fetchTransactions($conn, $accountNumber, $limit, $offset)
 {
-    $transactionQuery = "SELECT t.id, u.firstname, u.lastname, u.account_number, t.amount, t.transaction_type, t.transaction_date
-                         FROM transactions t 
-                         JOIN useracc u ON t.user_id = u.id 
-                         WHERE u.account_number = '$accountNumber'
-                         ORDER BY t.transaction_date DESC
-                         LIMIT $limit OFFSET $offset";
+    $transactionQuery = "
+    SELECT t.id, u.firstname, u.lastname, u.account_number, t.amount, t.transaction_type, t.transaction_date, t.conductor_id, c.firstname AS conductor_firstname, c.lastname AS conductor_lastname
+    FROM transactions t
+    JOIN useracc u ON t.user_id = u.id
+    LEFT JOIN useracc c ON t.conductor_id = c.account_number  -- Joining useracc for conductor details
+    WHERE u.account_number = '$accountNumber'
+    ORDER BY t.transaction_date DESC
+    LIMIT $limit OFFSET $offset";
+
+
+
+
     return mysqli_query($conn, $transactionQuery);
 }
 
@@ -76,6 +82,7 @@ $transactions = fetchTransactions($conn, $accountNumber, $limit, $offset);
                     <th>Amount</th>
                     <th>Transaction Type</th>
                     <th>Transaction Time</th>
+                    <th>Loaded By</th>
                 </tr>
             </thead>
             <tbody>
@@ -87,6 +94,9 @@ $transactions = fetchTransactions($conn, $accountNumber, $limit, $offset);
                             <td><?php echo number_format($row['amount'], 2); ?></td>
                             <td><?php echo htmlspecialchars(ucfirst($row['transaction_type'])); ?></td>
                             <td><?php echo date('Y-m-d H:i:s', strtotime($row['transaction_date'])); ?></td>
+                            <td><?php echo htmlspecialchars($row['conductor_firstname'] . ' ' . $row['conductor_lastname']); ?>
+                            </td>
+
                         </tr>
                     <?php endwhile; ?>
                 <?php else: ?>
@@ -119,7 +129,9 @@ $transactions = fetchTransactions($conn, $accountNumber, $limit, $offset);
         </nav>
     </div>
 
-    <script src="path/to/bootstrap.bundle.min.js"></script> <!-- Adjust the path -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="../js/main.js"></script>
 </body>
 
 </html>

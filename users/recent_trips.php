@@ -106,7 +106,7 @@ $recentTripsStmt->close();
 </head>
 
 <body>
-<?php include '../sidebar.php'; ?>
+    <?php include '../sidebar.php'; ?>
     <div id="content" class="container p-4 p-md-5">
         <h2>Your Recent Trips</h2>
         <?php if (!empty($recentTrips)): ?>
@@ -146,8 +146,9 @@ $recentTripsStmt->close();
         <?php endif; ?>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/main.js"></script>
 </body>
 
 </html>
