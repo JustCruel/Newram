@@ -8,7 +8,6 @@ error_reporting(0);          // Turn off error reporting
 include '../config/connection.php';
 include '../sidebar.php';
 
-
 if (!isset($_SESSION['email']) || ($_SESSION['role'] != 'Admin' && $_SESSION['role'] != 'Superadmin')) {
     header("Location: ../index.php");
     exit();
@@ -25,35 +24,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $selectedMonth = date('m', strtotime($selectedDate));
     $selectedDay = date('d', strtotime($selectedDate));
 
-    $dailyRevenueQuery = "SELECT DAY(timestamp) AS day, SUM(fare) AS total_revenue 
+    // Query to fetch revenue for a specific day
+    $dailyRevenueQuery = "SELECT SUM(fare) AS total_revenue 
                           FROM passenger_logs 
                           WHERE YEAR(timestamp) = '$selectedYear' 
                           AND MONTH(timestamp) = '$selectedMonth'
-                          GROUP BY DAY(timestamp)";
+                          AND DAY(timestamp) = '$selectedDay'"; // Specific day
     $dailyRevenueResult = mysqli_query($conn, $dailyRevenueQuery);
 
-    $daysInMonth = date('t', strtotime("$selectedYear-$selectedMonth-01"));
-    $dailyRevenue = array_fill(1, $daysInMonth, 0);
-
-    while ($row = mysqli_fetch_assoc($dailyRevenueResult)) {
-        $dailyRevenue[$row['day']] = $row['total_revenue'];
+    if ($row = mysqli_fetch_assoc($dailyRevenueResult)) {
+        $selectedDayRevenue = $row['total_revenue'] ?? 0;
     }
-
-    $selectedDayRevenue = $dailyRevenue[(int) $selectedDay] ?? 0;
 
     header('Content-Type: application/json');
     ob_end_clean(); // Clear any unwanted output
     echo json_encode([
-        'dailyRevenue' => $dailyRevenue,
         'selectedDayRevenue' => $selectedDayRevenue
     ]);
 
     exit;
 }
 
-$dailyRevenue = $dailyRevenue ?? [];
+$selectedDayRevenue = $selectedDayRevenue ?? 0;
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -65,15 +58,13 @@ $dailyRevenue = $dailyRevenue ?? [];
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800,900">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script> <!-- Load ApexCharts -->
     <!-- jQuery CDN link -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <link rel="stylesheet" href="../css/style.css">
-    
+
     <style>
         h1 {
             color: black;
@@ -95,7 +86,7 @@ $dailyRevenue = $dailyRevenue ?? [];
                 </div>
             </div>
             <button type="submit" class="btn btn-primary">Filter</button>
-            <button type="button" class="btn btn-danger" id="generatePdfBtn">Download PDF</button>
+            <button type="button" class="btn btn-danger" id="generatePdfBtn" disabled>Download PDF</button>
         </form>
 
         <!-- Display Total Revenue -->
@@ -107,14 +98,12 @@ $dailyRevenue = $dailyRevenue ?? [];
         <!-- Chart for daily revenue -->
         <div id="revenueChart"></div> <!-- ApexCharts container -->
     </div>
-    <script src="../js/popper.js"></script>
-    <script src="../js/bootstrap.min.js"></script>
-    <script src="../js/main.js"></script>
+
     <script>
-        // Update the chart using ApexCharts
+        // Update the chart using ApexCharts (for a single day)
         function updateChart(dailyRevenue) {
-            const labels = Object.keys(dailyRevenue).map(day => parseInt(day));
-            const data = Object.values(dailyRevenue);
+            const labels = ['Revenue'];  // Only one label for the selected day
+            const data = [dailyRevenue];
 
             var options = {
                 chart: {
@@ -128,7 +117,7 @@ $dailyRevenue = $dailyRevenue ?? [];
                 xaxis: {
                     categories: labels,
                     title: {
-                        text: 'Days of the Month'
+                        text: 'Day'
                     }
                 },
                 yaxis: {
@@ -151,12 +140,13 @@ $dailyRevenue = $dailyRevenue ?? [];
             chart.render();
         }
 
-
         window.onload = function () {
-            const initialData = <?php echo json_encode($dailyRevenue); ?>;
-            updateChart(initialData);
+            const initialRevenue = <?php echo json_encode($selectedDayRevenue); ?>;
+            updateChart(initialRevenue);
+            document.getElementById('generatePdfBtn').disabled = true;
         };
 
+        // Enable the PDF button after successful form submission
         document.getElementById('filterForm').addEventListener('submit', function (e) {
             e.preventDefault();
             const formData = new FormData(this);
@@ -171,11 +161,13 @@ $dailyRevenue = $dailyRevenue ?? [];
                 })
                 .then(data => {
                     document.querySelector('#revenueDisplay p').textContent = `₱${parseFloat(data.selectedDayRevenue).toFixed(2)}`;
-                    updateChart(data.dailyRevenue);
+                    updateChart(data.selectedDayRevenue);
+
+                    // Enable the PDF button after data is updated
+                    document.getElementById('generatePdfBtn').disabled = false;
                 })
                 .catch(error => console.error('Error updating revenue data:', error));
         });
-
 
         // Handle PDF generation
         document.getElementById('generatePdfBtn').addEventListener('click', function () {

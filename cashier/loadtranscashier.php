@@ -242,37 +242,37 @@ if (isset($_GET['generate_pdf'])) {
     ?>
 
     <!-- Page Content  -->
-    
-
-        <div class="main-content">
-            <h1 class="mb-4">Load Transaction Report</h1>
-
-            <!-- Date Selection Form -->
-            <form method="POST" action="">
-                <div class="form-row">
-                    <div class="col-md-3 mb-3">
-                        <label for="selected_date">Select Date</label>
-                        <input type="date" name="selected_date" class="form-control" id="selected_date"
-                            value="<?= $selectedDate ?>">
-                    </div>
 
 
+    <div class="main-content">
+        <h1 class="mb-4">Load Transaction Report</h1>
 
-                    <div class="col-md-3 mb-3">
-                        <button type="submit" class="btn btn-primary mt-4">Generate Report</button>
-                    </div>
+        <!-- Date Selection Form -->
+        <form method="POST" action="">
+            <div class="form-row">
+                <div class="col-md-3 mb-3">
+                    <label for="selected_date">Select Date</label>
+                    <input type="date" name="selected_date" class="form-control" id="selected_date"
+                        value="<?= $selectedDate ?>">
                 </div>
-            </form>
 
-            <!-- Chart -->
-            <div id="revenueChart"></div>
 
-            <h2 class="mt-5">Revenue for <?php echo date("F j, Y", strtotime($selectedDate)); ?></h2>
 
-            <p>Total Revenue for the day: P<?= number_format($selectedDayRevenue, 2) ?></p>
+                <div class="col-md-3 mb-3">
+                    <button type="submit" class="btn btn-primary mt-4">Generate Report</button>
+                </div>
+            </div>
+        </form>
 
-            <a href="?generate_pdf=true&selected_date=<?= $selectedDate ?>" class="btn btn-danger">Download PDF</a>
-        </div>
+        <!-- Chart -->
+        <div id="revenueChart"></div>
+
+        <h2 class="mt-5">Revenue for <?php echo date("F j, Y", strtotime($selectedDate)); ?></h2>
+
+        <p>Total Revenue for the day: P<?= number_format($selectedDayRevenue, 2) ?></p>
+
+        <a href="?generate_pdf=true&selected_date=<?= $selectedDate ?>" class="btn btn-danger">Download PDF</a>
+    </div>
     </div>
     <script src="../js/main.js"></script>
     <!-- Chart JS -->
