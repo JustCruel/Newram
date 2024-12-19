@@ -17,7 +17,7 @@ if (isset($_SESSION['firstname']) && isset($_SESSION['lastname'])) {
 
     <nav id="sidebar" class="active">
 
-        <h1><a href="index.php" class="logo">
+        <h1><a class="logo">
                 <img src="../assets/logo/logoramstar.jpg" alt="logo" />
             </a></h1>
         <div class="user-profile text-center mb-3">

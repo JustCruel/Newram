@@ -14,15 +14,21 @@ if (isset($_POST['search_account'])) {
 
     if (!empty($accountNumber)) {
         $searchResult = searchUserByAccount($conn, $accountNumber);
-        
+
         if ($searchResult && mysqli_num_rows($searchResult) > 0) {
             $user = mysqli_fetch_assoc($searchResult);
-            // Concatenate the name from firstname, middlename, and lastname
-            $fullName = trim($user['firstname'] . ' ' . $user['middlename'] . ' ' . $user['lastname']);
-            echo json_encode([
-                'success' => "User found: " . htmlspecialchars($fullName),
-                'user' => $user
-            ]);
+
+            // Check the activation status
+            if ($user['is_activated'] == 0 || $user['is_activated'] == 2) {
+                $searchError = "This account is not activated or is disabled.";
+            } else {
+                // Concatenate the name from firstname, middlename, and lastname
+                $fullName = trim($user['firstname'] . ' ' . $user['middlename'] . ' ' . $user['lastname']);
+                echo json_encode([
+                    'success' => "User  found: " . htmlspecialchars($fullName),
+                    'user' => $user
+                ]);
+            }
         } else {
             // No user found
             $searchError = "No user found with Account Number: " . htmlspecialchars($accountNumber);

@@ -16,7 +16,7 @@ $base_path = "/Newram/superadmin/";
 <div class="wrapper d-flex align-items-stretch">
     <nav id="sidebar" class="active">
         <h1>
-            <a href="index.php" class="logo">
+            <a class="logo">
                 <img src="../assets/logo/logoramstar.jpg" alt="logo" />
             </a>
         </h1>

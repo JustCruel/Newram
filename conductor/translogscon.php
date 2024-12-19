@@ -1,6 +1,5 @@
 <?php
 session_start();
-// transaction_logs.php
 include '../config/connection.php'; // Include your database connection file
 include 'includes/functions.php'; // Include your functions file
 
@@ -10,7 +9,7 @@ $account_number = $_SESSION['account_number']; // Fetch account number from sess
 // Fetch user data based on account_number
 $query = "SELECT firstname, lastname, role FROM useracc WHERE account_number = ?";
 $stmt = $conn->prepare($query);
-$stmt->bind_param('s', $account_number); // Use the account number for fetching user data
+$stmt->bind_param('s', $account_number);
 $stmt->execute();
 $stmt->bind_result($firstname, $lastname, $role);
 $stmt->fetch();
@@ -20,21 +19,21 @@ $stmt->close(); // Close the prepared statement after fetching user data
 function fetchTransactions($conn)
 {
     $transactionQuery = "SELECT 
-    t.id, 
-    u.firstname, 
-    u.lastname, 
-    u.account_number, 
-    t.amount, 
-    t.transaction_type, 
-    t.transaction_date, 
-    t.conductor_id, 
-    c.firstname AS conductor_firstname, 
-    c.lastname AS conductor_lastname, 
-    c.account_number AS conductor_account_number,
-    c.role AS loaded_by_role
+        t.id, 
+        u.firstname, 
+        u.lastname, 
+        u.account_number, 
+        t.amount, 
+        t.transaction_type, 
+        t.transaction_date, 
+        t.conductor_id, 
+        c.firstname AS conductor_firstname, 
+        c.lastname AS conductor_lastname, 
+        c.account_number AS conductor_account_number,
+        c.role AS loaded_by_role
     FROM transactions t
     JOIN useracc u ON t.user_id = u.id
-    LEFT JOIN useracc c ON t.conductor_id = c.account_number  -- Change here: join on account_number
+    LEFT JOIN useracc c ON t.conductor_id = c.account_number
     ORDER BY t.transaction_date DESC";
 
     $stmt = $conn->prepare($transactionQuery);
@@ -62,7 +61,6 @@ $transactions = fetchTransactions($conn);
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
-
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
@@ -70,7 +68,7 @@ $transactions = fetchTransactions($conn);
     <title>Transaction Logs</title>
 
     <style>
-        h2{
+        h2 {
             color: black;
         }
     </style>
@@ -82,51 +80,43 @@ $transactions = fetchTransactions($conn);
 </head>
 
 <body>
-    <?php
-    include "../sidebar.php";
-    ?>
+    <?php include "../sidebar.php"; ?>
 
-    <!-- Page Content  -->
-    
-        <div class="container mt-5">
-            <h2 class="text-center">Transaction Logs</h2>
-            <table id="transactionTable" class="table table-bordered mt-4">
-                <thead class="thead-light">
-                    <tr>
-                        <th>Account Number</th>
-                        <th>User Name</th>
-                        <th>Amount</th>
-                        <th>Transaction Type</th>
-                        <th>Transaction Time</th>
-                        <th>Loaded By</th>
-                        <th>Role of Loader</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php if (mysqli_num_rows($transactions) > 0): ?>
-                        <?php while ($row = mysqli_fetch_assoc($transactions)): ?>
-                            <tr>
-                                <td><?php echo $row['account_number']; ?></td>
-                                <td><?php echo htmlspecialchars($row['firstname'] . ' ' . $row['lastname']); ?></td>
-                                <td><?php echo number_format($row['amount'], 2); ?></td>
-                                <td><?php echo htmlspecialchars(ucfirst($row['transaction_type'])); ?></td>
-                                <td>
-                                    <?php echo date('F-d-Y h:i:s A', strtotime($row['transaction_date'])); ?>
-                                </td>
-                                <td>
-                                    <?php echo htmlspecialchars($row['conductor_firstname'] . ' ' . $row['conductor_lastname']); ?>
-                                </td>
-                                <td><?php echo htmlspecialchars($row['loaded_by_role']); ?></td>
-                            </tr>
-                        <?php endwhile; ?>
-                    <?php else: ?>
+    <div class="container mt-5">
+        <h2 class="text-center">Transaction Logs</h2>
+        <table id="transactionTable" class="table table-bordered mt-4">
+            <thead class="thead-light">
+                <tr>
+                    <th>Account Number</th>
+                    <th>User Name</th>
+                    <th>Amount</th>
+                    <th>Transaction Type</th>
+                    <th>Transaction Time</th>
+                    <th>Loaded By</th>
+                    <th>Role of Loader</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if (mysqli_num_rows($transactions) > 0): ?>
+                    <?php while ($row = mysqli_fetch_assoc($transactions)): ?>
                         <tr>
-                            <td colspan="7" class="text-center">No transaction records found.</td>
+                            <td><?php echo htmlspecialchars($row['account_number']); ?></td>
+                            <td><?php echo htmlspecialchars($row['firstname'] . ' ' . $row['lastname']); ?></td>
+                            <td><?php echo number_format($row['amount'], 2); ?></td>
+                            <td><?php echo htmlspecialchars(ucfirst($row['transaction_type'])); ?></td>
+                            <td><?php echo date('F-d-Y h:i:s A', strtotime($row['transaction_date'])); ?></td>
+                            <td><?php echo htmlspecialchars($row['conductor_firstname'] . ' ' . $row['conductor_lastname']); ?>
+                            </td>
+                            <td><?php echo htmlspecialchars($row['loaded_by_role']); ?></td>
                         </tr>
-                    <?php endif; ?>
-                </tbody>
-            </table>
-        </div>
+                    <?php endwhile; ?>
+                <?php else: ?>
+                    <tr>
+                        <td colspan="7" class="text-center">No transaction records found.</td>
+                    </tr>
+                <?php endif; ?>
+            </tbody>
+        </table>
     </div>
 
     <script src="../js/main.js"></script>

@@ -3,7 +3,7 @@ session_start();
 include '../config/connection.php';
 
 
-if (!isset($_SESSION['email']) || ($_SESSION['role'] != 'Conductor' && $_SESSION['role'] != 'Superadmin')) {
+if (!isset($_SESSION['email']) || ($_SESSION['role'] != 'Cashier' && $_SESSION['role'] != 'Superadmin')) {
     header("Location: ../index.php");
     exit();
 }
@@ -89,86 +89,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['generate_remittance'])
     $total_deductions = array_sum(array_map('floatval', $deduction_amount));
     $net_amount = $total_earnings - $total_deductions;
 
-    // Display the remittance receipt (before saving)
-    echo "<div id='receiptPreview' style='padding:20px; background:#f0f0f0; border-radius:8px; border:1px solid #ddd;'>";
-    echo "<h3>Remittance Receipt Preview</h3>";
-    echo "<p><strong>Bus No:</strong> " . htmlspecialchars($bus_no) . "</p>";
-    echo "<p><strong>Conductor:</strong> " . htmlspecialchars($conductor_name) . "</p>";
-    echo "<p><strong>Total Fare (₱):</strong> " . number_format($total_cash, 2) . "</p>";
-    echo "<p><strong>Total Earnings (₱):</strong> " . number_format($net_amount, 2) . "</p>";
+    // Store data in session
+    $_SESSION['bus_no'] = $bus_no;
+    $_SESSION['conductor_name'] = $conductor_name;
+    $_SESSION['total_cash'] = $total_cash;
+    $_SESSION['net_amount'] = $net_amount;
+    $_SESSION['deduction_desc'] = $deduction_desc;
+    $_SESSION['deduction_amount'] = $deduction_amount;
 
-    echo "<h4>Deductions:</h4>";
-    if (!empty($deduction_desc)) {
-        foreach ($deduction_desc as $index => $desc) {
-            echo "<p>" . htmlspecialchars($desc) . ": ₱" . number_format((float) $deduction_amount[$index], 2) . "</p>";
-        }
-        echo "<p><strong>Total Deductions (₱):</strong> " . number_format($total_deductions, 2) . "</p>";
-    } else {
-        echo "<p>No Deductions</p>";
-    }
-
-    echo "<p><strong>Net Amount (₱):</strong> " . number_format((float) $net_amount, 2) . "</p>";
-    echo "<form method='POST' action=''>";
-    echo "<input type='hidden' name='bus_no' value='" . htmlspecialchars($bus_no) . "'>";
-    echo "<input type='hidden' name='conductor_id' value='" . htmlspecialchars($conductor_id) . "'>";
-    echo "<input type='hidden' name='total_load' value='" . htmlspecialchars($total_load) . "'>";
-    echo "<input type='hidden' name='total_load' value='" . htmlspecialchars($total_cash) . "'>";
-    echo "<input type='hidden' name='deduction_desc' value='" . htmlspecialchars(implode(',', $deduction_desc)) . "'>";
-    echo "<input type='hidden' name='deduction_amount' value='" . htmlspecialchars(implode(',', $deduction_amount)) . "'>";
-    echo "<input type='hidden' name='net_amount' value='" . htmlspecialchars($net_amount) . "'>";
-    echo "<button type='submit' name='confirm_remittance' class='btn-confirm'>Confirm & Save</button>";
-    echo "</form>";
-    echo "</div>";
-
-    // Exit after displaying receipt preview
+    // Redirect to the receipt page
+    header("Location: remittance_receipt.php");
     exit;
-}
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['confirm_remittance'])) {
-    // Confirm and save the remittance
-    $bus_no = $_POST['bus_no'];
-    $conductor_id = (string) $_POST['conductor_id'];
-    $total_load = (float) $_POST['total_load'];  // Ensure total load is a float
-    $total_cash = (float) $_POST['total_fare'];  // Ensure total load is a float
-    $deduction_desc = explode(',', $_POST['deduction_desc']);
-    $deduction_amount = array_map('floatval', explode(',', $_POST['deduction_amount']));  // Convert deductions to floats
-    $net_amount = (float) $_POST['net_amount'];  // Ensure net amount is a float
-
-    // Insert into remittances
-    $remitDate = date('Y-m-d');
-    $stmt = $conn->prepare("INSERT INTO remittances (bus_no, conductor_id, remit_date, total_earning, total_deductions, net_amount) VALUES (?, ?, ?, ?, ?, ?)");
-    $total_deductions = array_sum($deduction_amount);
-    $stmt->bind_param("sssdds", $bus_no, $conductor_id, $remitDate, $total_load, $total_deductions, $net_amount);
-    $stmt->execute();
-    $remit_id = $stmt->insert_id;
-
-    // Insert remittance log into remit_logs table
-    $stmtRemitLog = $conn->prepare("INSERT INTO remit_logs (remit_id, bus_no, conductor_id, total_load, total_cash, total_deductions, net_amount, remit_date) VALUES (?, ?,?, ?, ?, ?, ?, ?)");
-    $stmtRemitLog->bind_param("issdddds", $remit_id, $bus_no, $conductor_id, $total_load, $total_cash, $total_deductions, $net_amount, $remitDate);
-    $stmtRemitLog->execute();
-
-    // Insert deductions
-    $stmtDeduction = $conn->prepare("INSERT INTO deductions (remit_id, description, amount) VALUES (?, ?, ?)");
-    foreach ($deduction_desc as $key => $desc) {
-        $amount = $deduction_amount[$key];
-        $stmtDeduction->bind_param("isd", $remit_id, $desc, $amount);
-        $stmtDeduction->execute();
-    }
-
-    // Reset the daily revenue to 0 after remittance
-    $resetRevenueStmt = $conn->prepare("UPDATE transactions SET status = 'remitted' WHERE bus_number = ? AND DATE(transaction_date) = CURDATE()");
-    $resetRevenueStmt->bind_param("s", $bus_no);
-    $resetRevenueStmt->execute();
-
-    $resetPassengerLogsStmt = $conn->prepare("UPDATE passenger_logs SET status = 'remitted' WHERE bus_number = ? AND DATE(timestamp) = CURDATE()");
-    $resetPassengerLogsStmt->bind_param("s", $bus_no);
-    $resetPassengerLogsStmt->execute();
-
-    // Pass conductor name to printremit.php via POST
-    $_POST['conductor_name'] = $conductor_name;
-    include 'printremit.php';
-
-    // Success response
-    echo "<script>alert('Remittance saved successfully! Revenue for today has been reset.'); window.location.href='';</script>";
 }
 
 $firstname = $_SESSION['firstname'];
@@ -189,8 +120,6 @@ if (!isset($_SESSION['bus_number']) || !isset($_SESSION['driver_account_number']
     echo json_encode(['error' => 'Bus number or conductor not set in session.']);
     exit;
 }
-
-var_dump($conductor_id);
 
 ?>
 

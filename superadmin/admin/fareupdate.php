@@ -17,23 +17,31 @@ $result = $conn->query($query);
 $fareSettings = $result->fetch_assoc();
 
 // Update fare settings if the form is submitted
+$errorMessage = '';
+
+// Update fare settings if the form is submitted
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $baseFare = $_POST['base_fare'];
     $additionalFare = $_POST['additional_fare'];
 
-    // Update the fare settings in the database
-    $updateQuery = "UPDATE fare_settings SET base_fare = ?, additional_fare = ? WHERE id = 1";
-    $stmt = $conn->prepare($updateQuery);
-    $stmt->bind_param("dd", $baseFare, $additionalFare);
-    $stmt->execute();
-    $stmt->close();
+    // Validate minimum fare values
+    if ($baseFare < 10.00 || $additionalFare < 2.00) {
+        $errorMessage = "Base fare cannot be less than ₱10.00 and additional fare cannot be less than ₱2.00.";
+    } else {
+        // Update the fare settings in the database
+        $updateQuery = "UPDATE fare_settings SET base_fare = ?, additional_fare = ? WHERE id = 1";
+        $stmt = $conn->prepare($updateQuery);
+        $stmt->bind_param("dd", $baseFare, $additionalFare);
+        $stmt->execute();
+        $stmt->close();
 
-    // Set session variable for SweetAlert success
-    $_SESSION['fare_updated'] = true;
+        // Set session variable for SweetAlert success
+        $_SESSION['fare_updated'] = true;
 
-    // Reload the page to reflect updated fare settings
-    header("Location: " . $_SERVER['PHP_SELF']);
-    exit;
+        // Reload the page to reflect updated fare settings
+        header("Location: " . $_SERVER['PHP_SELF']);
+        exit();
+    }
 }
 
 $conn->close();
@@ -80,6 +88,7 @@ $conn->close();
     }
     ?>
 
+
     <div class="container mt-5">
         <h1 class="text-center">Fare Settings</h1>
 
@@ -98,16 +107,54 @@ $conn->close();
             </div>
 
             <div class="row mb-3">
+                <div class="col-12">
+                    <span id="error_message" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="row mb-3">
                 <div class="col-md-6 offset-md-3">
-                    <button type="submit" class="btn btn-primary btn-lg w-100">Save Fare Settings</button>
+                    <button type="submit" id="save_button" class="btn btn-primary btn-lg w-100">Save Fare
+                        Settings</button>
                 </div>
             </div>
         </form>
+
     </div>
     <script src="../js/popper.js"></script>
     <script src="../js/bootstrap.min.js"></script>
     <script src="../js/main.js"></script>
     <script>
+        const baseFareInput = document.getElementById('base_fare');
+        const additionalFareInput = document.getElementById('additional_fare');
+        const saveButton = document.getElementById('save_button');
+        const errorMessage = document.getElementById('error_message');
+
+        function validateInputs() {
+            const baseFare = parseFloat(baseFareInput.value);
+            const additionalFare = parseFloat(additionalFareInput.value);
+
+            if (isNaN(baseFare) || isNaN(additionalFare)) {
+                errorMessage.textContent = "Please enter valid numbers.";
+                saveButton.disabled = true;
+                return;
+            }
+
+            if (baseFare < 12.00 || additionalFare < 2.00) {
+                errorMessage.textContent = "Base fare cannot be less than ₱10.00 and additional fare cannot be less than ₱2.00.";
+                saveButton.disabled = true;
+            } else {
+                errorMessage.textContent = "";
+                saveButton.disabled = false;
+            }
+        }
+
+        // Add event listeners to inputs
+        baseFareInput.addEventListener('input', validateInputs);
+        additionalFareInput.addEventListener('input', validateInputs);
+
+        // Initial validation check
+        validateInputs();
         document.querySelector('form').addEventListener('submit', function (e) {
             e.preventDefault(); // Prevent the form from submitting immediately
 

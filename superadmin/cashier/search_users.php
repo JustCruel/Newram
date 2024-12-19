@@ -10,39 +10,54 @@ $success = null;
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Reset user variable
     $user = null; // Reset user info
-    
+
     // Check if RFID is submitted
     if (isset($_POST['rfid'])) {
         // Get the RFID from the form
         $rfid_code = trim($_POST['rfid']);
 
         // Fetch user details based on the RFID
-        $stmt = $conn->prepare("SELECT id, firstname, lastname, balance FROM useracc WHERE account_number = ?");
-        $stmt->bind_param("s", $rfid_code); // Changed to use rfid_code
+        $stmt = $conn->prepare("SELECT id, firstname, lastname, balance, is_activated, account_number, birthday, gender, email, contactnumber FROM useracc WHERE account_number = ?");
+        $stmt->bind_param("s", $rfid_code);
         $stmt->execute();
         $result = $stmt->get_result();
 
         // Check if user exists
         if ($result->num_rows > 0) {
             $user = $result->fetch_assoc();
+
+            // Check the activation status
+            if ($user['is_activated'] == 0 || $user['is_activated'] == 2) {
+                $error = "This account is not activated or is disabled.";
+                $user = null; // Reset user info if not activated
+            }
         } else {
             $error = "RFID not found.";
         }
     }
+
+    // Prepare the response
+    if ($user) {
+        $success = "User  found.";
+        echo json_encode(['success' => $success, 'user' => $user]);
+    } else {
+        echo json_encode(['error' => $error]);
+    }
 }
+
 ?>
 
 <!-- Sidebar Layout -->
 <div class="main-content">
     <h1 class="text-center">Search User Info</h1>
     <!-- Inside your form -->
-    <form method="POST" action="search_users.php" class="mt-4" id="manageBalanceForm">
-    <div class="form-group">
-        <label for="rfid">Scan RFID:</label>
-        <input type="text" class="form-control mb-3" id="rfid" name="rfid" autofocus required oninput="submitIfValid(this)">
-    </div>
-</form>
-
+    <form method="POST" action="search_user.php" class="mt-4" id="manageBalanceForm">
+        <div class="form-group">
+            <label for="rfid">Scan RFID:</label>
+            <input type="text" class="form-control mb-3" id="rfid" name="rfid" autofocus required
+                oninput="submitIfValid(this)">
+        </div>
+    </form>
 
     <?php if (isset($user)): ?>
         <div class="card">
@@ -62,10 +77,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
 <script>
-function submitIfValid(input) {
-    // Replace 10 with the expected length of your RFID codes
-    if (input.value.length === 10) { 
-        input.form.submit(); 
+    function submitIfValid(input) {
+        // Replace 10 with the expected length of your RFID codes
+        if (input.value.length === 10) {
+            input.form.submit();
+        }
     }
-}
 </script>
