@@ -57,7 +57,7 @@ function getUserBalance($rfid, $conn)
     $stmt->bind_result($balance);
     $result = $stmt->fetch();
     $stmt->close();
-    
+
     // Return balance if found, otherwise return false
     return $result ? $balance : false;
 }
@@ -264,7 +264,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['removeAllPassengers']))
 }
 
 
-
 // Check if bus number and driver name are not set in the session
 if (!$bus_number || !$driverac) {
 
@@ -375,6 +374,8 @@ $conn->close();
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.6.0/dist/sweetalert2.min.js"></script>
+    <script src="../js/main.js"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="../css/style.css">
     <style>
@@ -743,58 +744,59 @@ $conn->close();
         }
 
         function promptRFIDInput() {
-    const fromRouteValue = document.getElementById('fromRoute').value;
-    const toRouteValue = document.getElementById('toRoute').value;
-    const distance = Math.abs(fromRoute.post - toRoute.post);
-    const transactionNumber = generateTransactionNumber();
-    const paymentMethod = 'RFID';
-    
-    console.log("Generated Transaction Number:", transactionNumber); // Debugging line
-    console.log("Distance:", distance); // Debugging line
-    console.log("Payment Method:", paymentMethod);
-    
-    if (!validateRoutes()) {
-        // Stop execution if routes are not selected
-        return;
-    }
+            const fromRouteValue = document.getElementById('fromRoute').value;
+            const toRouteValue = document.getElementById('toRoute').value;
+            const distance = Math.abs(fromRoute.post - toRoute.post);
+            const transactionNumber = generateTransactionNumber();
+            const paymentMethod = 'RFID';
 
-    Swal.fire({
-        title: 'Enter RFID',
-        input: 'text',
-        inputAttributes: {
-            autocapitalize: 'off'
-        },
-        showCancelButton: true,
-        cancelButtonText: 'Cancel',
-        inputPlaceholder: 'Scan your RFID here',
-        didOpen: () => {
-            const inputField = Swal.getInput();
-            inputField.addEventListener('keydown', async (event) => {
-                // Check if the Enter key is pressed
-                if (event.key === 'Enter') {
-                    const rfid = inputField.value.trim();
-                    if (rfid) {
-                        // If RFID is entered, automatically process the fare
-                        const fromRoute = JSON.parse(document.getElementById('fromRoute').value);
-                        const toRoute = JSON.parse(document.getElementById('toRoute').value);
-                        const fareType = document.getElementById('fareType').value;
-                        const passengerQuantity = parseInt(document.getElementById('passengerQuantity').value, 10);
-                        
-                        if (!fromRoute || !toRoute) {
-                            Swal.fire('Error', 'Please select both starting point and destination.', 'error');
-                            return;
+            console.log("Generated Transaction Number:", transactionNumber); // Debugging line
+            console.log("Distance:", distance); // Debugging line
+            console.log("Payment Method:", paymentMethod);
+
+            if (!validateRoutes()) {
+                // Stop execution if routes are not selected
+                return;
+            }
+
+            Swal.fire({
+                title: 'Enter RFID',
+                input: 'text',
+                inputAttributes: {
+                    autocapitalize: 'off'
+                },
+                showCancelButton: true,
+                showConfirmButton: false,
+                cancelButtonText: 'Cancel',
+                inputPlaceholder: 'Scan your RFID here',
+                didOpen: () => {
+                    const inputField = Swal.getInput();
+                    inputField.addEventListener('keydown', async (event) => {
+                        // Check if the Enter key is pressed
+                        if (event.key === 'Enter') {
+                            const rfid = inputField.value.trim();
+                            if (rfid) {
+                                // If RFID is entered, automatically process the fare
+                                const fromRoute = JSON.parse(document.getElementById('fromRoute').value);
+                                const toRoute = JSON.parse(document.getElementById('toRoute').value);
+                                const fareType = document.getElementById('fareType').value;
+                                const passengerQuantity = parseInt(document.getElementById('passengerQuantity').value, 10);
+
+                                if (!fromRoute || !toRoute) {
+                                    Swal.fire('Error', 'Please select both starting point and destination.', 'error');
+                                    return;
+                                }
+
+                                console.log("Transaction Number before calling getUser Balance:", transactionNumber); // Debugging line
+
+                                // Call the function to get user balance and process the fare
+                                getUserBalance(rfid, fromRoute, toRoute, fareType, passengerQuantity, true, transactionNumber, distance, paymentMethod);
+                            }
                         }
-
-                        console.log("Transaction Number before calling getUser Balance:", transactionNumber); // Debugging line
-
-                        // Call the function to get user balance and process the fare
-                        getUserBalance(rfid, fromRoute, toRoute, fareType, passengerQuantity, true, transactionNumber, distance, paymentMethod);
-                    }
+                    });
                 }
             });
         }
-    });
-}
 
 
 
@@ -929,6 +931,7 @@ $conn->close();
         `,
                 didClose: () => {
                     // Trigger the PHP print function here using an AJAX request
+
                     $.post('print_receipt.php', {
                         fromRoute: fromRoute,
                         toRoute: toRoute,

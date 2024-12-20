@@ -6,6 +6,25 @@ include 'config/connection.php';
 $errors = [];
 $msg = "";
 
+// Helper function to get redirect URL based on role
+function getRedirectURL($role)
+{
+   switch ($role) {
+      case 'Admin':
+         return 'admin/admindashboard.php';
+      case 'Cashier':
+         return 'cashier/cashierdashboard.php';
+      case 'Superadmin':
+         return 'superadmin/superadmin.php';
+      case 'User':
+         return 'users/index.php';
+      case 'Conductor':
+         return 'conductor/conductordashboard.php';
+      default:
+         return 'index.php';
+   }
+}
+
 if (isset($_POST['Login'])) {
    $username = mysqli_real_escape_string($conn, $_POST['username']);
    $password = mysqli_real_escape_string($conn, md5($_POST['password']));
@@ -24,7 +43,7 @@ if (isset($_POST['Login'])) {
    }
 
    if (empty($errors)) {
-      // Updated query to check for email, account_number, or normalized contact number, and is_activated status
+      // Query to check user credentials
       $check_user_query = "
             SELECT * 
             FROM useracc 
@@ -48,28 +67,23 @@ if (isset($_POST['Login'])) {
                $_SESSION[$key] = $value;
             }
 
-            // Redirect based on user role
-            switch ($row['role']) {
-               case 'Admin':
-                  header("Location: admin/admindashboard.php");
-                  break;
-               case 'Cashier':
-                  header("Location: cashier/cashierdashboard.php");
-                  break;
-               case 'Superadmin':
-                  header("Location: superadmin/superadmin.php");
-                  break;
-               case 'User':
-                  header("Location: users/index.php");
-                  break;
-               case 'Conductor':
-                  // Handle conductor-specific logic
-                  header("Location: conductor/conductordashboard.php");
-                  break;
-               default:
-                  $msg = "<div class='alert alert-danger' style='background-color:#BF0210; text-align:center; color:#FFFFFF;'>Invalid role assignment!</div>";
-                  break;
-            }
+            // Trigger SweetAlert2 for successful login using JavaScript
+            echo "
+                    <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+                    <script>
+                    document.addEventListener('DOMContentLoaded', function () {
+                        Swal.fire({
+                            title: 'Login Successfully',
+                            text: ' " . /* htmlspecialchars($row['fullname']) . */ "',
+                            icon: 'success',
+                            confirmButtonText: 'Continue'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                window.location.href = '" . getRedirectURL($row['role']) . "';
+                            }
+                        });
+                    });
+                    </script>";
             exit;
          }
       } else {
@@ -92,6 +106,7 @@ if (isset($_POST['Login'])) {
    <title>Login</title>
    <link rel="stylesheet" href="css/login.css">
    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
    <style>
       body {
          background: #f0f2f5;
@@ -153,7 +168,6 @@ if (isset($_POST['Login'])) {
          padding: 15px;
          background-color: #576BED;
          color: white;
-         /* Changed from #576BED to white */
          font-size: 18px;
          border: none;
          border-radius: 4px;
@@ -164,7 +178,6 @@ if (isset($_POST['Login'])) {
       .btn:hover {
          background-color: #2980b9;
       }
-
 
       .alert {
          text-align: center;
@@ -250,9 +263,7 @@ if (isset($_POST['Login'])) {
                <input type="password" name="password" placeholder="Password" id="pass2" required>
                <i class="fas fa-eye" id="togglePassword2" onclick="togglePassword('pass2', 'togglePassword2')"></i>
             </div>
-
             <input type="submit" name="Login" value="Log in" class="btn">
-
          </form>
       </div>
    </div>

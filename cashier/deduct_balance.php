@@ -5,8 +5,9 @@ include '../config/connection.php'; // Adjust path as necessary
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['deduct_balance'])) {
     $account_number = $_POST['deduct_user_account_number']; // Updated to match input name
     $amount = floatval($_POST['deduct_balance']); // Changed to match input name
-    $busNumber = isset($_SESSION['bus_number']) ? $_SESSION['bus_number'] : null;
-    $conductorId = isset($_SESSION['driver_account_number']) ? $_SESSION['driver_account_number'] : null;
+
+    $bus_number = 'Cashier';
+    $conductor_id = isset($_SESSION['account_number']) ? $_SESSION['account_number'] : null;
 
     // Check if the amount is valid and less than or equal to current balance
     if ($amount <= 0) {
@@ -44,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['deduct_balance'])) {
             if ($updateStmt->execute()) {
                 $logQuery = "INSERT INTO transactions (user_id, account_number, amount, transaction_type,bus_number, conductor_id) VALUES (?, ?, ?, 'Deduct',?,?)";
                 $logStmt = $conn->prepare($logQuery);
-                $logStmt->bind_param("isdss", $user['id'], $account_number, $amount, $busNumber, $conductorId);
+                $logStmt->bind_param("isdss", $user['id'], $account_number, $amount, $bus_number, $conductor_id);
                 $logStmt->execute();
 
                 echo json_encode(['success' => 'Balance deducted successfully. New balance is ₱' . number_format($new_balance, 2)]);

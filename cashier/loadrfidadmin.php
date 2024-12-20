@@ -37,7 +37,7 @@ if (!isset($_SESSION['role']) || !isset($_SESSION['account_number'])) {
 
 $bus_number = $_SESSION['role']; // Get bus number from session
 $conductor_id = $_SESSION['account_number']; // Get conductor ID from session
-var_dump($bus_number,$conductor_id);
+
 ?>
 
 <!DOCTYPE html>
@@ -132,117 +132,117 @@ var_dump($bus_number,$conductor_id);
 
     <?php include "../sidebar.php"; ?>
 
- 
-        <div class="container">
-            <h1 class="text-center">Load User</h1>
-            <h3 class="text-center">Total Users: <span class="badge bg-secondary"><?php echo $userCount; ?></span></h3>
 
-            <div class="mb-4">
-                <form id="searchForm" method="POST">
-                    <input type="text" name="account_number" placeholder="Enter Account Number" required autofocus>
-                    <input type="hidden" name="search_account" value="1">
-                    <button type="submit">Search</button>
-                </form>
-            </div>
+    <div class="container">
+        <h1 class="text-center">Load User</h1>
+        <h3 class="text-center">Total Users: <span class="badge bg-secondary"><?php echo $userCount; ?></span></h3>
 
-            <div id="searchResult" class="text-center"></div>
+        <div class="mb-4">
+            <form id="searchForm" method="POST">
+                <input type="text" name="account_number" placeholder="Enter Account Number" required autofocus>
+                <input type="hidden" name="search_account" value="1">
+                <button type="submit">Search</button>
+            </form>
+        </div>
 
-            <div class="modal fade" id="loadBalanceModal" tabindex="-1" aria-labelledby="loadBalanceModalLabel"
-                aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="loadBalanceModalLabel">Load Balance</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="mb-3 text-center">
-                                <!-- Predefined Load Buttons -->
-                                <div class="d-flex flex-wrap justify-content-center gap-2">
-                                    <?php
-                                    $loadAmounts = [100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 1000];
-                                    foreach ($loadAmounts as $amount) {
-                                        echo '<button type="button" class="btn btn-outline-primary m-1 load-amount-btn" data-amount="' . $amount . '">₱' . $amount . '</button>';
-                                    }
-                                    ?>
-                                </div>
+        <div id="searchResult" class="text-center"></div>
+
+        <div class="modal fade" id="loadBalanceModal" tabindex="-1" aria-labelledby="loadBalanceModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="loadBalanceModalLabel">Load Balance</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3 text-center">
+                            <!-- Predefined Load Buttons -->
+                            <div class="d-flex flex-wrap justify-content-center gap-2">
+                                <?php
+                                $loadAmounts = [100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 1000];
+                                foreach ($loadAmounts as $amount) {
+                                    echo '<button type="button" class="btn btn-outline-primary m-1 load-amount-btn" data-amount="' . $amount . '">₱' . $amount . '</button>';
+                                }
+                                ?>
                             </div>
-                            <form id="loadBalanceForm" method="POST">
-                                <div class="mb-3">
-                                    <label for="balance" class="form-label">Enter Custom Load Amount</label>
-                                    <input type="number" id="balance" name="balance" class="form-control"
-                                        placeholder="Enter Load" required>
-                                </div>
-                                <input type="hidden" id="user_account_number" name="user_account_number">
-                                <button type="submit" class="btn btn-primary">Load</button>
-                            </form>
                         </div>
+                        <form id="loadBalanceForm" method="POST">
+                            <div class="mb-3">
+                                <label for="balance" class="form-label">Enter Custom Load Amount</label>
+                                <input type="number" id="balance" name="balance" class="form-control"
+                                    placeholder="Enter Load" required>
+                            </div>
+                            <input type="hidden" id="user_account_number" name="user_account_number">
+                            <button type="submit" class="btn btn-primary">Load</button>
+                        </form>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <div class="modal fade" id="deductBalanceModal" tabindex="-1" aria-labelledby="deductBalanceModalLabel"
-                aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="deductBalanceModalLabel">Deduct Balance</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <form id="deductBalanceForm" method="POST">
-                                <div class="mb-3">
-                                    <label for="deduct_balance" class="form-label">Balance to Deduct</label>
-                                    <input type="number" id="deduct_balance" name="deduct_balance" class="form-control"
-                                        placeholder="Enter Amount to Deduct" required>
-                                </div>
-                                <input type="hidden" id="deduct_user_account_number" name="deduct_user_account_number">
-                                <button type="submit" class="btn btn-danger">Deduct</button>
-                            </form>
-                        </div>
+        <div class="modal fade" id="deductBalanceModal" tabindex="-1" aria-labelledby="deductBalanceModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deductBalanceModalLabel">Deduct Balance</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="deductBalanceForm" method="POST">
+                            <div class="mb-3">
+                                <label for="deduct_balance" class="form-label">Balance to Deduct</label>
+                                <input type="number" id="deduct_balance" name="deduct_balance" class="form-control"
+                                    placeholder="Enter Amount to Deduct" required>
+                            </div>
+                            <input type="hidden" id="deduct_user_account_number" name="deduct_user_account_number">
+                            <button type="submit" class="btn btn-danger">Deduct</button>
+                        </form>
                     </div>
                 </div>
             </div>
-            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-            <script src="../js/main.js"></script>
-            <script>
+        </div>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="../js/main.js"></script>
+        <script>
 
 
-                document.addEventListener('DOMContentLoaded', () => {
-                    const loadButtons = document.querySelectorAll('.load-amount-btn');
-                    const balanceInput = document.getElementById('balance');
+            document.addEventListener('DOMContentLoaded', () => {
+                const loadButtons = document.querySelectorAll('.load-amount-btn');
+                const balanceInput = document.getElementById('balance');
 
-                    loadButtons.forEach(button => {
-                        button.addEventListener('click', () => {
-                            const amount = button.getAttribute('data-amount');
-                            balanceInput.value = amount; // Set the value of the input field
-                        });
+                loadButtons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        const amount = button.getAttribute('data-amount');
+                        balanceInput.value = amount; // Set the value of the input field
                     });
                 });
+            });
 
 
-                document.getElementById('searchForm').onsubmit = async (event) => {
-                    event.preventDefault();
-                    const formData = new FormData(event.target);
+            document.getElementById('searchForm').onsubmit = async (event) => {
+                event.preventDefault();
+                const formData = new FormData(event.target);
 
-                    try {
-                        const response = await fetch('includes/search_user.php', {
-                            method: 'POST',
-                            body: formData
-                        });
+                try {
+                    const response = await fetch('includes/search_user.php', {
+                        method: 'POST',
+                        body: formData
+                    });
 
-                        if (!response.ok) {
-                            throw new Error('Network response was not ok ' + response.statusText);
-                        }
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok ' + response.statusText);
+                    }
 
-                        const result = await response.json();
-                        document.getElementById('searchResult').innerHTML = '';
+                    const result = await response.json();
+                    document.getElementById('searchResult').innerHTML = '';
 
-                        if (result.error) {
-                            document.getElementById('searchResult').innerHTML =
-                                `<div class="alert alert-danger">${result.error}</div>`;
-                        } else {
-                            const userInfo = `<div class="card shadow-lg border-light rounded">
+                    if (result.error) {
+                        document.getElementById('searchResult').innerHTML =
+                            `<div class="alert alert-danger">${result.error}</div>`;
+                    } else {
+                        const userInfo = `<div class="card shadow-lg border-light rounded">
                 <div class="card-header bg-success text-white text-start">
                     <h5 class="mb-0"><strong class="fs-4">${result.success}</strong></h5>
                 </div>
@@ -288,96 +288,96 @@ var_dump($bus_number,$conductor_id);
                 </div>
             </div>
             `;
-                            document.getElementById('searchResult').innerHTML = userInfo;
-                        }
-                    } catch (error) {
-                        console.error('Error:', error);
+                        document.getElementById('searchResult').innerHTML = userInfo;
                     }
-                };
-
-                function openLoadBalanceModal(accountNumber) {
-                    document.getElementById('user_account_number').value = accountNumber;
-                    const modal = new bootstrap.Modal(document.getElementById('loadBalanceModal'));
-                    modal.show();
-
+                } catch (error) {
+                    console.error('Error:', error);
                 }
+            };
 
-                document.getElementById('loadBalanceForm').onsubmit = async (event) => {
-                    event.preventDefault();
+            function openLoadBalanceModal(accountNumber) {
+                document.getElementById('user_account_number').value = accountNumber;
+                const modal = new bootstrap.Modal(document.getElementById('loadBalanceModal'));
+                modal.show();
 
-                    const balance = document.getElementById('balance').value;
+            }
 
-                    // Check if the load amount is less than 100 pesos
-                    if (parseFloat(balance) < 100) {
-                        Swal.fire('Error', 'The minimum load amount is ₱100.', 'error'); return;
-                    } const formData = new FormData(event.target); try {
-                        const response = await
-                            fetch('includes/load_balance.php', { method: 'POST', body: formData }); const result = await
-                                response.json(); if (result.success) {
-                                    Swal.fire('Success', result.success, 'success').then(() => {
-                                        // Refresh user info after successful load
-                                        refreshUserInfo(document.getElementById('user_account_number').value);
+            document.getElementById('loadBalanceForm').onsubmit = async (event) => {
+                event.preventDefault();
 
-                                        // Close the modal after successful form submission
-                                        $('#loadBalanceModal').modal('hide');
-                                        $('.modal-backdrop').remove(); // This removes the backdrop // Properly hide the modal
-                                    });
-                                } else {
-                            Swal.fire('Error', result.error, 'error');
-                        }
-                    } catch (error) {
-                        console.error('Error:', error);
+                const balance = document.getElementById('balance').value;
+
+                // Check if the load amount is less than 100 pesos
+                if (parseFloat(balance) < 100) {
+                    Swal.fire('Error', 'The minimum load amount is ₱100.', 'error'); return;
+                } const formData = new FormData(event.target); try {
+                    const response = await
+                        fetch('includes/load_balance.php', { method: 'POST', body: formData }); const result = await
+                            response.json(); if (result.success) {
+                                Swal.fire('Success', result.success, 'success').then(() => {
+                                    // Refresh user info after successful load
+                                    refreshUserInfo(document.getElementById('user_account_number').value);
+
+                                    // Close the modal after successful form submission
+                                    $('#loadBalanceModal').modal('hide');
+                                    $('.modal-backdrop').remove(); // This removes the backdrop // Properly hide the modal
+                                });
+                            } else {
+                        Swal.fire('Error', result.error, 'error');
                     }
-                };
+                } catch (error) {
+                    console.error('Error:', error);
+                }
+            };
 
-                document.getElementById('deductBalanceForm').onsubmit = async (event) => {
-                    event.preventDefault();
-                    const formData = new FormData(event.target);
+            document.getElementById('deductBalanceForm').onsubmit = async (event) => {
+                event.preventDefault();
+                const formData = new FormData(event.target);
 
-                    try {
-                        const response = await fetch('deduct_balance.php', {
-                            method: 'POST',
-                            body: formData
+                try {
+                    const response = await fetch('deduct_balance.php', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const result = await response.json();
+                    if (result.success) {
+                        Swal.fire('Success', result.success, 'success').then(() => {
+                            // Refresh user info after successful deduction
+                            refreshUserInfo(document.getElementById('deduct_user_account_number').value);
+
+                            $('#deductBalanceModal').modal('hide');
+                            $('.modal-backdrop').remove(); // This will close the modal
                         });
-
-                        const result = await response.json();
-                        if (result.success) {
-                            Swal.fire('Success', result.success, 'success').then(() => {
-                                // Refresh user info after successful deduction
-                                refreshUserInfo(document.getElementById('deduct_user_account_number').value);
-
-                                $('#deductBalanceModal').modal('hide');
-                                $('.modal-backdrop').remove(); // This will close the modal
-                            });
-                        } else {
-                            Swal.fire('Error', result.error, 'error');
-                        }
-                    } catch (error) {
-                        console.error('Error:', error);
+                    } else {
+                        Swal.fire('Error', result.error, 'error');
                     }
-                };
+                } catch (error) {
+                    console.error('Error:', error);
+                }
+            };
 
 
-                // Function to refresh user information
-                async function refreshUserInfo(accountNumber) {
-                    const formData = new FormData();
-                    formData.append('account_number', accountNumber);
-                    formData.append('search_account', '1'); // You might need to adjust this as necessary
+            // Function to refresh user information
+            async function refreshUserInfo(accountNumber) {
+                const formData = new FormData();
+                formData.append('account_number', accountNumber);
+                formData.append('search_account', '1'); // You might need to adjust this as necessary
 
-                    try {
-                        const response = await fetch('includes/search_user.php', {
-                            method: 'POST',
-                            body: formData
-                        });
+                try {
+                    const response = await fetch('includes/search_user.php', {
+                        method: 'POST',
+                        body: formData
+                    });
 
-                        const result = await response.json();
-                        document.getElementById('searchResult').innerHTML = '';
+                    const result = await response.json();
+                    document.getElementById('searchResult').innerHTML = '';
 
-                        if (result.error) {
-                            document.getElementById('searchResult').innerHTML =
-                                `<div class="alert alert-danger">${result.error}</div>`;
-                        } else {
-                            const userInfo = `<div class="card shadow-lg border-light rounded">
+                    if (result.error) {
+                        document.getElementById('searchResult').innerHTML =
+                            `<div class="alert alert-danger">${result.error}</div>`;
+                    } else {
+                        const userInfo = `<div class="card shadow-lg border-light rounded">
                     <div class="card-header bg-success text-white text-start">
                         <h5 class="mb-0"><strong class="fs-4">${result.success}</strong></h5>
                     </div>
@@ -423,15 +423,15 @@ var_dump($bus_number,$conductor_id);
                         </div>
                     </div>
                 </div>`;
-                            document.getElementById('searchResult').innerHTML = userInfo;
-                        }
-                    } catch (error) {
-                        console.error('Error refreshing user info:', error);
+                        document.getElementById('searchResult').innerHTML = userInfo;
                     }
+                } catch (error) {
+                    console.error('Error refreshing user info:', error);
                 }
+            }
 
-            </script>
-        </div>
+        </script>
+    </div>
     </div>
 </body>
 
