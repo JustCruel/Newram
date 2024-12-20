@@ -81,10 +81,10 @@ if (isset($_SESSION['firstname']) && isset($_SESSION['lastname'])) {
                         <a href="./loadrfidadmin.php"><span class="fa fa-credit-card"></span>
                             Load RFID</a>
                     </li>
-                    <!-- <li>
-                        <a href="./activatecashier.php"><span class="fa fa-bolt"></span>
-                            Activation</a>
-                    </li> -->
+                    <li>
+                        <a href="./remitcashier.php"><span class="fa fa-bolt"></span>
+                            Remit</a>
+                    </li> 
                     <li>
                         <a href="./translogscashier.php"><span class="fa fa-list-alt"></span>
                             Load Transaction</a>

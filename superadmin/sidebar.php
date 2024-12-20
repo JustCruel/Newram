@@ -99,8 +99,7 @@ $base_path = "/Newram/superadmin/";
                                     class="fa fa-history me-2"></i> Load Transaction</a></li>
                         <li><a href="<?php echo $base_path; ?>conductor/loadtranscon.php" class="nav-link"><i
                                     class="fa fa-dollar-sign me-2"></i> Load Revenue</a></li>
-                        <li><a href="<?php echo $base_path; ?>conductor/remitcon.php" class="nav-link"><i
-                                    class="fa fa-paper-plane me-2"></i> Remit</a></li>
+                       
                     </ul>
                 </li>
                 <hr style="border: 1px solid white;">

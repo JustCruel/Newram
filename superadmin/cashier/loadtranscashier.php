@@ -1,203 +1,206 @@
 <?php
 session_start();
-ob_start();
+require '../fpdf/fpdf.php';
+include '../config/connection.php'; // Include your DB connection file
 
-ini_set('display_errors', 1); // Enable error reporting for debugging
-error_reporting(E_ALL);          // Report all errors
-
-include '../config/connection.php';
-include '../sidebar.php';
-
-if (!isset($_SESSION['email']) || ($_SESSION['role'] != 'Admin' && $_SESSION['role'] != 'Superadmin')) {
+if (!isset($_SESSION['email']) || ($_SESSION['role'] != 'Conductor' && $_SESSION['role'] != 'Superadmin')) {
     header("Location: ../index.php");
     exit();
 }
 
-$currentYear = date('Y');
-$currentMonth = date('m');
-$currentDay = date('d');
-$selectedDayRevenue = 0; // Default value
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $selectedDate = $_POST['date'] ?? date('Y-m-d');
-    $selectedYear = date('Y', strtotime($selectedDate));
-    $selectedMonth = date('m', strtotime($selectedDate));
-    $selectedDay = date('d', strtotime($selectedDate));
-
-    // Query to fetch revenue for a specific day
-    $dailyRevenueQuery = "SELECT SUM(amount) AS total_revenue 
-                          FROM transactions 
-                          WHERE YEAR(transaction_date) = '$selectedYear' 
-                          AND MONTH(transaction_date) = '$selectedMonth'
-                          AND DAY(transaction_date) = '$selectedDay'"; // Specific day
-    $dailyRevenueResult = mysqli_query($conn, $dailyRevenueQuery);
-
-    if ($row = mysqli_fetch_assoc($dailyRevenueResult)) {
-        $selectedDayRevenue = $row['total_revenue'] ?? 0;
-    }
-
-    header('Content-Type: application/json');
-    ob_end_clean(); // Clear any unwanted output
-    echo json_encode([
-        'selectedDayRevenue' => $selectedDayRevenue
-    ]);
-
-    exit;
+// Check if the user is logged in
+if (!isset($_SESSION['email'])) {
+    header("Location: ../index.php");
+    exit();
 }
 
-$selectedDayRevenue = $selectedDayRevenue ?? 0;
+// Fetch user data
+$firstname = $_SESSION['firstname'];
+$lastname = $_SESSION['lastname'];
+
+// Initialize variables
+$dailyRevenue = [];
+$totalRevenue = 0;
+
+// Handle POST request
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $selectedDate = isset($_POST['selected_date']) ? $_POST['selected_date'] : date('Y-m-d');
+    $showWholeMonth = isset($_POST['show_whole_month']);
+
+    $selectedMonth = date('m', strtotime($selectedDate));
+    $selectedYear = date('Y', strtotime($selectedDate));
+    $selectedDay = date('d', strtotime($selectedDate));
+
+    if ($showWholeMonth) {
+        $sql = "SELECT DAY(transaction_date) AS day, SUM(amount) AS total_revenue
+                FROM transactions
+                WHERE transaction_type = 'Load' AND MONTH(transaction_date) = ? AND YEAR(transaction_date) = ?
+                GROUP BY DAY(transaction_date)";
+
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param('ii', $selectedMonth, $selectedYear);
+    } else {
+        $sql = "SELECT SUM(amount) AS total_revenue
+                FROM transactions
+                WHERE transaction_type = 'Load' AND DATE(transaction_date) = ?";
+
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param('s', $selectedDate);
+    }
+
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($showWholeMonth) {
+        $dailyRevenue = array_fill(1, 31, 0); // Default to 0 for all days
+        while ($row = $result->fetch_assoc()) {
+            $dailyRevenue[(int)$row['day']] = (float)$row['total_revenue'];
+        }
+    } else {
+        $dailyRevenue[(int)$selectedDay] = 0; // Default to 0 for the selected day
+        if ($row = $result->fetch_assoc()) {
+            $dailyRevenue[(int)$selectedDay] = (float)$row['total_revenue'];
+        }
+    }
+
+    $stmt->close();
+}
+
+// Calculate total revenue
+$totalRevenue = array_sum($dailyRevenue);
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Revenue Report</title>
+    <title>RAMSTAR - Daily Revenue Report</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800,900">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script> <!-- Load ApexCharts -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
+    <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800,900" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <link rel="stylesheet" href="../css/style.css">
-
     <style>
-        h1 {
-            color: black;
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f9fa;
         }
 
-        #revenueChart {
-            height: 350px;
-            /* Set a fixed height for the chart */
+        .sidebar {
+            background-color: #ffffff;
+            padding: 20px;
+            color: #001f3f;
+            border-right: 1px solid #e0e0e0;
+        }
+
+        .main-content {
+            padding: 20px;
+            background-color: #ffffff;
+            border-left: 1px solid #e0e0e0;
+        }
+
+        h1, h2 {
+            color: #343a40;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3 }
+        
+            #chart {
+    width: 100%;
+    height: 350px;
+}
+
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 200px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .sidebar {
+                width: 150px;
+            }
         }
     </style>
 </head>
-
 <body>
-    <div class="container mt-5">
-        <h1>Revenue Report</h1>
-
-        <!-- Filter Form -->
-        <form id="filterForm" method="POST">
-            <div class="row mb-3">
-                <div class="col-md-4">
-                    <label for="date" class="form-label">Select Date</label>
-                    <input type="date" id="date" name="date" class="form-control"
-                        value="<?php echo "$currentYear-$currentMonth-$currentDay"; ?>" required>
-                </div>
+<?php include "../sidebar.php"; ?>
+<div class="container-fluid d-flex">
+    <div class="sidebar">
+        <!-- Sidebar content -->
+    </div>
+    <div class="main-content flex-grow-1">
+        <h1 class="mt-4">Daily Revenue Report</h1>
+        <form method="POST" class="mb-4">
+            <div class="form-group">
+                <label for="selected_date">Select Date:</label>
+                <input type="date" id="selected_date" name="selected_date" class="form-control" value="<?php echo htmlspecialchars($selectedDate); ?>">
             </div>
-            <button type="submit" class="btn btn-primary">Filter</button>
-            <button type="button" class="btn btn-danger" id="generatePdfBtn" disabled>Download PDF</button>
+            <div class="form-group form-check">
+                <input type="checkbox" id="show_whole_month" name="show_whole_month" class="form-check-input" <?php echo $showWholeMonth ? 'checked' : ''; ?>>
+                <label for="show_whole_month" class="form-check-label">Show Whole Month</label>
+            </div>
+            <button type="submit" class="btn btn-primary">Generate Report</button>
         </form>
 
-        <!-- Display Total Revenue -->
-        <div class="mt-4" id="revenueDisplay">
-            <h3>Total Revenue</h3>
-            <p>₱<?php echo number_format($selectedDayRevenue, 2); ?></p>
-        </div>
+        <p>Total Revenue: <strong><?php echo number_format($totalRevenue, 2); ?></strong></p>
 
-        <!-- Chart for daily revenue -->
-        <div id="revenueChart"></div> <!-- ApexCharts container -->
-    </div>
+        <div id="chart"></div>
 
-    <script>
-        // Update the chart using ApexCharts (for a single day)
-        function updateChart(dailyRevenue) {
-            console.log('Daily Revenue:', dailyRevenue); // Debugging line
-            const labels = ['Revenue'];  // Only one label for the selected day
-            const data = [dailyRevenue];
+        <script>
+ window.onload = function () {
+    const dailyRevenue = <?php echo json_encode(array_values($dailyRevenue)); ?>;
+    updateChart(dailyRevenue);
+};
 
-            var options = {
+function updateChart(dailyRevenue) {
+    const categories = <?php echo json_encode($showWholeMonth ? range(1, 31) : [$selectedDay]); ?>;
 
-                chart: {
-                    type: 'bar',
-                    height: 350
-                },
-                series: [{
-                    name: 'Daily Revenue',
-                    data: data
-                }],
-                xaxis: {
-                    categories: labels,
-                    title: {
-                        text: 'Day'
-                    }
-                },
-                yaxis: {
-                    title: {
-                        text: 'Revenue (₱)'
-                    }
-                },
-                dataLabels: {
-                    enabled: false
-                },
-                fill: {
-                    opacity: 0.9
-                },
-                colors: ['#4bc0c0']
-            };
-
-            // Clear previous chart and render a new one
-            document.querySelector("#revenueChart").innerHTML = "";
-            var chart = new ApexCharts(document.querySelector("#revenueChart"), options);
-            chart.render();
+    const options = {
+        chart: {
+            type: 'bar',
+            height: 350
+        },
+        series: [{
+            name: 'Revenue',
+            data: dailyRevenue
+        }],
+        xaxis: {
+            categories: categories
+        },
+        title: {
+            text: 'Daily Revenue',
+            align: 'center'
+        },
+        dataLabels: {
+            enabled: true
+        },
+        tooltip: {
+            shared: true,
+            intersect: false
         }
+    };
 
-        window.onload = function () {
-            const initialRevenue = <?php echo json_encode($selectedDayRevenue); ?>;
-            updateChart(initialRevenue);
-            document.getElementById('generatePdfBtn').disabled = true;
-        };
+    const chart = new ApexCharts(document.querySelector("#chart"), options);
+    chart.render();
+}
 
-        // Enable the PDF button after successful form submission
-        document.getElementById('filterForm').addEventListener('submit', function (e) {
-            e.preventDefault();
-            const formData = new FormData(this);
 
-            fetch(window.location.href, {
-                method: 'POST',
-                body: formData,
-            })
-                .then(response => {
-                    if (!response.ok) throw new Error('Network response was not ok');
-                    return response.json();
-                })
-                .then(data => {
-                    document.querySelector('#revenueDisplay p').textContent = `₱${parseFloat(data.selectedDayRevenue).toFixed(2)
-                        }`;
-                    updateChart(data.selectedDayRevenue);
-
-                    // Enable the PDF button after data is updated
-                    document.getElementById('generatePdfBtn').disabled = false;
-                })
-                .catch(error => console.error('Error updating revenue data:', error));
-        });
-
-        // Handle PDF generation
-        document.getElementById('generatePdfBtn').addEventListener('click', function () {
-            const formData = new FormData(document.getElementById('filterForm'));
-
-            fetch('generate_pdf.php', {
-                method: 'POST',
-                body: formData,
-            })
-                .then(response => response.blob())  // PDF comes as a blob
-                .then(blob => {
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.style.display = 'none';
-                    a.href = url;
-                    a.download = 'Revenue_Report.pdf';
-                    document.body.appendChild(a);
-                    a.click();
-                    window.URL.revokeObjectURL(url);
-                })
-                .catch(error => console.error('Error generating PDF:', error));
-        });
-    </script>
+        </script>
+    </div>
+</div>
 </body>
-
 </html>

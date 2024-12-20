@@ -767,6 +767,7 @@ $conn->close();
                     autocapitalize: 'off'
                 },
                 showCancelButton: true,
+                showConfirmButton: false,
                 cancelButtonText: 'Cancel',
                 inputPlaceholder: 'Scan your RFID here',
                 didOpen: () => {
