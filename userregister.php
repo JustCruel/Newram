@@ -3,12 +3,7 @@ session_start();
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-include "../config/connection.php";
-
-
-
-$firstname = $_SESSION['firstname'];
-$lastname = $_SESSION['lastname'];
+include "config/connection.php";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Retrieve form data
@@ -26,8 +21,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $barangay = $_POST['barangay'];
     $address = $_POST['address'];
     $account_number = $_POST['account_number'];
-    $password = "ramstarbus"; // Set a default password or generate one
-    $hashed_password = md5($password);
+    $password = $_POST['password']; // Password from form
+    $confirm_password = $_POST['confirm_password']; // Confirm password from form
+
+    // Password validation
+    if ($password !== $confirm_password) {
+        echo "<script>alert('Passwords do not match. Please try again.'); window.history.back();</script>";
+        exit();
+    }
+
+    $hashed_password = md5($password); // Hash the password
     $balance = 0; // Default balance
     $role = "User"; // Default role
     $points = 0; // Default points
@@ -46,7 +49,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // Insert new user into the database
     $stmt = $conn->prepare("INSERT INTO useracc (firstname, lastname, middlename, suffix, birthday, age, gender, email, contactnumber, province, municipality, barangay, address, password, balance, role, points) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-    
+
     // Ensure you have 20 variables here
     $stmt->bind_param(
         "ssssssssiiiissdsd",
@@ -70,7 +73,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     );
 
     if ($stmt->execute()) {
-        echo "<script>alert('Registration successful!'); window.location.href = 'register.php';</script>";
+        echo "<script>alert('Registration successful!'); window.location.href = 'login.php';</script>";
     } else {
         echo "<script>alert('Error: " . $stmt->error . "'); window.history.back();</script>";
     }
@@ -88,74 +91,112 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> <!-- Use full version -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800,900">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link rel="stylesheet" href="../css/style.css">
-
     <title>Registration Form</title>
     <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: #333;
+            font-size: 2rem;
+            margin-bottom: 30px;
+        }
+
+        .form-label {
+            font-weight: 600;
+        }
+
         .register {
             background-color: #cc0000;
             color: white;
             border: none;
-            padding: 10px 20px;
+            padding: 12px 25px;
             border-radius: 5px;
             cursor: pointer;
             font-size: 16px;
+            width: 100%;
             transition: background-color 0.3s;
-        }
-
-        h2 {
-            color: black;
         }
 
         .register:hover {
             background-color: #b30000;
         }
 
-        /* Styling for the contact number input group */
-        .form-group {
-            position: relative;
-        }
-
-        /* Country code styling */
         .country-code {
             background-color: #f8f9fa;
-            /* Light background */
             border-right: 1px solid #ced4da;
-            /* Border to separate from input */
             display: flex;
             align-items: center;
-            /* Center vertically */
             padding: 0.5rem;
-            /* Padding around the text */
             font-weight: bold;
-            /* Bold text for emphasis */
         }
 
-        /* Contact number input field */
-        #phone {
-            padding-left: 0.5rem;
-            /* Padding to align text with country code */
-        }
-
-        /* Adjust width to ensure country code and input look good together */
         .form-group .form-control {
             flex: 1;
-            /* Allow the input to take up remaining space */
             min-width: 0;
-            /* Prevent overflow */
         }
+
+        .invalid-feedback {
+            display: block;
+        }
+
+        .form-control.is-invalid {
+            border-color: #dc3545;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-row {
+            margin-top: 20px;
+        }
+
+        .form-select {
+            background-color: #fff;
+        }
+
+        .form-control[readonly] {
+            background-color: #f1f1f1;
+        }
+
+        .invalid-feedback {
+            color: #dc3545;
+        }
+
+        .form-control:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.25rem rgba(38, 143, 255, 0.25);
+        }
+
+        .form-group select,
+        .form-group input {
+            border-radius: 5px;
+        }
+
+        .register-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
     </style>
-    <script src="../js/main.js"></script>
-    <script>
+
+<script>
         $(document).ready(function () {
             let confirmationShown = false; // To track confirmation dialog
             let rfidScanned = false; // To track if RFID has been scanned
@@ -174,7 +215,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 if (contactValue.length === 11) {
                     $.ajax({
                         type: "POST",
-                        url: "check_contact.php",
+                        url: "/admin/check_contact.php",
                         data: { contactnumber: contactValue },
                         dataType: "json",
                         success: function (response) {
@@ -197,14 +238,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 }
             });
 
-
             $('#email').on('input', function () {
                 var email = $(this).val();
 
                 // Check if email is not empty
                 if (email) {
                     $.ajax({
-                        url: 'check_email.php', // Path to your PHP script
+                        url: '/admin/check_email.php', // Path to your PHP script
                         type: 'POST',
                         data: { email: email },
                         dataType: 'json',
@@ -230,7 +270,48 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     $('#emailFeedback').remove();
                 }
             });
+           
 
+
+            // Birthday and age validation
+            function calculateAge(birthday) {
+                let today = new Date();
+                let birthDate = new Date(birthday);
+                let age = today.getFullYear() - birthDate.getFullYear();
+                let monthDifference = today.getMonth() - birthDate.getMonth();
+                if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
+                    age--;
+                }
+                return age;
+            }
+
+            $('#birthday').change(function () {
+                let birthday = $(this).val();
+                if (birthday) {
+                    let age = calculateAge(birthday);
+                    $('#age').val(age);
+                }
+            });
+
+
+            // Load provinces on page load
+            $.ajax({
+                url: 'https://psgc.gitlab.io/api/provinces', // API URL for provinces
+                method: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    // Populate the province dropdown
+                    $.each(data, function (index, province) {
+                        $('#province').append($('<option>', {
+                            value: province.code,
+                            text: province.name
+                        }));
+                    });
+                },
+                error: function () {
+                    console.error('Error fetching provinces');
+                }
+            });
             $(document).ready(function () {
     let confirmationShown = false; // To track confirmation dialog
 
@@ -260,114 +341,34 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     });
 });
 
-          
-            // Birthday and age validation
-            function calculateAge(birthday) {
-                let today = new Date();
-                let birthDate = new Date(birthday);
-                let age = today.getFullYear() - birthDate.getFullYear();
-                let monthDifference = today.getMonth() - birthDate.getMonth();
-                if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
-                    age--;
-                }
-                return age;
-            }
-
-            $('#birthday').change(function () {
-                let birthday = $(this).val();
-                if (birthday) {
-                    let age = calculateAge(birthday);
-                    $('#age').val(age);
-                }
-            });
-
-            // Load provinces on page load
-            $.ajax({
-                url: 'https://psgc.gitlab.io/api/provinces', // API URL for provinces
-                method: 'GET',
-                dataType: 'json',
-                success: function (data) {
-                    // Populate the province dropdown
-                    $.each(data, function (index, province) {
-                        $('#province').append($('<option>', {
-                            value: province.code,
-                            text: province.name
-                        }));
-                    });
-                },
-                error: function () {
-                    console.error('Error fetching provinces');
-                }
-            });
-
             // When a province is selected, fetch municipalities
             $('#province').change(function () {
-                const provinceCode = $(this).val();
-                $('#municipality').empty().append('<option value="">-- Select Municipality --</option>');
-                $('#barangay').empty().append('<option value="">-- Select Barangay --</option>');
-
+                let provinceCode = $(this).val();
                 if (provinceCode) {
                     $.ajax({
-                        url: 'https://psgc.gitlab.io/api/municipalities', // API URL for municipalities
+                        url: 'https://psgc.gitlab.io/api/municipalities?province=' + provinceCode,
                         method: 'GET',
                         dataType: 'json',
                         success: function (data) {
-                            // Filter municipalities by province code
-                            const municipalities = data.filter(municipality => municipality.provinceCode === provinceCode);
-
-                            if (municipalities.length > 0) {
-                                $.each(municipalities, function (index, municipality) {
-                                    $('#municipality').append($('<option>', {
-                                        value: municipality.code,
-                                        text: municipality.name
-                                    }));
-                                });
-                            } else {
-                                console.warn('No municipalities found for this province.');
-                            }
+                            // Clear previous municipalities
+                            $('#municipality').empty().append('<option>Select Municipality</option>');
+                            $.each(data, function (index, municipality) {
+                                $('#municipality').append($('<option>', {
+                                    value: municipality.code,
+                                    text: municipality.name
+                                }));
+                            });
                         },
                         error: function () {
                             console.error('Error fetching municipalities');
                         }
                     });
-                }
-            });
-
-            // When a municipality is selected, fetch barangays
-            $('#municipality').change(function () {
-                const municipalityCode = $(this).val();
-                $('#barangay').empty().append('<option value="">-- Select Barangay --</option>');
-
-                if (municipalityCode) {
-                    // Adjusted barangay API call
-                    $.ajax({
-                        url: `https://psgc.gitlab.io/api/barangays`, // Ensure this endpoint is correct
-                        method: 'GET',
-                        dataType: 'json',
-                        success: function (data) {
-                            // Filter barangays by municipality code
-                            const barangays = data.filter(barangay => barangay.municipalityCode === municipalityCode);
-
-                            if (barangays.length > 0) {
-                                $.each(barangays, function (index, barangay) {
-                                    $('#barangay').append($('<option>', {
-                                        value: barangay.code,
-                                        text: barangay.name
-                                    }));
-                                });
-                            } else {
-                                console.warn('No barangays found for this municipality.');
-                            }
-                        },
-                        error: function () {
-                            console.error('Error fetching barangays');
-                        }
-                    });
+                } else {
+                    $('#municipality').empty().append('<option>Select Municipality</option>');
                 }
             });
         });
 
-        // Calculate the date for 7 years ago
         const today = new Date();
         const sevenYearsAgo = new Date(today.setFullYear(today.getFullYear() - 7));
 
@@ -378,10 +379,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         document.getElementById("birthday").setAttribute("min", formattedDate);
 
     </script>
+
 </head>
 
 <body>
-    <div class="container mt-5">
+    <div class="container mt-5 register-container">
         <h2>Registration Form</h2>
         <form method="POST" action="" id="registrationForm" enctype="multipart/form-data">
             <div class="row mb-3">
@@ -394,6 +396,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <input type="text" class="form-control" id="lastname" name="lastname" required>
                 </div>
             </div>
+
             <div class="row mb-3">
                 <div class="col-md-6">
                     <label for="middlename" class="form-label">Middle Name</label>
@@ -411,18 +414,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     </select>
                 </div>
             </div>
+
             <div class="row mb-3">
-                <div class="col-md-6">
+            <div class="col-md-6">
                     <label for="birthday" class="form-label">Birthday</label>
                     <input type="date" class="form-control" id="birthday" name="birthday" required min=""
                         max="2017-12-31" />
                 </div>
-
                 <div class="col-md-6">
                     <label for="age" class="form-label">Age</label>
                     <input type="number" class="form-control" id="age" name="age" readonly>
                 </div>
             </div>
+
             <div class="row mb-3">
                 <div class="col-md-6">
                     <label for="gender" class="form-label">Gender</label>
@@ -433,27 +437,29 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     </select>
                 </div>
                 <div class="col-md-6">
-                    <label for="address" class="form-label">House#/Purok#/Street/Sitio(Optional)</label>
-                    <input type="text" class="form-control" id="address" name="address" >
+                    <label for="address" class="form-label">Address</label>
+                    <input type="text" class="form-control" id="address" name="address">
                 </div>
             </div>
+
             <div class="row mb-3">
                 <div class="col-md-6">
-                    <label for="province" class="form-label">Province(Optional)</label>
-                    <select class="form-select" id="province" name="province" >
+                    <label for="province" class="form-label">Province</label>
+                    <select class="form-select" id="province" name="province">
                         <option value="">-- Select Province --</option>
                     </select>
                 </div>
                 <div class="col-md-6">
-                    <label for="municipality" class="form-label">Municipality(Optional)</label>
-                    <select class="form-select" id="municipality" name="municipality" >
+                    <label for="municipality" class="form-label">Municipality</label>
+                    <select class="form-select" id="municipality" name="municipality">
                         <option value="">-- Select Municipality --</option>
                     </select>
                 </div>
             </div>
+
             <div class="row mb-3">
                 <div class="col-md-6">
-                    <label for="barangay" class="form-label">Barangay(Optional)</label>
+                    <label for="barangay" class="form-label">Barangay</label>
                     <select class="form-select" id="barangay" name="barangay">
                         <option value="">-- Select Barangay --</option>
                     </select>
@@ -467,39 +473,34 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             <div class="row mb-3">
                 <div class="col-md-6">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" class="form-control" id="password" name="password" required>
+                </div>
+                <div class="col-md-6">
+                    <label for="confirm_password" class="form-label">Confirm Password</label>
+                    <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
                     <label for="phone" class="form-label">Contact Number</label>
                     <div class="form-group d-flex">
                         <span class="border-end country-code px-2">+63</span>
-                        <input type="text" class="form-control" id="phone" name="contactnumber" placeholder="" required
-                            pattern="\d{11}" maxlength="11" />
+                        <input type="text" class="form-control" id="phone" name="contactnumber" placeholder="" required maxlength="11" />
                     </div>
                     <div id="contactError" class="invalid-feedback" style="display: none;"></div>
                 </div>
-
-
-                <div class="col-md-6">
-                    <label for="account_number" class="form-label">Account Number</label>
-                    <input type="text" class="form-control" id="account_number" name="account_number" readonly>
-                </div>
             </div>
+
+            <div class="form-row mt-4">
+                <button type="submit" class="register">Register</button>
+            </div>
+        </form>
     </div>
+    <script src="js/main.js"></script>
+    
 
-
-
-    <button type="submit" class="btn btn-primary">Register</button>
-    </form>
-    </div>
-    <script>
-        ['firstname', 'middlename', 'lastname'].forEach(function(fieldId) {
-    document.getElementById(fieldId).addEventListener('input', function (e) {
-        let value = e.target.value;
-        
-        // Remove any non-alphabetic character
-        e.target.value = value.replace(/[^a-zA-Z\s]/g, '');
-    });
-});
-    </script>
 </body>
-
 
 </html>

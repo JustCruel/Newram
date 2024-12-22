@@ -11825,6 +11825,7 @@ h5,
   background: #3e64ff;
   color: #fff;
   transition: all 0.3s;
+
 }
 
 #sidebar.active {
@@ -11834,68 +11835,33 @@ h5,
 }
 
 /* Logo styles */
-/* Default logo styling */
 #sidebar .logo {
   display: block;
-  /* Make the logo a block-level element */
   color: #fff;
-  /* Set the text color to white */
   font-weight: 900;
-  /* Make the font bold */
   transition: 0.3s;
-  /* Smooth transition for changes */
   text-decoration: none;
-  /* Remove the underline from the link */
   font-size: 24px;
-  /* Default font size for the logo text */
   display: flex;
-  /* Use flexbox for logo and text alignment */
   align-items: center;
-  /* Vertically align logo and text */
   justify-content: center;
-  /* Center the logo horizontally */
   padding: 10px 30px;
-  /* Add padding for spacing around the logo */
 }
 
-/* Adjustments when the sidebar is active (collapsed) */
 #sidebar.active .logo {
   padding: 10px 0;
-  /* Reduce padding when sidebar is collapsed */
   font-size: 18px;
-  /* Smaller font size when sidebar is collapsed */
   justify-content: center;
-  /* Center the logo horizontally */
 }
 
-/* Adjust logo image size when sidebar is active */
 #sidebar.active .logo img {
-  height: auto;
-  /* Let the height adjust automatically based on the container */
   max-height: 25px;
-  /* Limit the maximum height */
-  width: auto;
-  /* Maintain aspect ratio */
-  margin-right: 0;
-  /* Remove space between image and text */
-  margin-left: 0;
-  /* Ensure no space between the image and text */
 }
 
-/* Optional: Hover effect on the logo */
-#sidebar .logo:hover {
-  color: #f39c12;
-  /* Change text color on hover */
-}
-
-/* Adjust logo image size when sidebar is not active */
 #sidebar .logo img {
   height: auto;
-  /* Let the height adjust automatically based on the container */
   max-height: 80px;
-  /* Limit the maximum height */
   width: auto;
-  /* Maintain aspect ratio */
 }
 
 /* User profile section */
@@ -11916,7 +11882,6 @@ h5,
   height: 50px;
 }
 
-/* User name */
 .user-profile h3 {
   font-size: 18px;
   margin-top: 10px;
@@ -11942,6 +11907,8 @@ h5,
   font-size: 14px;
 }
 
+
+
 #sidebar ul li a {
   padding: 10px 30px;
   display: block;
@@ -11953,10 +11920,13 @@ h5,
   padding: 10px 0;
 }
 
-#sidebar.active ul.components li a span {
-  margin-right: 0;
-  display: block;
-  font-size: 24px;
+#sidebar ul li a:hover {
+  color: #fff;
+}
+
+#sidebar ul li.active>a {
+  background: transparent;
+  color: #fff;
 }
 
 /* Footer */
@@ -11967,16 +11937,6 @@ h5,
 
 #sidebar.active .footer {
   display: none;
-}
-
-/* Hover and active state */
-#sidebar ul li a:hover {
-  color: #fff;
-}
-
-#sidebar ul li.active>a {
-  background: transparent;
-  color: #fff;
 }
 
 /* Media query for smaller screens */
@@ -11991,8 +11951,66 @@ h5,
   #sidebar.active {
     margin-left: 0 !important;
   }
+
+  /* Adjust font size and padding for smaller screens */
+  #sidebar ul li a {
+    padding: 10px 0;
+  }
+
+  #sidebar ul li a span {
+    display: none;
+  }
+
+  /* Sidebar collapses on mobile */
+  #sidebar.active ul.components li a span {
+    font-size: 24px;
+    margin-right: 0;
+    display: block;
+  }
+  
+  /* Hide the sidebar items text when collapsed */
+  #sidebar.active .logo, .user-profile h3 {
+    display: none;
+  }
+  #sidebar .logo img {
+    height: auto;
+    max-height: 1px;
+    width: auto;
+  }
 }
 
+/* Ensure the hamburger menu button is visible on mobile */
+@media (max-width: 768px) {
+  #sidebarCollapse {
+    display: block;
+    margin-top: 10px;
+    color: #fff;
+    background-color: #3e64ff;
+    border: none;
+  }
+  
+  #sidebar .logo img {
+    height: auto;
+    max-height: 1px;
+    width: auto;
+  }
+}
+
+/* Navbar adjustments for smaller screens */
+@media (max-width: 768px) {
+  .navbar {
+    padding: 10px;
+  }
+
+  .navbar-expand-lg .navbar-nav {
+    flex-direction: column;
+  }
+
+  /* Center the toggle button */
+  .navbar-toggler {
+    margin-left: auto;
+  }
+}
 
 a[data-toggle="collapse"] {
   position: relative;

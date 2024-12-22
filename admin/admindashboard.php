@@ -107,7 +107,7 @@ $todayRevenue = mysqli_fetch_assoc($todayRevenueResult)['todayRevenue'] ?? 0;
 
     <div id="main-content" class="container mt-4">
         <div class="dashboard">
-            <div class="dashboard-item">
+            <div class="dashboard-item" onclick="window.location.href='activate.php';">
                 <i class="fas fa-users fa-2x"></i>
                 <h3>Registered Users</h3>
                 <p><?php echo $userCount; ?></p>
@@ -115,7 +115,7 @@ $todayRevenue = mysqli_fetch_assoc($todayRevenueResult)['todayRevenue'] ?? 0;
             <div class="dashboard-item">
                 <i class="fas fa-desktop fa-2x"></i>
                 <h3>Total Terminals</h3>
-                <p>Data Missing</p> <!-- Update with actual data -->
+                <p>3</p> <!-- Update with actual data -->
             </div>
             <div class="dashboard-item">
                 <i class="fas fa-money-bill-wave fa-2x"></i>

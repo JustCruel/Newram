@@ -77,8 +77,16 @@ if (isset($_POST['confirm_logout']) && $_POST['confirm_logout'] === 'true') {
 					.then(response => response.json())
 					.then(data => {
 						if (data.success) {
-							Swal.fire('Logged Out!', data.message, 'success')
-								.then(() => window.location.href = 'login.php'); // Redirect after successful logout
+							Swal.fire({
+    title: 'Logged Out!',
+    text: data.message,
+    icon: 'success',
+    showConfirmButton: false,  // Disable the "OK" button
+    timer: 1500  // Optionally, you can add a timer to auto-close after 1.5 seconds
+}).then(() => {
+    window.location.href = 'login.php';  // Redirect to the login page after the alert
+});
+
 						} else {
 							Swal.fire('Error', data.error || 'An error occurred during logout.', 'error');
 							window.history.back(); // Go back to the previous page

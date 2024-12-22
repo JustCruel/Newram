@@ -18,24 +18,24 @@ if (!isset($_SESSION['account_number'])) {
 
 
 
-    // Fetch total load transactions
-    $stmtLoad = $conn->prepare("SELECT SUM(amount) FROM transactions WHERE status = 'notremitted' AND bus_number = ? AND conductor_id = ? AND DATE(transaction_date) = CURDATE()");
-    $stmtLoad->bind_param("ss", $bus_number, $conductor_id);
-    $stmtLoad->execute();
-    $stmtLoad->bind_result($total_load);
-    $stmtLoad->fetch();
-    $stmtLoad->close();
+// Fetch total load transactions
+$stmtLoad = $conn->prepare("SELECT SUM(amount) FROM transactions WHERE status = 'notremitted' AND bus_number = ? AND conductor_id = ? AND DATE(transaction_date) = CURDATE()");
+$stmtLoad->bind_param("ss", $bus_number, $conductor_id);
+$stmtLoad->execute();
+$stmtLoad->bind_result($total_load);
+$stmtLoad->fetch();
+$stmtLoad->close();
 
-    // Fetch total cash transactions (including the fare)
-    $stmtCash = $conn->prepare("SELECT SUM(fare) FROM passenger_logs WHERE status = 'notremitted' AND bus_number = ? AND conductor_name = ? AND rfid = 'cash' AND DATE(timestamp) = CURDATE()");
-    $stmtCash->bind_param("ss", $bus_number, $conductor_name);
-    $stmtCash->execute();
-    $stmtCash->bind_result($total_cash);
-    $stmtCash->fetch();
-    $stmtCash->close();
-    // Default to 0 if NULL
+// Fetch total cash transactions (including the fare)
+$stmtCash = $conn->prepare("SELECT SUM(fare) FROM passenger_logs WHERE status = 'notremitted' AND bus_number = ? AND conductor_name = ? AND rfid = 'cash' AND DATE(timestamp) = CURDATE()");
+$stmtCash->bind_param("ss", $bus_number, $conductor_name);
+$stmtCash->execute();
+$stmtCash->bind_result($total_cash);
+$stmtCash->fetch();
+$stmtCash->close();
+// Default to 0 if NULL
 
-    $total_cash = $total_cash ?? 0; // Default to 0 if NULL
+$total_cash = $total_cash ?? 0; // Default to 0 if NULL
 
 
 
@@ -238,7 +238,7 @@ $stmt->close(); // Close statement
 
             <label for="conductor_name">Conductor Name:</label>
             <input type="text" id="conductor_name" name="conductor_name" required value="" readonly>
-            
+
             <label for="conductor_id">Conductor Name:</label>
             <input type="text" id="conductor_id" name="conductor_id" required value="" readonly>
 
@@ -356,7 +356,9 @@ $stmt->close(); // Close statement
                 document.getElementById('net_amount').value = (totalLoad + totalFare - totalDeductions).toFixed(2);
             }
         });
-        document.getElementById('rfid_input').addEventListener('change', function () {
+        document.getElementById('rfid_input').addEventListener('change', function (event) {
+            event.preventDefault(); // Prevent form submission
+
             const rfid = this.value;
 
             if (rfid) {
@@ -370,37 +372,46 @@ $stmt->close(); // Close statement
                 })
                     .then(response => response.json())
                     .then(data => {
-    if (data.success) {
-        
-        // Populate the fields with the fetched data
-        document.getElementById('bus_no').value = data.bus_number || 'N/A';
-        document.getElementById('conductor_name').value = data.conductor_name || 'Unknown Conductor';
-        document.getElementById('conductor_id').value = data.conductor_id || 'Unknown Conductor';
-        document.getElementById('total_load').value = data.total_load || '0.00';
-        document.getElementById('total_fare').value = data.total_fare || '0.00';
-        document.getElementById('net_amount').value = data.net_amount || '0.00';
+                        if (data.success) {
+                            // Populate the fields with the fetched data
+                            document.getElementById('bus_no').value = data.bus_number || 'N/A';
+                            document.getElementById('conductor_name').value = data.conductor_name || 'Unknown Conductor';
+                            document.getElementById('conductor_id').value = data.conductor_id || 'Unknown Conductor';
+                            document.getElementById('total_load').value = data.total_load || '0.00';
+                            document.getElementById('total_fare').value = data.total_fare || '0.00';
+                            document.getElementById('net_amount').value = data.net_amount || '0.00';
 
-        // Check if conductor_id exists
-        if (data.conductor_id) {
-                    let totalLoad = parseFloat(data.total_load) || 0;
-                    let totalFare = parseFloat(data.total_fare) || 0;
-                    let conductor_id = data.conductor_id; // Use the conductor_id directly
-                    let netAmount = totalLoad + totalFare;
+                            // Check if conductor_id exists
+                            if (data.conductor_id) {
+                                let totalLoad = parseFloat(data.total_load) || 0;
+                                let totalFare = parseFloat(data.total_fare) || 0;
+                                let conductor_id = data.conductor_id; // Use the conductor_id directly
+                                let netAmount = totalLoad + totalFare;
 
-                    document.getElementById('net_amount').value = netAmount.toFixed(2) || '0.00';
-                } else {
-                    alert('Conductor ID not found.');
-                }
-            } else {
-                alert(data.message || 'Error fetching conductor info.');
-            }
-        })
+                                document.getElementById('net_amount').value = netAmount.toFixed(2) || '0.00';
+                            } else {
+                                alert('Conductor ID not found.');
+                            }
+                        } else {
+                            alert(data.message || 'Error fetching conductor info.');
+                        }
+                    })
                     .catch(error => {
                         console.error('Error:', error);
                         alert('Failed to fetch data.');
                     });
             }
         });
+
+        // Optional: Handle form submission if needed
+        document.getElementById('remittanceForm').addEventListener('submit', function (event) {
+            // Ensure form submission does not reload the page
+            event.preventDefault();
+
+            // Your form submission logic here
+            // For example, you can send the form data using AJAX as well
+        });
+
     </script>
 </body>
 

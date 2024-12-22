@@ -76,11 +76,12 @@ if (isset($_POST['Login'])) {
                             title: 'Login Successfully',
                             text: ' " . /* htmlspecialchars($row['fullname']) . */ "',
                             icon: 'success',
-                            confirmButtonText: 'Continue'
+                             showConfirmButton: false,
+                           timer: 1000
                         }).then((result) => {
-                            if (result.isConfirmed) {
+                        
                                 window.location.href = '" . getRedirectURL($row['role']) . "';
-                            }
+                            
                         });
                     });
                     </script>";
@@ -113,14 +114,7 @@ if (isset($_POST['Login'])) {
          font-family: Arial, sans-serif;
       }
 
-      .wrapper {
-         max-width: 400px;
-         margin: 0 auto;
-         padding: 40px;
-         background-color: #fff;
-         border-radius: 8px;
-         box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-      }
+     
 
       .title-text {
          text-align: center;
@@ -173,8 +167,20 @@ if (isset($_POST['Login'])) {
          border-radius: 4px;
          cursor: pointer;
          transition: background-color 0.3s;
+         
       }
-
+      .btn-signup {
+         margin-top: 10px;
+         width: 100%;
+         padding: 15px;
+         background-color: #576BED;
+         color: white;
+         font-size: 18px;
+         border: none;
+         border-radius: 4px;
+         cursor: pointer;
+         transition: background-color 0.3s;
+      }
       .btn:hover {
          background-color: #2980b9;
       }
@@ -224,6 +230,14 @@ if (isset($_POST['Login'])) {
       header nav ul li a:hover {
          color: #2980b9;
       }
+      .signup-link p {
+         margin-top: 15px;
+         font-size: 20px;
+      }
+      .forgot-link p{
+         margin-top: 15px;
+         font-size: 20px;
+      }
    </style>
    <script>
       function togglePassword(inputId, iconId) {
@@ -252,21 +266,29 @@ if (isset($_POST['Login'])) {
    </header>
 
    <div class="wrapper">
-      <p>Login Form</p>
-      <div class="form-container">
-         <form method="POST" action="#" class="login">
-            <?php echo $msg; ?>
-            <div class="field">
-               <input type="text" name="username" placeholder="Account Number/Email" required>
-            </div>
-            <div class="field">
-               <input type="password" name="password" placeholder="Password" id="pass2" required>
-               <i class="fas fa-eye" id="togglePassword2" onclick="togglePassword('pass2', 'togglePassword2')"></i>
-            </div>
-            <input type="submit" name="Login" value="Log in" class="btn">
-         </form>
+   <p>Login Form</p>
+   <div class="form-container">
+      <form method="POST" action="#" class="login">
+         <?php echo $msg; ?>
+         <div class="field">
+            <input type="text" name="username" placeholder="Account Number/Email" required>
+         </div>
+         <div class="field">
+            <input type="password" name="password" placeholder="Password" id="pass2" required>
+            <i class="fas fa-eye" id="togglePassword2" onclick="togglePassword('pass2', 'togglePassword2')"></i>
+         </div>
+         <input type="submit" name="Login" value="Log in" class="btn">
+      </form>
+      <div class="signup-link">
+         <!-- Changed to a button -->
+         <button onclick="window.location.href='userregister.php'" class="btn-signup">No account? Sign up here</button>
+      </div>
+      <div class="forgot-link">
+         <p>Forgot Password? <a href="forgotpassword.php">Click here</a></p>
       </div>
    </div>
+</div>
+
 </body>
 
 </html>

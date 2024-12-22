@@ -125,10 +125,6 @@ if (isset($_POST['fetch_users'])) {
         $output .= '<td>' . date('F j, Y', strtotime($row['birthday'])) . '</td>';
         $output .= '<td>' . $row['age'] . '</td>';
         $output .= '<td>' . htmlspecialchars($row['gender']) . '</td>';
-        $output .= '<td>' . htmlspecialchars($row['address']) . '</td>';
-        $output .= '<td>' . htmlspecialchars($row['province']) . '</td>';
-        $output .= '<td>' . htmlspecialchars($row['municipality']) . '</td>';
-        $output .= '<td>' . htmlspecialchars($row['barangay']) . '</td>';
         $output .= '<td>' . htmlspecialchars($row['account_number']) . '</td>';
         $output .= '<td>₱' . number_format($row['balance'], 2) . '</td>';
         $output .= '<td>' . ($row['is_activated'] == 1 ? 'Activated' : 'Disabled') . '</td>';
@@ -170,8 +166,8 @@ if (isset($_POST['fetch_users'])) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/alertify.min.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/alertify.min.js"></script>
     <link rel="stylesheet" href="../css/style.css">
     <style>
         .sidebar {
@@ -209,10 +205,33 @@ if (isset($_POST['fetch_users'])) {
         }
 
         .table-container {
-            max-height: 400px;
+            max-height: 520px;
             overflow-y: auto;
             overflow-x: hidden;
         }
+
+        .clickable-count {
+    text-decoration: none; /* Remove underline */
+    color: #007bff; /* Bootstrap primary color */
+    font-weight: bold; /* Make the text bold */
+    transition: color 0.3s, background-color 0.3s; /* Smooth transition for hover effects */
+    padding: 5px; /* Add some padding */
+    border-radius: 4px; /* Rounded corners */
+}
+
+.clickable-count:hover {
+    color: #fff; /* Change text color on hover */
+    background-color: #007bff; /* Change background color on hover */
+}
+h5{
+    color: black;
+}
+
+.custom-btn {
+    padding: 12px 24px; /* Adjust padding for button size */
+    font-size: 16px; /* Adjust font size */
+}
+
 
         /* Responsive Design */
         @media (max-width: 768px) {
@@ -237,21 +256,21 @@ if (isset($_POST['fetch_users'])) {
     <!-- Page Content  -->
 
     <div class="main-content">
-        <h3>
-            Registered Users Awaiting Activation: <?php echo $userActivateCount; ?> Registered Users:
-            <?php echo $userCount; ?>
-        </h3>
-
-
+    <h3>
+    <a href="#" id="awaitingActivation" class="clickable-count">
+        Awaiting Activation: <?php echo $userActivateCount; ?>
+    </a>
+</h3>
+<h3>
+    <a href="#" id="registeredUsers" class="clickable-count">
+        Registered Users: <?php echo $userCount; ?>
+    </a>
+</h3>
 
         <form method="POST" action="">
             <div class="input-group mb-3">
                 <input type="text" class="form-control" id="search" name="search" placeholder="Search users...">
-                <select class="form-select" id="statusFilter" name="statusFilter">
-                    <option value="">All Users</option>
-                    <option value="1">Activated</option>
-                    <option value="0">Disabled</option>
-                </select>
+              
             </div>
         </form>
         <!-- Feedback Message -->
@@ -268,6 +287,7 @@ if (isset($_POST['fetch_users'])) {
         <div class="table-container">
             <div class="table-responsive">
                 <table class="table table-striped">
+                <caption>List of users</caption>
                     <thead>
                         <tr>
                             <th>ID</th>
@@ -277,10 +297,7 @@ if (isset($_POST['fetch_users'])) {
                             <th>Birthday</th>
                             <th>Age</th>
                             <th>Gender</th>
-                            <th>Address</th>
-                            <th>Province</th>
-                            <th>Municipality</th>
-                            <th>Barangay</th>
+                          
                             <th>Account Number</th>
                             <th>Balance</th>
                             <th>Status</th>
@@ -297,16 +314,7 @@ if (isset($_POST['fetch_users'])) {
                                 <td><?php echo date('F j, Y', strtotime($row['birthday'])); ?></td>
                                 <td><?php echo $row['age']; ?></td>
                                 <td><?php echo htmlspecialchars($row['gender']); ?></td>
-                                <td><?php echo htmlspecialchars($row['address']); ?></td>
-                                <td id="province-<?php echo $row['id']; ?>">
-                                    <?php echo htmlspecialchars($row['province']); ?>
-                                </td>
-                                <td id="municipality-<?php echo $row['id']; ?>">
-                                    <?php echo htmlspecialchars($row['municipality']); ?>
-                                </td>
-                                <td id="barangay-<?php echo $row['id']; ?>">
-                                    <?php echo htmlspecialchars($row['barangay']); ?>
-                                </td>
+
                                 <td><?php echo htmlspecialchars($row['account_number']); ?></td>
                                 <td>₱<?php echo number_format($row['balance'], 2); ?></td>
                                 <td><?php echo isset($row['is_activated']) ? ($row['is_activated'] == 1 ? 'Activated' : 'Disabled') : 'N/A'; ?>
@@ -321,6 +329,7 @@ if (isset($_POST['fetch_users'])) {
                                         </button>
                                     </form>
                                 </td>
+                              
                             </tr>
                         <?php endwhile; ?>
                     </tbody>
@@ -331,24 +340,20 @@ if (isset($_POST['fetch_users'])) {
 
         <!-- Action Modal -->
         <div class="modal fade" id="actionModal" tabindex="-1" aria-labelledby="actionModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="actionModalLabel">User Actions</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <button id="activateBtn" class="btn btn-success btn-sm"
-                            onclick="confirmActivate()">Activate</button>
-                        <button id="disableBtn" class="btn btn-danger btn-sm"
-                            onclick="confirmDisable()">Disable</button>
-                        <button id="transferFundsBtn" class="btn btn-warning btn-sm"
-                            onclick="confirmTransferDisable()">Transfer
-                            Funds</button>
-                    </div>
-                </div>
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title d-flex justify-content-center w-100" id="actionModalLabel">Actions</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body d-flex justify-content-center align-items-center">
+                <button id="activateBtn" class="btn btn-success custom-btn mx-2" onclick="confirmActivate()">Activate</button>
+                <button id="disableBtn" class="btn btn-danger custom-btn mx-2" onclick="confirmDisable()">Disable</button>
+                <button id="transferFundsBtn" class="btn btn-warning custom-btn mx-2" onclick="confirmTransferDisable()">Transfer Funds</button>
             </div>
         </div>
+    </div>
+</div>
 
 
 
@@ -356,6 +361,45 @@ if (isset($_POST['fetch_users'])) {
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
         <script>
+            $(document).ready(function () {
+    // Function to fetch users based on search and filter
+    function fetchUsers(search = '', statusFilter = '') {
+        $.ajax({
+            url: '', // Current file
+            method: 'POST',
+            data: {
+                search: search,
+                statusFilter: statusFilter,
+                fetch_users: true // Indicate that we want to fetch users
+            },
+            success: function (data) {
+                $('#userTableBody').html(data); // Update the table body with the response
+            }
+        });
+    }
+
+    // Trigger fetch on search input change
+    $('#search').on('keyup', function () {
+        fetchUsers($(this).val(), $('#statusFilter').val());
+    });
+
+    // Trigger fetch on dropdown change
+    $('#statusFilter').on('change', function () {
+        fetchUsers($('#search').val(), $(this).val());
+    });
+
+    // Click event for Awaiting Activation count
+    $('#awaitingActivation').on('click', function (e) {
+        e.preventDefault(); // Prevent default anchor behavior
+        fetchUsers('', 0); // Fetch users with status 0 (not activated)
+    });
+
+    // Click event for Registered Users count
+    $('#registeredUsers').on('click', function (e) {
+        e.preventDefault(); // Prevent default anchor behavior
+        fetchUsers('', 1); // Fetch users with status 1 (activated)
+    });
+});
             $(document).ready(function () {
                 // Function to fetch users based on search and filter
                 function fetchUsers() {
