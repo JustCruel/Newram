@@ -281,7 +281,7 @@ if (isset($_POST['Login'])) {
       </form>
       <div class="signup-link">
          <!-- Changed to a button -->
-         <button onclick="window.location.href='userregister.php'" class="btn-signup">No account? Sign up here</button>
+         <button onclick="window.location.href='userregister.php'" class="btn-signup">Sign up</button>
       </div>
       <div class="forgot-link">
          <p>Forgot Password? <a href="forgotpassword.php">Click here</a></p>
