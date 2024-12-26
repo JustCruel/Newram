@@ -172,9 +172,8 @@ $userResult = mysqli_query($conn, $userQuery);
                                 <form id="disableForm<?php echo $row['id']; ?>" method="POST">
                                     <input type="hidden" name="user_id" value="<?php echo $row['id']; ?>">
                                     <button type="button" onclick="confirmDisable(<?php echo $row['id']; ?>)"
-                                        class="btn btn-disable btn-sm">Disable</button>
-                                    <button type="button" onclick="confirmTransferDisable(<?php echo $row['id']; ?>)"
-                                        class="btn btn-transfer btn-sm">Transfer Funds</button>
+                                        class="btn btn-disable btn-sm">Deactivate</button>
+                                   
                                 </form>
                             </td>
                         </tr>

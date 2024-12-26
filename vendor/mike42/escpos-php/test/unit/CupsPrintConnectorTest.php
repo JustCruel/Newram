@@ -1,7 +1,7 @@
 <?php
 use Mike42\Escpos\PrintConnectors\CupsPrintConnector;
 
-class CupsPrintConnectorTest extends PHPUnit\Framework\TestCase
+class CupsPrintConnectorTest extends PHPUnit_Framework_TestCase
 {
     private $connector;
     public function testPrinterExists()
@@ -12,14 +12,14 @@ class CupsPrintConnectorTest extends PHPUnit\Framework\TestCase
     }
     public function testPrinterDoesntExist()
     {
-        $this -> expectException(BadMethodCallException::class);
+        $this -> setExpectedException('BadMethodCallException');
         $connector = $this->getMockConnector("FooPrinter", array("OtherPrinter"));
         $connector->expects($this->once())->method('getCmdOutput')->with($this->stringContains("lp -d 'FooPrinter' "));
         $connector->finalize();
     }
     public function testNoPrinter()
     {
-        $this -> expectException(BadMethodCallException::class);
+        $this -> setExpectedException('BadMethodCallException');
         $connector = $this->getMockConnector("FooPrinter", array(""));
     }
     private function getMockConnector($path, array $printers)

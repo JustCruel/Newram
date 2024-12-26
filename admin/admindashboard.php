@@ -117,21 +117,21 @@ $todayRevenue = mysqli_fetch_assoc($todayRevenueResult)['todayRevenue'] ?? 0;
                 <h3>Total Terminals</h3>
                 <p>3</p> <!-- Update with actual data -->
             </div>
-            <div class="dashboard-item">
+            <div class="dashboard-item" onclick="window.location.href='revenue.php';">
                 <i class="fas fa-money-bill-wave fa-2x"></i>
                 <h3>Total Revenue</h3>
                 <p>₱<?php echo number_format($totalRevenue, 2); ?></p>
             </div>
-            <div class="dashboard-item">
+            <div class="dashboard-item" onclick="window.location.href='busviewinfo.php';">
                 <i class="fas fa-car fa-2x"></i>
                 <h3>Total Buses</h3>
                 <p><?php echo $busCount; ?></p>
             </div>
-            <div class="dashboard-items">
+            <div class="dashboard-items" onclick="window.location.href='revenue.php';">
                 <h3>Monthly Revenue Chart</h3>
                 <canvas id="revenueChart"></canvas>
             </div>
-            <div class="dashboard-items">
+            <div class="dashboard-items" onclick="window.location.href='revenue.php';">
                 <h3>Today's Revenue</h3>
                 <canvas id="todayRevenueChart"></canvas>
             </div>

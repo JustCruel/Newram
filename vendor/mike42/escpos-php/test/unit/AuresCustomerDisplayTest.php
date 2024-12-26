@@ -4,12 +4,12 @@ use Mike42\Escpos\Devices\AuresCustomerDisplay;
 use Mike42\Escpos\PrintConnectors\DummyPrintConnector;
 use Mike42\Escpos\CapabilityProfile;
 
-class AuresCustomerDisplayTest extends PHPUnit\Framework\TestCase
+class AuresCustomerDisplayTest extends PHPUnit_Framework_TestCase
 {
     protected $printer;
     protected $outputConnector;
     
-    protected function setUp(): void
+    protected function setup()
     {
         /* Print to nowhere- for testing which inputs are accepted */
         $this -> outputConnector = new DummyPrintConnector();
@@ -27,7 +27,7 @@ class AuresCustomerDisplayTest extends PHPUnit\Framework\TestCase
         $this -> assertEquals($expected, $outp);
     }
     
-    protected function tearDown(): void
+    protected function tearDown()
     {
         $this -> outputConnector -> finalize();
     }

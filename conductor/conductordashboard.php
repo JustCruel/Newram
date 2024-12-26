@@ -60,7 +60,6 @@ while ($row = mysqli_fetch_assoc($revenueByDateResult)) {
 }
 
 
-
 ?>
 
 <!doctype html>
@@ -151,7 +150,7 @@ while ($row = mysqli_fetch_assoc($revenueByDateResult)) {
             <div class="card text-center text-white bg-info">
                 <div class="card-body">
                     <h3><i class="fas fa-bus"></i></h3>
-                    <h4>Passengers Today</h4>
+                    <h4>Total Transactions Today</h4>
                     <p class="h2"><?php echo $totalPassengers; ?></p>
                 </div>
             </div>

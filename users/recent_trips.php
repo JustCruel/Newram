@@ -45,7 +45,8 @@ $recentTripsQuery = "
         timestamp AS trip_date, 
         fare AS amount, 
         from_route, 
-        to_route 
+        to_route,
+        bus_number
     FROM passenger_logs 
     WHERE rfid = ? 
     ORDER BY timestamp DESC 
@@ -65,6 +66,7 @@ while ($row = $recentTripsResult->fetch_assoc()) {
         'amount' => $row['amount'],
         'from_route' => $row['from_route'],
         'to_route' => $row['to_route'],
+        'bus_number' => $row['bus_number'],
     ];
 }
 $recentTripsStmt->close();
@@ -117,6 +119,7 @@ $recentTripsStmt->close();
                         <th>From</th>
                         <th>To</th>
                         <th>Fare Amount</th>
+                        <th>Bus Number</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -126,6 +129,7 @@ $recentTripsStmt->close();
                             <td><?php echo htmlspecialchars($trip['from_route']); ?></td>
                             <td><?php echo htmlspecialchars($trip['to_route']); ?></td>
                             <td>₱<?php echo number_format($trip['amount'], 2); ?></td>
+                            <td><?php echo htmlspecialchars($trip['bus_number']); ?></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>

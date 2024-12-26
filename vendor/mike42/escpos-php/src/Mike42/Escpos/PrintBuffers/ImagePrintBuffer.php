@@ -1,17 +1,14 @@
 <?php
-
 /**
  * This file is part of escpos-php: PHP receipt printer library for use with
  * ESC/POS-compatible thermal and impact printers.
  *
- * Copyright (c) 2014-20 Michael Billington < michael.billington@gmail.com >,
+ * Copyright (c) 2014-16 Michael Billington < michael.billington@gmail.com >,
  * incorporating modifications by others. See CONTRIBUTORS.md for a full list.
  *
  * This software is distributed under the terms of the MIT license. See LICENSE.md
  * for details.
  */
-
-declare(strict_types=1);
 
 namespace Mike42\Escpos\PrintBuffers;
 
@@ -63,7 +60,7 @@ class ImagePrintBuffer implements PrintBuffer
         $this -> printer = $printer;
     }
 
-    public function writeText(string $text)
+    public function writeText($text)
     {
         if ($this -> printer == null) {
             throw new LogicException("Not attached to a printer.");
@@ -105,7 +102,7 @@ class ImagePrintBuffer implements PrintBuffer
         $this -> printer -> bitImage($escposImage, $size);
     }
 
-    public function writeTextRaw(string $text)
+    public function writeTextRaw($text)
     {
         if ($this -> printer == null) {
             throw new LogicException("Not attached to a printer.");
@@ -123,7 +120,7 @@ class ImagePrintBuffer implements PrintBuffer
      * @param string $font
      *            Font name or a filename
      */
-    public function setFont(string $font)
+    public function setFont($font)
     {
         $this->font = $font;
     }
@@ -131,7 +128,7 @@ class ImagePrintBuffer implements PrintBuffer
     /**
      * Numeric font size for rendering text to image
      */
-    public function setFontSize(int $fontSize)
+    public function setFontSize($fontSize)
     {
         $this->fontSize = $fontSize;
     }

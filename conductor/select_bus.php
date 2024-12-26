@@ -2,6 +2,13 @@
 session_start();
 include '../config/connection.php';
 
+$driver_name = isset($_SESSION['driver_name']) ? $_SESSION['driver_name'] : null;
+
+$nameParts = explode(' ', $driver_name);
+$firstname = $nameParts[0]; // First name
+$middlename = isset($nameParts[1]) ? $nameParts[1] : ''; // Middle name (if present)
+$lastname = isset($nameParts[2]) ? $nameParts[2] : ''; // Last name (if present)
+
 if (isset($_POST['bus_number']) && isset($_POST['driver_name'])) {
     // Get the selected bus number and driver name
     $driver_account_number = $_SESSION['account_number']; // Ensure this is defined
@@ -23,14 +30,35 @@ if (isset($_POST['bus_number']) && isset($_POST['driver_name'])) {
     UPDATE businfo 
     SET driverName = '$driver_name', 
         conductorName = '$conductor_name', 
-        status = ' In Transit' 
+        status = 'In Transit' 
     WHERE bus_number = '$bus_number'
 ";
 
     if (mysqli_query($conn, $update_bus_data)) {
-        // Redirect to the conductor dashboard or another page after saving
-        header("Location: busfare.php");
-        exit();
+        // Split the full name into first, middle, and last name if necessary
+        $nameParts = explode(' ', $driver_name);
+        $firstname = $nameParts[0]; // First name
+        $middlename = isset($nameParts[1]) ? $nameParts[1] : ''; // Middle name (if present)
+        $lastname = isset($nameParts[2]) ? $nameParts[2] : '';
+      
+
+        // Update the driver status in the useracc table to 'driving'
+        $updateDriverStatusStmt = $conn->prepare("UPDATE useracc SET driverStatus = 'driving' WHERE account_number =?");
+        if ($updateDriverStatusStmt) {
+            $updateDriverStatusStmt->bind_param("s", $lastname);
+            if ($updateDriverStatusStmt->execute()) {
+                // Redirect to the conductor dashboard or another page after saving
+                header("Location: busfare.php");
+                exit();
+            } else {
+                // Error updating driver status
+                echo "Error updating driver status: " . $conn->error;
+            }
+            $updateDriverStatusStmt->close();
+        } else {
+            // Error preparing driver status update statement
+            echo "Error preparing driver status update statement: " . $conn->error;
+        }
     } else {
         // Handle database error
         echo "Error updating record: " . mysqli_error($conn);

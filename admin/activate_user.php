@@ -1,6 +1,15 @@
-<?php
+<?php 
 session_start();
-include '../config/connection.php';
+require '../PHPMailer/src/PHPMailer.php';
+require '../PHPMailer/src/SMTP.php';
+require '../PHPMailer/src/Exception.php';
+
+// Use PHPMailer namespace
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+// Include your database connection
+include "../config/connection.php";
 
 if (!isset($_SESSION['email']) || ($_SESSION['role'] != 'Admin' && $_SESSION['role'] != 'Superadmin')) {
     header("Location: ../index.php");
@@ -23,62 +32,95 @@ function logActivity($conn, $user_id, $action, $performed_by)
 // Activate user action
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['user_id'])) {
     $user_id = $_POST['user_id']; // Get the user ID from the POST data
+    $account_number = isset($_POST['account_number']) ? $_POST['account_number'] : ''; // Get the account number if provided
+    $password = "ramstarbus"; // Set a default password or generate one
+
+    $response = array(); // Initialize response array
 
     if ($user_id) {
-        // Prepare the SQL statement to prevent SQL injection
-        $activateQuery = "UPDATE useracc SET is_activated = 1 WHERE id = ?"; // Set is_activated to 1
-        $stmt = $conn->prepare($activateQuery);
-
-        if ($stmt) {
-            $stmt->bind_param("i", $user_id); // Bind the user ID as an integer parameter
-            if ($stmt->execute()) {
-                // Log the activity
-                logActivity($conn, $user_id, 'Activated', $_SESSION['firstname'] . ' ' . $_SESSION['lastname']);
-
-                // Fetch the updated list of users
-                $userQuery = "SELECT id, firstname, middlename, lastname, birthday, age, gender, address, province, municipality, barangay, account_number, balance 
-                              FROM useracc WHERE is_activated = 0"; // Fetch only activated users
-                $userResult = mysqli_query($conn, $userQuery);
-
-                $updatedTableData = ''; // Initialize updated table data
-
-                // Build the updated table rows
-                while ($row = mysqli_fetch_assoc($userResult)) {
-                    $updatedTableData .= '<tr>
-                        <td>' . htmlspecialchars($row['id']) . '</td>
-                        <td>' . htmlspecialchars($row['firstname']) . '</td>
-                        <td>' . htmlspecialchars($row['middlename']) . '</td>
-                        <td>' . htmlspecialchars($row['lastname']) . '</td>
-                        <td>' . date('F j, Y', strtotime($row['birthday'])) . '</td>
-                        <td>' . htmlspecialchars($row['age']) . '</td>
-                        <td>' . htmlspecialchars($row['gender']) . '</td>
-                        <td>' . htmlspecialchars($row['address']) . '</td>
-                        <td>' . htmlspecialchars($row['province']) . '</td>
-                        <td>' . htmlspecialchars($row['municipality']) . '</td>
-                        <td>' . htmlspecialchars($row['barangay']) . '</td>
-                        <td>' . htmlspecialchars($row['account_number']) . '</td>
-                        <td>₱' . number_format($row['balance'], 2) . '</td>
-                        <td>
-                            <form id="activateForm' . $row['id'] . '" method="POST">
-                                <input type="hidden" name="user_id" value="' . $row['id'] . '">
-                                <button type="button" onclick="confirmActivate(' . $row['id'] . ')" class="btn btn-success btn-sm">Activate</button>
-                            </form>
-                        </td>
-                    </tr>';
+        if (!empty($account_number)) {
+            // If an account number is provided, update it along with activation
+            $activateQuery = "UPDATE useracc SET is_activated = 1, account_number = ? WHERE id = ?";
+            $stmt1 = $conn->prepare($activateQuery);
+            if ($stmt1) {
+                $stmt1->bind_param("si", $account_number, $user_id);
+                if ($stmt1->execute()) {
+                    logActivity($conn, $user_id, 'Activated with account number', $_SESSION['firstname'] . ' ' . $_SESSION['lastname']);
+                    $response['status'] = 'success';
+                    $response['message'] = ' User activated and email has been sent successfully!';
+                } else {
+                    $response['status'] = 'error';
+                    $response['message'] = 'Failed to activate user with account number.';
                 }
-
-                // Return the updated table rows as a JSON response
-                echo json_encode(['success' => true, 'tableData' => $updatedTableData]);
-            } else {
-                echo json_encode(['success' => false, 'message' => "Error activating user: " . $stmt->error]);
+                $stmt1->close();
             }
-            $stmt->close(); // Close the statement
         } else {
-            echo json_encode(['success' => false, 'message' => "Error preparing statement: " . $conn->error]);
+            // If no account number is provided, just activate the user
+            $activateQuery = "UPDATE useracc SET is_activated = 1 WHERE id = ?";
+            $stmt2 = $conn->prepare($activateQuery);
+            if ($stmt2) {
+                $stmt2->bind_param("i", $user_id);
+                if ($stmt2->execute()) {
+                    logActivity($conn, $user_id, 'Activated without account number', $_SESSION['firstname'] . ' ' . $_SESSION['lastname']);
+                    $response['status'] = 'success';
+                    $response['message'] = 'User activated successfully!!';
+                } else {
+                    $response['status'] = 'error';
+                    $response['message'] = 'Failed to activate user without account number.';
+                }
+                $stmt2->close();
+            }
         }
+
+        // Fetch user details for email notification
+        $userQuery = "SELECT firstname, lastname, email FROM useracc WHERE id = ?";
+        $stmt3 = $conn->prepare($userQuery);
+        if ($stmt3) {
+            $stmt3->bind_param("i", $user_id);
+            $stmt3->execute();
+            $stmt3->bind_result($firstname, $lastname, $email);
+            $stmt3->fetch();
+            $stmt3->close();
+        }
+
+        // Send email if activated with account number
+        if (!empty($account_number)) {
+            $mail = new PHPMailer(true);
+            try {
+                $mail->isSMTP();
+                $mail->Host = 'smtp.gmail.com';
+                $mail->SMTPAuth = true;
+                $mail->Username = 'ramstarzaragoza@gmail.com';
+                $mail->Password = 'hwotyendfdsazoar';
+                $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+                $mail->Port = 587;
+
+                $mail->setFrom('ramstarzaragoza@gmail.com', 'Ramstar Bus Transportation');
+                $mail->addAddress($email, $firstname . ' ' . $lastname);
+                $mail->isHTML(true);
+                $mail->Subject = 'Registration Successful';
+                $mail->Body = "
+                    <p>Dear $firstname,</p>
+                    <p>Your account has been successfully activated!.</p>
+                    <p>Login to ramstarbus.com<p>
+                    <p><strong>Account Number:</strong> $account_number<br>
+                    <strong>Password:</strong>$password</p>
+                    <p>Change your password after logging in for security.</p>
+                    <p>Best regards,<br>RAMSTAR</p>
+                ";
+
+                $mail->send();
+            } catch (Exception $e) {
+                error_log("Email could not be sent. Mailer Error: {$mail->ErrorInfo}");
+            }
+        }
+
     } else {
-        echo json_encode(['success' => false, 'message' => "User  ID is missing."]);
+        $response['status'] = 'error';
+        $response['message'] = 'Failed to activate user.';
     }
-    exit;
+
+    // Return response as JSON
+    echo json_encode($response);
 }
 ?>

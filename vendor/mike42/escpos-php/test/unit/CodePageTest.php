@@ -1,24 +1,39 @@
 <?php
 use Mike42\Escpos\CodePage;
 
-class CodePageTest extends PHPUnit\Framework\TestCase
+class CodePageTest extends PHPUnit_Framework_TestCase
 {
-    public function testDataGenerated()
+
+    protected function requiresIconv()
+    {
+        if (! extension_loaded('iconv')) {
+            $this->markTestSkipped("Requires iconv");
+        }
+    }
+
+    public function testDataIconv()
     {
         // Set up CP437
+        $this->requiresIconv();
         $cp = new CodePage("CP437", array(
             "name" => "CP437",
             "iconv" => "CP437"
         ));
-        $dataArray = $cp->getDataArray();
-        $this->assertEquals(128, count($dataArray));
-        $expected = "ÇüéâäàåçêëèïîìÄÅÉæÆôöòûùÿÖÜ¢£¥₧ƒáíóúñÑªº¿⌐¬½¼¡«»░▒▓│┤╡╢╖╕╣║╗╝╜╛┐└┴┬├─┼╞╟╚╔╩╦╠═╬╧╨╤╥╙╘╒╓╫╪┘┌█▄▌▐▀αßΓπΣσμτΦΘΩδ∞φε∩≡±≥≤⌠⌡÷≈°∙·√ⁿ²■ ";
-        $this->assertEquals($expected, self::dataArrayToString($dataArray));
+        $this->assertTrue($cp->isEncodable());
+        $this->assertEquals($cp->getIconv(), "CP437");
+        $this->assertEquals($cp->getName(), "CP437");
+        $this->assertEquals($cp->getId(), "CP437");
+        $this->assertEquals($cp->getNotes(), null);
+        // Get data and see if it's right
+        $data = $cp->getData();
+        $expected = "ÇüéâäàåçêëèïîìÄÅÉæÆôöòûùÿÖÜ¢£¥₧ƒáíóúñÑªº¿⌐¬½¼¡«»░▒▓│┤╡╢╖╕╣║╗╝╜╛┐└┴┬├─┼╞╟╚╔╩╦╠═╬╧╨╤╥╙╘╒╓╫╪┘┌█▄▌▐▀αßΓπΣσµτΦΘΩδ∞φε∩≡±≥≤⌠⌡÷≈°∙·√ⁿ²■ ";
+        $this->assertEquals($expected, $data);
     }
 
-    public function testDataGenerateFailed()
+    public function testDataIconvBogus()
     {
         // No errors raised, you just get an empty list of supported characters if you try to compute a fake code page
+        $this->requiresIconv();
         $cp = new CodePage("foo", array(
             "name" => "foo",
             "iconv" => "foo"
@@ -28,49 +43,21 @@ class CodePageTest extends PHPUnit\Framework\TestCase
         $this->assertEquals($cp->getName(), "foo");
         $this->assertEquals($cp->getId(), "foo");
         $this->assertEquals($cp->getNotes(), null);
-        $dataArray = $cp->getDataArray();
+        $data = $cp->getData();
         $expected = str_repeat(" ", 128);
-        $this->assertEquals($expected, self::dataArrayToString($dataArray));
+        $this->assertEquals($expected, $data);
         // Do this twice (caching behaviour)
-        $dataArray = $cp->getDataArray();
-        $this->assertEquals($expected, self::dataArrayToString($dataArray));
-    }
-
-    public function testDataDefined()
-    {
-        // A made up code page called "baz", which is the same as CP437 but with some unmapped values at the start.
-        $cp = new CodePage("baz", array(
-            "name" => "baz",
-            "iconv" => "baz",
-            "data" => [
-                "   âäàåçêëèïîìÄÅ",
-                "ÉæÆôöòûùÿÖÜ¢£¥₧ƒ",
-                "áíóúñÑªº¿⌐¬½¼¡«»",
-                "░▒▓│┤╡╢╖╕╣║╗╝╜╛┐",
-                "└┴┬├─┼╞╟╚╔╩╦╠═╬╧",
-                "╨╤╥╙╘╒╓╫╪┘┌█▄▌▐▀",
-                "αßΓπΣσμτΦΘΩδ∞φε∩",
-                "≡±≥≤⌠⌡÷≈°∙·√ⁿ²■ "]
-        ));
-        $dataArray = $cp->getDataArray();
-        $this->assertEquals(128, count($dataArray));
-        $expected = "   âäàåçêëèïîìÄÅÉæÆôöòûùÿÖÜ¢£¥₧ƒáíóúñÑªº¿⌐¬½¼¡«»░▒▓│┤╡╢╖╕╣║╗╝╜╛┐└┴┬├─┼╞╟╚╔╩╦╠═╬╧╨╤╥╙╘╒╓╫╪┘┌█▄▌▐▀αßΓπΣσμτΦΘΩδ∞φε∩≡±≥≤⌠⌡÷≈°∙·√ⁿ²■ ";
-        $this->assertEquals($expected, self::dataArrayToString($dataArray));
+        $data = $cp->getData();
+        $this->assertEquals($expected, $data);
     }
 
     public function testDataCannotEncode()
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->setExpectedException('\InvalidArgumentException');
         $cp = new CodePage("foo", array(
             "name" => "foo"
         ));
         $this->assertFalse($cp->isEncodable());
-        $cp->getDataArray();
-    }
-
-    private static function dataArrayToString(array $codePoints) : string
-    {
-        // Assemble into character string so that the assertion is more compact
-        return implode(array_map("IntlChar::chr", $codePoints));
+        $cp->getData();
     }
 }

@@ -4,6 +4,14 @@ include 'config/connection.php';
 
 $response = ['success' => false, 'message' => ''];
 
+$driver_name = isset($_SESSION['driver_name']) ? $_SESSION['driver_name'] : null;
+
+$nameParts = explode(' ', $driver_name);
+$firstname = $nameParts[0]; // First name
+$middlename = isset($nameParts[1]) ? $nameParts[1] : ''; // Middle name (if present)
+$lastname = isset($nameParts[2]) ? $nameParts[2] : ''; // Last name (if present)
+
+
 if (isset($_POST['confirm_logout']) && $_POST['confirm_logout'] === 'true') {
     // Check if it's a conductor's session
     if (isset($_SESSION['bus_number'], $_SESSION['driver_account_number'], $_SESSION['email'], $_SESSION['driver_name'])) {
@@ -11,6 +19,7 @@ if (isset($_POST['confirm_logout']) && $_POST['confirm_logout'] === 'true') {
         $conductor_id = $_SESSION['driver_account_number'];
         $email = $_SESSION['email'];
         $driver_name = $_SESSION['driver_name'];
+   
 
         // Update the bus status to 'Available'
         $updateBusStmt = $conn->prepare("UPDATE businfo SET driverName ='', conductorName ='', status = 'Available' WHERE bus_number = ?");
@@ -18,15 +27,11 @@ if (isset($_POST['confirm_logout']) && $_POST['confirm_logout'] === 'true') {
             $updateBusStmt->bind_param("s", $bus_number);
             if ($updateBusStmt->execute()) {
                 // Split the full name into first, middle, and last name if necessary
-                $nameParts = explode(' ', $driver_name);
-                $firstname = $nameParts[0]; // First name
-                $middlename = isset($nameParts[1]) ? $nameParts[1] : ''; // Middle name (if present)
-                $lastname = isset($nameParts[2]) ? $nameParts[2] : ''; // Last name (if present)
-
+               
                 // Update the driver status in the useracc table to 'notdriving'
-                $updateDriverStatusStmt = $conn->prepare("UPDATE useracc SET driverStatus = 'notdriving' WHERE firstname = ? AND middlename = ? AND lastname = ?");
+                $updateDriverStatusStmt = $conn->prepare("UPDATE useracc SET driverStatus = 'notdriving' WHERE  account_number = ?");
                 if ($updateDriverStatusStmt) {
-                    $updateDriverStatusStmt->bind_param("sss", $firstname, $middlename, $lastname);
+                    $updateDriverStatusStmt->bind_param("s",$lastname);
                     if ($updateDriverStatusStmt->execute()) {
                         session_destroy(); // End the session
                         $response = ['success' => true, 'message' => 'Conductor logged out successfully and driver status updated.'];
@@ -61,6 +66,7 @@ if (isset($_POST['confirm_logout']) && $_POST['confirm_logout'] === 'true') {
     echo json_encode($response);
     exit();
 }
+ var_dump($lastname);
 ?>
 
 

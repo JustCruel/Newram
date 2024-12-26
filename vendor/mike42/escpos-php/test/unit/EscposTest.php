@@ -1,15 +1,15 @@
 <?php
 use Mike42\Escpos\Printer;
+use Mike42\Escpos\CapabilityProfiles\SimpleCapabilityProfile;
 use Mike42\Escpos\PrintConnectors\DummyPrintConnector;
 use Mike42\Escpos\EscposImage;
-use Mike42\Escpos\CapabilityProfile;
 
-class EscposTest extends PHPUnit\Framework\TestCase
+class EscposTest extends PHPUnit_Framework_TestCase
 {
     protected $printer;
     protected $outputConnector;
 
-    protected function setUp(): void
+    protected function setup()
     {
         /* Print to nowhere- for testing which inputs are accepted */
         $this -> outputConnector = new DummyPrintConnector();
@@ -26,7 +26,7 @@ class EscposTest extends PHPUnit\Framework\TestCase
         $this -> assertEquals($expected, $outp);
     }
 
-    protected function tearDown(): void
+    protected function tearDown()
     {
         $this -> outputConnector -> finalize();
     }
@@ -36,7 +36,7 @@ class EscposTest extends PHPUnit\Framework\TestCase
         if (!EscposImage::isGdLoaded() && !EscposImage::isImagickLoaded()) {
             // If the test is about to do something which requires a library,
             // something must throw an exception.
-            $this -> expectException(Exception::class);
+            $this -> setExpectedException('Exception');
         }
     }
 
@@ -51,6 +51,12 @@ class EscposTest extends PHPUnit\Framework\TestCase
         $this -> checkOutput("\x1b@The quick brown fox jumps over the lazy dog\n");
     }
 
+    public function testTextDefault()
+    {
+        $this -> printer -> text();
+        $this -> checkOutput("\x1b@");
+    }
+    
     public function testTextChinese()
     {
         // Switch to chinese print mode, GBK output, switch back to alphanumeric.
@@ -70,8 +76,17 @@ class EscposTest extends PHPUnit\Framework\TestCase
     {
         $this -> printer -> text("String");
         $this -> printer -> text(123);
+        $this -> printer -> text();
+        $this -> printer -> text(null);
         $this -> printer -> text(1.2);
-        $this -> checkOutput("\x1b@String1231.2");
+        $this -> printer -> text(new FooBar("FooBar"));
+        $this -> checkOutput("\x1b@String1231.2FooBar");
+    }
+
+    public function testTextObject()
+    {
+        $this -> setExpectedException('InvalidArgumentException');
+        $this -> printer -> text(new DateTime());
     }
 
     public function testFeedDefault()
@@ -88,13 +103,19 @@ class EscposTest extends PHPUnit\Framework\TestCase
 
     public function testFeedZero()
     {
-        $this -> expectException(InvalidArgumentException::class);
+        $this -> setExpectedException('InvalidArgumentException');
         $this -> printer -> feed(0);
+    }
+
+    public function testFeedNonInteger()
+    {
+        $this -> setExpectedException('InvalidArgumentException');
+        $this -> printer -> feed("ab");
     }
 
     public function testFeedTooLarge()
     {
-        $this -> expectException(InvalidArgumentException::class);
+        $this -> setExpectedException('InvalidArgumentException');
         $this -> printer -> feed(256);
     }
 
@@ -161,14 +182,20 @@ class EscposTest extends PHPUnit\Framework\TestCase
 
     public function testSetUnderlineTooLarge()
     {
-        $this -> expectException(InvalidArgumentException::class);
+        $this -> setExpectedException('InvalidArgumentException');
         $this -> printer -> setUnderline(3);
     }
 
     public function testSetUnderlineNegative()
     {
-        $this -> expectException(InvalidArgumentException::class);
+        $this -> setExpectedException('InvalidArgumentException');
         $this -> printer -> setUnderline(-1);
+    }
+
+    public function testSetUnderlineNonInteger()
+    {
+        $this -> setExpectedException('InvalidArgumentException');
+        $this -> printer -> setUnderline("Hello");
     }
 
     /* Emphasis */
@@ -190,6 +217,12 @@ class EscposTest extends PHPUnit\Framework\TestCase
         $this -> checkOutput("\x1b@\x1bE\x00");
     }
 
+    public function testSetEmphasisNonBoolean()
+    {
+        $this -> setExpectedException('InvalidArgumentException');
+        $this -> printer -> setEmphasis(7);
+    }
+
     /* Double strike */
     public function testSetDoubleStrikeDefault()
     {
@@ -209,6 +242,12 @@ class EscposTest extends PHPUnit\Framework\TestCase
         $this -> checkOutput("\x1b@\x1bG\x00");
     }
 
+    public function testSetDoubleStrikeNonBoolean()
+    {
+        $this -> setExpectedException('InvalidArgumentException');
+        $this -> printer -> setDoubleStrike(4);
+    }
+
     /* Font */
     public function testSetFontDefault()
     {
@@ -226,15 +265,21 @@ class EscposTest extends PHPUnit\Framework\TestCase
 
     public function testSetFontNegative()
     {
-        $this -> expectException(InvalidArgumentException::class);
+        $this -> setExpectedException('InvalidArgumentException');
         $this -> printer -> setFont(-1);
     }
 
 
     public function testSetFontTooLarge()
     {
-        $this -> expectException(InvalidArgumentException::class);
+        $this -> setExpectedException('InvalidArgumentException');
         $this -> printer -> setFont(3);
+    }
+
+    public function testSetFontNonInteger()
+    {
+        $this -> setExpectedException('InvalidArgumentException');
+        $this -> printer -> setFont('hello');
     }
 
     /* Justification */
@@ -264,15 +309,21 @@ class EscposTest extends PHPUnit\Framework\TestCase
 
     public function testSetJustificationNegative()
     {
-        $this -> expectException(InvalidArgumentException::class);
+        $this -> setExpectedException('InvalidArgumentException');
         $this -> printer -> setJustification(-1);
     }
 
 
     public function testSetJustificationTooLarge()
     {
-        $this -> expectException(InvalidArgumentException::class);
+        $this -> setExpectedException('InvalidArgumentException');
         $this -> printer -> setFont(3);
+    }
+
+    public function testSetJustificationNonInteger()
+    {
+        $this -> setExpectedException('InvalidArgumentException');
+        $this -> printer -> setJustification('hello');
     }
 
     /* Reverse feed */
@@ -290,14 +341,20 @@ class EscposTest extends PHPUnit\Framework\TestCase
 
     public function testFeedReverseNegative()
     {
-        $this -> expectException(InvalidArgumentException::class);
+        $this -> setExpectedException('InvalidArgumentException');
         $this -> printer -> feedReverse(-1);
     }
 
     public function testFeedReverseTooLarge()
     {
-        $this -> expectException(InvalidArgumentException::class);
+        $this -> setExpectedException('InvalidArgumentException');
         $this -> printer -> feedReverse(256);
+    }
+
+    public function testFeedReverseNonInteger()
+    {
+        $this -> setExpectedException('InvalidArgumentException');
+        $this -> printer -> feedReverse('hello');
     }
 
     /* Cut */
@@ -324,14 +381,20 @@ class EscposTest extends PHPUnit\Framework\TestCase
 
     public function testSetBarcodeHeightNegative()
     {
-        $this -> expectException(InvalidArgumentException::class);
+        $this -> setExpectedException('InvalidArgumentException');
         $this -> printer -> setBarcodeHeight(-1);
     }
 
     public function testSetBarcodeHeightTooLarge()
     {
-        $this -> expectException(InvalidArgumentException::class);
+        $this -> setExpectedException('InvalidArgumentException');
         $this -> printer -> setBarcodeHeight(256);
+    }
+
+    public function testSetBarcodeHeightNonInteger()
+    {
+        $this -> setExpectedException('InvalidArgumentException');
+        $this -> printer -> setBarcodeHeight('hello');
     }
 
     /* Set barcode width */
@@ -349,14 +412,20 @@ class EscposTest extends PHPUnit\Framework\TestCase
     
     public function testSetBarcodeWidthNegative()
     {
-        $this -> expectException(InvalidArgumentException::class);
+        $this -> setExpectedException('InvalidArgumentException');
         $this -> printer -> setBarcodeWidth(-1);
     }
     
     public function testSetBarcodeWidthTooLarge()
     {
-        $this -> expectException(InvalidArgumentException::class);
+        $this -> setExpectedException('InvalidArgumentException');
         $this -> printer -> setBarcodeWidth(256);
+    }
+    
+    public function testSetBarcodeWidthNonInteger()
+    {
+        $this -> setExpectedException('InvalidArgumentException');
+        $this -> printer -> setBarcodeWidth('hello');
     }
 
     /* Barcode text position */
@@ -380,19 +449,19 @@ class EscposTest extends PHPUnit\Framework\TestCase
     
     public function testSetBarcodeTextPositionNegative()
     {
-        $this -> expectException(InvalidArgumentException::class);
+        $this -> setExpectedException('InvalidArgumentException');
         $this -> printer -> setBarcodeTextPosition(-1);
     }
     
     public function testSetBarcodeTextPositionTooLarge()
     {
-        $this -> expectException(InvalidArgumentException::class);
+        $this -> setExpectedException('InvalidArgumentException');
         $this -> printer -> setBarcodeTextPosition(4);
     }
     
     public function tesSetBarcodeTextPositionNonInteger()
     {
-        $this -> expectException(InvalidArgumentException::class);
+        $this -> setExpectedException('InvalidArgumentException');
         $this -> printer -> setBarcodeTextPosition('hello');
     }
 
@@ -411,13 +480,13 @@ class EscposTest extends PHPUnit\Framework\TestCase
     
     public function testBarcodeUpcaNumeric13Char()
     {
-        $this -> expectException(InvalidArgumentException::class);
+        $this -> setExpectedException('InvalidArgumentException');
         $this -> printer -> barcode("0123456789012", Printer::BARCODE_UPCA);
     }
     
     public function testBarcodeUpcaNonNumeric12Char()
     {
-        $this -> expectException(InvalidArgumentException::class);
+        $this -> setExpectedException('InvalidArgumentException');
         $this -> printer -> barcode("A12345678901", Printer::BARCODE_UPCA);
     }
 
@@ -454,13 +523,13 @@ class EscposTest extends PHPUnit\Framework\TestCase
     
     public function testBarcodeUpceNumeric9Char()
     {
-        $this -> expectException(InvalidArgumentException::class);
+        $this -> setExpectedException('InvalidArgumentException');
         $this -> printer -> barcode("012345678", Printer::BARCODE_UPCE);
     }
     
     public function testBarcodeUpceNonNumeric12Char()
     {
-        $this -> expectException(InvalidArgumentException::class);
+        $this -> setExpectedException('InvalidArgumentException');
         $this -> printer -> barcode("A12345678901", Printer::BARCODE_UPCE);
     }
 
@@ -479,13 +548,13 @@ class EscposTest extends PHPUnit\Framework\TestCase
     
     public function testBarcodeJan13Numeric11Char()
     {
-        $this -> expectException(InvalidArgumentException::class);
+        $this -> setExpectedException('InvalidArgumentException');
         $this -> printer -> barcode("01234567890", Printer::BARCODE_JAN13);
     }
     
     public function testBarcodeJan13NonNumeric13Char()
     {
-        $this -> expectException(InvalidArgumentException::class);
+        $this -> setExpectedException('InvalidArgumentException');
         $this -> printer -> barcode("A123456789012", Printer::BARCODE_JAN13);
     }
     
@@ -504,13 +573,13 @@ class EscposTest extends PHPUnit\Framework\TestCase
     
     public function testBarcodeJan8Numeric9Char()
     {
-        $this -> expectException(InvalidArgumentException::class);
+        $this -> setExpectedException('InvalidArgumentException');
         $this -> printer -> barcode("012345678", Printer::BARCODE_JAN8);
     }
     
     public function testBarcodeJan8NonNumeric8Char()
     {
-        $this -> expectException(InvalidArgumentException::class);
+        $this -> setExpectedException('InvalidArgumentException');
         $this -> printer -> barcode("A1234567", Printer::BARCODE_JAN8);
     }
     
@@ -541,25 +610,25 @@ class EscposTest extends PHPUnit\Framework\TestCase
     
     public function testBarcodeCode39AsterisksUnmatched()
     {
-        $this -> expectException(InvalidArgumentException::class);
+        $this -> setExpectedException('InvalidArgumentException');
         $this -> printer -> barcode("*TEXT", Printer::BARCODE_CODE39);
     }
     
     public function testBarcodeCode39AsteriskInText()
     {
-        $this -> expectException(InvalidArgumentException::class);
+        $this -> setExpectedException('InvalidArgumentException');
         $this -> printer -> barcode("12*34", Printer::BARCODE_CODE39);
     }
     
     public function testBarcodeCode39Lowercase()
     {
-        $this -> expectException(InvalidArgumentException::class);
+        $this -> setExpectedException('InvalidArgumentException');
         $this -> printer -> barcode("abcd", Printer::BARCODE_CODE39);
     }
     
     public function testBarcodeCode39Empty()
     {
-        $this -> expectException(InvalidArgumentException::class);
+        $this -> setExpectedException('InvalidArgumentException');
         $this -> printer -> barcode("**", Printer::BARCODE_CODE39);
     }
 
@@ -572,13 +641,13 @@ class EscposTest extends PHPUnit\Framework\TestCase
     
     public function testBarcodeItfNumericOdd()
     {
-        $this -> expectException(InvalidArgumentException::class);
+        $this -> setExpectedException('InvalidArgumentException');
         $this -> printer -> barcode("123", Printer::BARCODE_ITF);
     }
     
     public function testBarcodeItfNonNumericEven()
     {
-        $this -> expectException(InvalidArgumentException::class);
+        $this -> setExpectedException('InvalidArgumentException');
         $this -> printer -> barcode("A234", Printer::BARCODE_ITF);
     }
 
@@ -597,13 +666,13 @@ class EscposTest extends PHPUnit\Framework\TestCase
     
     public function testBarcodeCodabarNotWrapped()
     {
-        $this -> expectException(InvalidArgumentException::class);
+        $this -> setExpectedException('InvalidArgumentException');
         $this -> printer -> barcode("012345", Printer::BARCODE_CODABAR);
     }
     
     public function testBarcodeCodabarStartStopWrongPlace()
     {
-        $this -> expectException(InvalidArgumentException::class);
+        $this -> setExpectedException('InvalidArgumentException');
         $this -> printer -> barcode("012A45", Printer::BARCODE_CODABAR);
     }
 
@@ -616,7 +685,7 @@ class EscposTest extends PHPUnit\Framework\TestCase
 
     public function testBarcodeCode93Empty()
     {
-        $this -> expectException(InvalidArgumentException::class);
+        $this -> setExpectedException('InvalidArgumentException');
         $this -> printer -> barcode("", Printer::BARCODE_CODE93);
     }
 
@@ -641,7 +710,7 @@ class EscposTest extends PHPUnit\Framework\TestCase
     
     public function testBarcodeCode128NoCodeSet()
     {
-        $this -> expectException(InvalidArgumentException::class);
+        $this -> setExpectedException('InvalidArgumentException');
         $this -> printer -> barcode("ABCD", Printer::BARCODE_CODE128);
     }
     
@@ -672,16 +741,22 @@ class EscposTest extends PHPUnit\Framework\TestCase
     
     function testPulseTooHigh()
     {
-        $this -> expectException(InvalidArgumentException::class);
+        $this -> setExpectedException('InvalidArgumentException');
         $this -> printer -> pulse(0, 512, 2);
     }
     
     function testPulseTooLow()
     {
-        $this -> expectException(InvalidArgumentException::class);
+        $this -> setExpectedException('InvalidArgumentException');
         $this -> printer -> pulse(0, 0, 2);
     }
-
+    
+    function testPulseNotANumber()
+    {
+        $this -> setExpectedException('InvalidArgumentException');
+        $this -> printer -> pulse("fish");
+    }
+    
     /* Set reverse */
     public function testSetReverseColorsDefault()
     {
@@ -699,6 +774,12 @@ class EscposTest extends PHPUnit\Framework\TestCase
     {
         $this -> printer -> setReverseColors(false);
         $this -> checkOutput("\x1b@\x1dB\x00");
+    }
+
+    public function testSetReverseColorsNonBoolean()
+    {
+        $this -> setExpectedException('InvalidArgumentException');
+        $this -> printer -> setReverseColors(7);
     }
 
     /* Bit image print */
@@ -815,8 +896,8 @@ class EscposTest extends PHPUnit\Framework\TestCase
 
     public function testPdf417CodeNotSupported()
     {
-        $this -> expectException(Exception::class);
-        $profile = CapabilityProfile::load("simple");
+        $this -> setExpectedException('Exception');
+        $profile = SimpleCapabilityProfile::getInstance();
         $this -> printer = new Printer($this -> outputConnector, $profile);
         $this -> printer -> pdf417Code("1234");
     }
@@ -836,8 +917,14 @@ class EscposTest extends PHPUnit\Framework\TestCase
 
     public function testPdf417CodeChangeErrorCorrectionOutOfRange()
     {
-        $this -> expectException(InvalidArgumentException::class);
+        $this -> setExpectedException('InvalidArgumentException');
         $this -> printer -> pdf417Code("1234", 3, 3, 0, 5.0);
+    }
+
+    public function testPdf417CodeChangeErrorCorrectionInvalid()
+    {
+        $this -> setExpectedException('InvalidArgumentException');
+        $this -> printer -> pdf417Code("1234", 3, 3, 0, "Foobar");
     }
 
     public function testPdf417CodeChangeOption()
@@ -927,7 +1014,7 @@ class EscposTest extends PHPUnit\Framework\TestCase
 
     public function testSetTextSizeInvalid()
     {
-        $this -> expectException(InvalidArgumentException::class);
+        $this -> setExpectedException('InvalidArgumentException');
         $this -> printer -> setTextSize(0, 9);
     }
     
@@ -946,7 +1033,7 @@ class EscposTest extends PHPUnit\Framework\TestCase
     
     public function testSetColorInvalid()
     {
-        $this -> expectException(InvalidArgumentException::class);
+        $this -> setExpectedException('InvalidArgumentException');
         $this -> printer -> setColor(3);
     }
 
@@ -959,7 +1046,7 @@ class EscposTest extends PHPUnit\Framework\TestCase
 
     public function testSetLineSpacingInvalid()
     {
-        $this -> expectException(InvalidArgumentException::class);
+        $this -> setExpectedException('InvalidArgumentException');
         $this -> printer -> setLineSpacing(300);
     }
 
@@ -990,7 +1077,7 @@ class EscposTest extends PHPUnit\Framework\TestCase
 
     public function testSetPrintWidthInvalid()
     {
-        $this -> expectException(InvalidArgumentException::class);
+        $this -> setExpectedException('InvalidArgumentException');
         $this -> printer -> setPrintWidth(0);
     }
 
@@ -1009,7 +1096,7 @@ class EscposTest extends PHPUnit\Framework\TestCase
 
     public function testPrintLeftMarginInvalid()
     {
-        $this -> expectException(InvalidArgumentException::class);
+        $this -> setExpectedException('InvalidArgumentException');
         $this -> printer -> setPrintLeftMargin(70000);
         $this -> checkOutput();
     }
@@ -1019,5 +1106,22 @@ class EscposTest extends PHPUnit\Framework\TestCase
     {
         $this -> printer -> setUpsideDown(true);
         $this -> checkOutput("\x1b@\x1b{\x01");
+    }
+}
+
+/*
+ * For testing that string-castable objects are handled
+ */
+class FooBar
+{
+    private $foo;
+    public function __construct($foo)
+    {
+        $this -> foo = $foo;
+    }
+    
+    public function __toString()
+    {
+        return $this -> foo;
     }
 }

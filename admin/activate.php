@@ -258,12 +258,12 @@ h5{
     <div class="main-content">
     <h3>
     <a href="#" id="awaitingActivation" class="clickable-count">
-        Awaiting Activation: <?php echo $userActivateCount; ?>
+        Awaiting Activation: <?php echo $userActivateCount; ?> (Disabled)
     </a>
 </h3>
 <h3>
     <a href="#" id="registeredUsers" class="clickable-count">
-        Registered Users: <?php echo $userCount; ?>
+        Registered Users: <?php echo $userCount; ?> (Activate)
     </a>
 </h3>
 
@@ -336,17 +336,20 @@ h5{
                 </table>
             </div>
         </div>
-
-
+        
         <!-- Action Modal -->
-        <div class="modal fade" id="actionModal" tabindex="-1" aria-labelledby="actionModalLabel" aria-hidden="true">
+<div class="modal fade" id="actionModal" tabindex="-1" aria-labelledby="actionModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title d-flex justify-content-center w-100" id="actionModalLabel">Actions</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body d-flex justify-content-center align-items-center">
+            <div class="modal-body">
+                <div id="accountNumberContainer" style="display: none;">
+                    <label for="accountNumberInput">Enter Account Number:</label>
+                    <input type="text" id="accountNumberInput" class="form-control" placeholder="Account Number">
+                </div>
                 <button id="activateBtn" class="btn btn-success custom-btn mx-2" onclick="confirmActivate()">Activate</button>
                 <button id="disableBtn" class="btn btn-danger custom-btn mx-2" onclick="confirmDisable()">Disable</button>
                 <button id="transferFundsBtn" class="btn btn-warning custom-btn mx-2" onclick="confirmTransferDisable()">Transfer Funds</button>
@@ -355,12 +358,14 @@ h5{
     </div>
 </div>
 
-
+      
 
         <!-- Confirmation Script -->
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
         <script>
+
+
             $(document).ready(function () {
     // Function to fetch users based on search and filter
     function fetchUsers(search = '', statusFilter = '') {
@@ -430,21 +435,30 @@ h5{
                     fetchUsers();
                 });
             });
+
             function prepareActions(userId, isActivated) {
-                // Store the user ID in the modal
-                $('#actionModal').data('userId', userId);
+    // Store the user ID in the modal
+    $('#actionModal').data('userId', userId);
 
-                // Enable or disable the buttons based on the user's status
-                if (isActivated == 1) {
-                    $('#activateBtn').prop('disabled', true); // Disable 'Activate' if the user is already activated
-                    $('#disableBtn').prop('disabled', false); // Enable 'Disable' if the user is activated
-                } else {
-                    $('#activateBtn').prop('disabled', false); // Enable 'Activate' if the user is not activated
-                    $('#disableBtn').prop('disabled', true);
-                    $('#transferFundsBtn').prop('disabled', true); // Enable 'Disable' if the user is not activated
-                }
-            }
+    // Enable or disable the buttons based on the user's status
+    if (isActivated == 1) {
+        $('#activateBtn').prop('disabled', true); // Disable 'Activate' if the user is already activated
+        $('#disableBtn').prop('disabled', false); // Enable 'Disable' if the user is activated
+        $('#accountNumberContainer').hide(); // Hide account number input
+    } else {
+        $('#activateBtn').prop('disabled', false); // Enable 'Activate' if the user is not activated
+        $('#disableBtn').prop('disabled', true);
+        $('#transferFundsBtn').prop('disabled', true); // Enable 'Disable' if the user is not activated
 
+        // Check if the user has an account number
+        var accountNumber = $('#user-row-' + userId + ' td:nth-child(8)').text().trim(); // Assuming account number is in the 8th column
+        if (!accountNumber) {
+            $('#accountNumberContainer').show(); // Show input for account number
+        } else {
+            $('#accountNumberContainer').hide(); // Hide input if account number exists
+        }
+    }
+}
 
             function toggleSidebar(event) {
                 event.preventDefault(); // Prevent default action when clicking toggle button
@@ -558,49 +572,86 @@ h5{
                 fetchBarangays();
             });
 
+            function activateUser(userId, accountNumber) {
+        // Create the data to send
+        var formData = new FormData();
+        formData.append('user_id', userId);
+        formData.append('account_number', accountNumber);
 
-            function confirmActivate(userId) {
-
-                var userId = $('#actionModal').data('userId'); // Get the stored user ID
-
-                // Set the user_id in the hidden form input for submitting
-                $('#actionForm').find('input[name="user_id"]').val(userId);
-
-                // Submit the form to activate the user
-                $('#actionForm').submit();
+        // Send the POST request to the PHP script
+        fetch('path/to/your/script.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
                 Swal.fire({
-                    title: 'Are you sure?',
-                    text: "Do you really want to activate this user?",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Yes, activate it!',
-                    cancelButtonText: 'No, cancel!'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        // Send AJAX request to activate the user
-                        $.ajax({
-                            url: 'activate_user.php', // Ensure this points to your activate.php
-                            method: 'POST',
-                            data: { user_id: userId }, // Send user ID
-                            success: function (response) {
-                                const result = JSON.parse(response); // Parse the JSON response
-                                if (result.success) {
-                                    Swal.fire('Activated!', 'User  has been activated', 'success').then(() => {
-                                        location.reload();
-                                    });
-                                } else {
-                                    Swal.fire('Error!', result.message, 'error');
-                                }
-                            },
-                            error: function () {
-                                Swal.fire('Error!', 'There was an error activating the user.', 'error');
-                            }
-                        });
-                    }
+                    title: 'Success!',
+                    text: data.message,
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                }).then(function() {
+                    window.location.href = 'activate.php'; // Redirect after alert
+                });
+            } else {
+                Swal.fire({
+                    title: 'Error!',
+                    text: data.message,
+                    icon: 'error',
+                    confirmButtonText: 'Try Again'
                 });
             }
+        })
+        .catch(error => {
+            Swal.fire({
+                title: 'Error!',
+                text: 'There was a problem with the request.',
+                icon: 'error',
+                confirmButtonText: 'Try Again'
+            });
+        });
+    }
+    function confirmActivate() {
+    var userId = $('#actionModal').data('userId'); // Get the stored user ID
+    var accountNumber = $('#accountNumberInput').val(); // Get the account number from the input
+
+    // Set the user_id in the hidden form input for submitting
+    $('#actionForm').find('input[name="user_id"]').val(userId);
+
+    // Check if the account number input is visible
+    if ($('#accountNumberContainer').is(':visible')) {
+        // If the input is visible, it means we need to use the provided account number
+        if (!accountNumber) {
+            Swal.fire('Error!', 'Please enter an account number.', 'error');
+            return; // Exit if no account number is provided
+        }
+    } else {
+        // If the input is not visible, we can proceed without it
+        accountNumber = ''; // Set to empty or handle as needed
+    }
+
+    // Submit the form to activate the user
+    $.ajax({
+        url: 'activate_user.php', // Ensure this points to your activate.php or script
+        method: 'POST',
+        data: { user_id: userId, account_number: accountNumber }, // Send user ID and account number
+        success: function (response) {
+            const result = JSON.parse(response); // Parse the JSON response
+
+            if (result.status === 'success') { // Check if the result status is success
+                Swal.fire('Activated!', result.message, 'success').then(() => {
+                    location.reload(); // Reload the page after successful activation
+                });
+            } else {
+                Swal.fire('Error!', result.message, 'error'); // Show error if activation fails
+            }
+        },
+        error: function () {
+            Swal.fire('Error!', 'There was an error activating the user.', 'error');
+        }
+    });
+}
 
             function confirmTransferDisable(userId) {
                 $('#actionModal').modal('hide');

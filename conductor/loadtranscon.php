@@ -143,7 +143,7 @@ $totalRevenue = array_sum($dailyRevenue);
         <!-- Sidebar content -->
     </div>
     <div class="main-content flex-grow-1">
-        <h1 class="mt-4">Daily Revenue Report</h1>
+        <h1 class="mt-4">Daily Load Report</h1>
         <form method="POST" class="mb-4">
             <div class="form-group">
                 <label for="selected_date">Select Date:</label>

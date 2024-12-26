@@ -44,13 +44,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
             $mail->isSMTP();
             $mail->Host = 'smtp.gmail.com';
             $mail->SMTPAuth = true;
-            $mail->Username = 'jemusu96@gmail.com'; // Your email
-            $mail->Password = 'aybfptvlrktcrfjx'; // Your email password
+            $mail->Username = 'ramstarzaragoza@gmail.com'; // Your email
+            $mail->Password = 'hwotyendfdsazoar'; // Your email password
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
             $mail->Port = 587;
 
             // Recipients
-            $mail->setFrom('jemusu96@gmail.com', 'Jemusu');
+            $mail->setFrom('ramstarzaragoza@gmail.com', 'Ramstar Bus Transportation');
             $mail->addAddress($email, $user['firstname'] . ' ' . $user['lastname']);
 
             // Content
@@ -131,13 +131,14 @@ try {
     $mail->isSMTP();
     $mail->Host = 'smtp.gmail.com';
     $mail->SMTPAuth = true;
-    $mail->Username = 'jemusu96@gmail.com'; // Your email
-    $mail->Password = 'aybfptvlrktcrfjx'; // Your email password
+    $mail->Username = 'ramstarzaragoza@gmail.com';
+    $mail->Password = 'hwotyendfdsazoar';
     $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
     $mail->Port = 587;
 
     // Recipients
-    $mail->setFrom('jemusu96@gmail.com', 'Jemusu');
+   
+    $mail->setFrom('ramstarzaragoza@gmail.com', 'Ramstar Bus Transportation');
     $mail->addAddress($email,$fullname);
 
 

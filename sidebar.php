@@ -46,7 +46,10 @@ if (isset($_SESSION['firstname']) && isset($_SESSION['lastname'])) {
                         <a href="activate.php"><span class="fa fa-sticky-note"></span>
                             Accounts</a>
                     </li>
-
+                    <li>
+                        <a href="deactivate.php"><span class="fa fa-sticky-note"></span>
+                            Deactivate</a>
+                    </li>
                     <li>
                         <a href="revenue.php"><span class="fa fa-cogs"></span>
                             Revenue</a>
@@ -96,7 +99,7 @@ if (isset($_SESSION['firstname']) && isset($_SESSION['lastname'])) {
                     </li>
                     <li>
                         <a href="./loadtranscashier.php"><span class="fa fa-chart-line"></span>
-                            Load Revenue</a>
+                            Load Report</a>
                     </li>
                     <li>
                         <a href="../logout.php"><span class="fa fa-sign-out-alt"></span> Logout</a>
@@ -120,7 +123,7 @@ if (isset($_SESSION['firstname']) && isset($_SESSION['lastname'])) {
                         <a href="./translogscon.php"><span class="fa fa-history"></span> Load Transaction</a>
                     </li>
                     <li>
-                        <a href="./loadtranscon.php"><span class="fa fa-dollar-sign"></span> Load Revenue</a>
+                        <a href="./loadtranscon.php"><span class="fa fa-dollar-sign"></span> Load Report</a>
                     </li>
 
                     <li>

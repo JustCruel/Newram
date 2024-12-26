@@ -14,7 +14,7 @@ function printReceipt($fromRoute, $toRoute, $fareType, $totalFare, $conductorNam
 {
     try {
         // Set up the printer (replace 'YourPrinterName' with your actual printer name)
-        $connector = new WindowsPrintConnector("smb://LYNMARIEMAPOY/POS58");
+        $connector = new WindowsPrintConnector("smb://DESKTOP-K55P7CC/POS-58");
         $printer = new Printer($connector);
 
         // --- Print Logo ---
