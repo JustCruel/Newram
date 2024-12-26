@@ -135,7 +135,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <select class="form-control" id="busModel" name="busModel" required>
         <option value="">Select a Bus Model</option>
         <option value="JMC">JMC</option>
-        <option value="model2">Model 2</option>
+        <option value="model2">HIGER</option>
         <option value="model3">Model 3</option>
        
         <!-- Add more options as needed -->

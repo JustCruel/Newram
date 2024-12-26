@@ -154,7 +154,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             /* Prevent overflow */
         }
     </style>
-    <script src="../js/main.js"></script>
+
     <script>
         $(document).ready(function () {
             let confirmationShown = false; // To track confirmation dialog
@@ -381,6 +381,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </head>
 
 <body>
+
+<?php include "../sidebar.php" ?>
     <div class="container mt-5">
         <h2>Registration Form</h2>
         <form method="POST" action="" id="registrationForm" enctype="multipart/form-data">
@@ -482,13 +484,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <input type="text" class="form-control" id="account_number" name="account_number" readonly>
                 </div>
             </div>
+            <button type="submit" class="btn btn-primary">Register</button>
     </div>
 
 
 
-    <button type="submit" class="btn btn-primary">Register</button>
+    
     </form>
     </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="../js/main.js"></script>
     <script>
         ['firstname', 'middlename', 'lastname'].forEach(function(fieldId) {
     document.getElementById(fieldId).addEventListener('input', function (e) {

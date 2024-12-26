@@ -61,6 +61,11 @@ if (isset($_SESSION['firstname']) && isset($_SESSION['lastname'])) {
                         </a>
                     </li>
                     <li>
+                        <a href="regemploye.php">
+                            <span class="fa fa-bus"></span> Reg Driver Info
+                        </a>
+                    </li>
+                    <li>
                         <a href="busviewinfo.php">
                             <span class="fa fa-eye"></span> View Bus Info
                         </a>
