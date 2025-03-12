@@ -21,14 +21,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $barangay = $_POST['barangay'];
     $address = $_POST['address'];
     $account_number = $_POST['account_number'];
-    $password = $_POST['password']; // Password from form
-    $confirm_password = $_POST['confirm_password']; // Confirm password from form
+    $password = "ramstar";
 
-    // Password validation
-    if ($password !== $confirm_password) {
-        echo "<script>alert('Passwords do not match. Please try again.'); window.history.back();</script>";
-        exit();
-    }
 
     $hashed_password = md5($password); // Hash the password
     $balance = 0; // Default balance
@@ -194,9 +188,58 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             margin: 0 auto;
         }
 
+        header {
+            background: linear-gradient(to right, rgb(243, 75, 83), rgb(131, 4, 4));
+            color: white;
+            padding: 20px 0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        header nav ul {
+            display: flex;
+            /* Make the <ul> a flex container */
+            justify-content: flex-start;
+            /* Align items to the left */
+            padding: 0;
+            margin: 0;
+        }
+
+        header nav ul li a {
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            background: #f1c40f;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+
+        header nav ul li a:hover {
+            background: #e67e22;
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        header nav ul li a:active {
+            background: #f1c40f;
+            transform: scale(1);
+        }
     </style>
 
-<script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const nameFields = ['firstname', 'middlename', 'lastname', 'suffix'];
+
+            nameFields.forEach(fieldId => {
+                document.getElementById(fieldId).addEventListener('input', function (e) {
+                    this.value = this.value.replace(/[^A-Za-z\s-]/g, ''); // Allow only letters, spaces, and hyphens
+                });
+            });
+        });
+
         $(document).ready(function () {
             let confirmationShown = false; // To track confirmation dialog
             let rfidScanned = false; // To track if RFID has been scanned
@@ -270,7 +313,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     $('#emailFeedback').remove();
                 }
             });
-           
+
 
 
             // Birthday and age validation
@@ -313,33 +356,33 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 }
             });
             $(document).ready(function () {
-    let confirmationShown = false; // To track confirmation dialog
+                let confirmationShown = false; // To track confirmation dialog
 
-    // Define the form element
-    const form = $("form"); // or use $('#yourFormId') if your form has an ID
+                // Define the form element
+                const form = $("form"); // or use $('#yourFormId') if your form has an ID
 
-    $('.register').click(function (event) {
-        event.preventDefault(); // Prevent the default form submission
+                $('.register').click(function (event) {
+                    event.preventDefault(); // Prevent the default form submission
 
-        if (!confirmationShown) {
-            confirmationShown = true;
+                    if (!confirmationShown) {
+                        confirmationShown = true;
 
-            Swal.fire({
-                title: 'Confirm Registration?',
-                text: "Are you sure you want to register?",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#cc0000',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Yes, register!'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    form.submit(); // Now, submit the form
-                }
+                        Swal.fire({
+                            title: 'Confirm Registration?',
+                            text: "Are you sure you want to register?",
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#cc0000',
+                            cancelButtonColor: '#d33',
+                            confirmButtonText: 'Yes, register!'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                form.submit(); // Now, submit the form
+                            }
+                        });
+                    }
+                });
             });
-        }
-    });
-});
 
             // When a province is selected, fetch municipalities
             $('#province').change(function () {
@@ -383,16 +426,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </head>
 
 <body>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="index.php">Home</a></li>
+            </ul>
+        </nav>
+    </header>
     <div class="container mt-5 register-container">
         <h2>Registration Form</h2>
         <form method="POST" action="" id="registrationForm" enctype="multipart/form-data">
             <div class="row mb-3">
                 <div class="col-md-6">
-                    <label for="firstname" class="form-label">First Name</label>
+                    <label for="firstname" class="form-label">
+                        First Name <span class="text-danger">*</span>
+                    </label>
                     <input type="text" class="form-control" id="firstname" name="firstname" required>
                 </div>
                 <div class="col-md-6">
-                    <label for="lastname" class="form-label">Last Name</label>
+                    <label for="lastname" class="form-label">
+                        Last Name <span class="text-danger">*</span>
+                    </label>
                     <input type="text" class="form-control" id="lastname" name="lastname" required>
                 </div>
             </div>
@@ -404,30 +458,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 </div>
                 <div class="col-md-6">
                     <label for="suffix" class="form-label">Suffix</label>
-                    <select class="form-select" id="suffix" name="suffix">
-                        <option value="">-- Select Suffix --</option>
-                        <option value="Jr">Jr</option>
-                        <option value="Sr">Sr</option>
-                        <option value="III">III</option>
-                        <option value="IV">IV</option>
-                        <option value="V">V</option>
-                    </select>
+                    <input type="text" class="form-control" id="suffix" name="suffix">
                 </div>
             </div>
 
             <div class="row mb-3">
-            <div class="col-md-6">
-                    <label for="birthday" class="form-label">Birthday</label>
-                    <input type="date" class="form-control" id="birthday" name="birthday" required min=""
-                        max="2017-12-31" />
-                </div>
                 <div class="col-md-6">
-                    <label for="age" class="form-label">Age</label>
-                    <input type="number" class="form-control" id="age" name="age" readonly>
+                    <label for="birthday" class="form-label">
+                        Birthday <span class="text-danger">*</span>
+                    </label>
+                    <input type="date" class="form-control" id="birthday" name="birthday" required max="2017-12-31" />
                 </div>
-            </div>
-
-            <div class="row mb-3">
                 <div class="col-md-6">
                     <label for="gender" class="form-label">Gender</label>
                     <select class="form-select" id="gender" name="gender" required>
@@ -436,62 +477,60 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <option value="Female">Female</option>
                     </select>
                 </div>
+            </div>
+
+            <div class="row mb-3">
                 <div class="col-md-6">
                     <label for="address" class="form-label">Address</label>
                     <input type="text" class="form-control" id="address" name="address">
                 </div>
-            </div>
-
-            <div class="row mb-3">
                 <div class="col-md-6">
                     <label for="province" class="form-label">Province</label>
                     <select class="form-select" id="province" name="province">
                         <option value="">-- Select Province --</option>
                     </select>
                 </div>
+            </div>
+
+            <div class="row mb-3">
                 <div class="col-md-6">
                     <label for="municipality" class="form-label">Municipality</label>
                     <select class="form-select" id="municipality" name="municipality">
                         <option value="">-- Select Municipality --</option>
                     </select>
                 </div>
-            </div>
-
-            <div class="row mb-3">
                 <div class="col-md-6">
                     <label for="barangay" class="form-label">Barangay</label>
                     <select class="form-select" id="barangay" name="barangay">
                         <option value="">-- Select Barangay --</option>
                     </select>
                 </div>
+            </div>
+
+            <div class="row mb-3">
                 <div class="col-md-6">
-                    <label for="email" class="form-label">Email</label>
+                    <label for="email" class="form-label">
+                        Email <span class="text-danger">*</span>
+                    </label>
                     <input type="email" class="form-control" id="email" name="email" required>
                     <div id="emailFeedback" class="invalid-feedback"></div>
                 </div>
-            </div>
-
-            <div class="row mb-3">
                 <div class="col-md-6">
-                    <label for="password" class="form-label">Password</label>
-                    <input type="password" class="form-control" id="password" name="password" required>
-                </div>
-                <div class="col-md-6">
-                    <label for="confirm_password" class="form-label">Confirm Password</label>
-                    <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
-                </div>
-            </div>
-
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <label for="phone" class="form-label">Contact Number</label>
+                    <label for="phone" class="form-label">
+                        Contact Number <span class="text-danger">*</span>
+                    </label>
                     <div class="form-group d-flex">
                         <span class="border-end country-code px-2">+63</span>
-                        <input type="text" class="form-control" id="phone" name="contactnumber" placeholder="" required maxlength="11" />
+                        <input type="text" class="form-control" id="phone" name="contactnumber" placeholder="" required
+                            maxlength="10" />
                     </div>
                     <div id="contactError" class="invalid-feedback" style="display: none;"></div>
                 </div>
             </div>
+
+
+
+
 
             <div class="form-row mt-4">
                 <button type="submit" class="register">Register</button>
@@ -499,7 +538,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </form>
     </div>
     <script src="js/main.js"></script>
-    
+
 
 </body>
 

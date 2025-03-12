@@ -1,17 +1,51 @@
 <?php
-// load_balance.php
+session_start();
 include '../../config/connection.php';
 include 'functions.php';
 
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['user_account_number']) && isset($_POST['balance'])) {
-    $userAccountNumber = $_POST['user_account_number'];
-    $balanceToLoad = $_POST['balance'];
+function loadUserBalance($conn, $userAccountNumber, $balanceToLoad, $rfid)
+{
+    // Fetch session variables for bus_number and conductor_id
+    $busNumber = 'Cashier';
+    $conductorId = isset($_SESSION['account_number']) ? $_SESSION['account_number'] : null;
 
-    if (loadUserBalance($conn, $userAccountNumber, $balanceToLoad)) {
-        echo json_encode(['success' => 'Loaded successfully!']);
+    // Sanitize inputs
+    $userAccountNumber = mysqli_real_escape_string($conn, $userAccountNumber);
+    $balanceToLoad = floatval($balanceToLoad);
+    $rfid = mysqli_real_escape_string($conn, $rfid);
+
+    // Check if the user account exists
+    $query = "SELECT * FROM useracc WHERE account_number = '$userAccountNumber'";
+    $result = mysqli_query($conn, $query);
+
+    if (mysqli_num_rows($result) > 0) {
+        // Update the user's balance
+        $updateQuery = "UPDATE useracc SET balance = balance + $balanceToLoad WHERE account_number = '$userAccountNumber'";
+        if (mysqli_query($conn, $updateQuery)) {
+            // Log the transaction
+            $logQuery = "INSERT INTO transactions (account_number, amount, transaction_type, bus_number, conductor_id) VALUES ('$userAccountNumber', $balanceToLoad, 'load', '$busNumber', '$conductorId')";
+            mysqli_query($conn, $logQuery);
+            return ['success' => '₱' . number_format($balanceToLoad, 2) . ' loaded successfully.'];
+        } else {
+            return ['error' => 'Failed to update balance.'];
+        }
     } else {
-        echo json_encode(['error' => 'Error loading balance.']);
+        return ['error' => 'User  account not found.'];
     }
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $userAccountNumber = $_POST['user_account_number'];
+    $loadAmount = $_POST['loadAmount'];
+    $rfid = $_POST['rfid'];
+
+    // Call the function to load the user balance
+    $response = loadUserBalance($conn, $userAccountNumber, $loadAmount, $rfid);
+    
+    header('Content-Type: application/json'); // Set the content type to JSON
+    echo json_encode($response);
 }
 ?>

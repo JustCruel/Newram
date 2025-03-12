@@ -95,11 +95,12 @@ $base_path = "/Newram/superadmin/";
                                     class="fa fa-bus me-2"></i> Bus Fare</a></li>
                         <li><a href="<?php echo $base_path; ?>conductor/loadrfidconductor.php" class="nav-link"><i
                                     class="fa fa-id-badge me-2"></i> Load RFID</a></li>
+
                         <li><a href="<?php echo $base_path; ?>conductor/translogscon.php" class="nav-link"><i
                                     class="fa fa-history me-2"></i> Load Transaction</a></li>
                         <li><a href="<?php echo $base_path; ?>conductor/loadtranscon.php" class="nav-link"><i
                                     class="fa fa-dollar-sign me-2"></i> Load Revenue</a></li>
-                       
+
                     </ul>
                 </li>
                 <hr style="border: 1px solid white;">
@@ -134,9 +135,8 @@ $base_path = "/Newram/superadmin/";
 
             <?php } ?>
         </ul>
+
     </nav>
-
-
     <div id="content" class="p-4 p-md-5">
         <nav class="navbar navbar-expand-lg navbar-light bg-light">
             <div class="container-fluid">

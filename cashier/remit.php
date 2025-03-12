@@ -54,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['rfid_scan'])) {
     <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800,900" rel="stylesheet">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/sidebars.css">
     <title>Conductor Remittance</title>
     <style>
         body {
@@ -63,14 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['rfid_scan'])) {
             padding: 20px;
         }
 
-        .container {
-            max-width: 600px;
-            margin: auto;
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
+      
 
         h1 {
             text-align: center;
@@ -108,22 +101,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['rfid_scan'])) {
 </head>
 
 <body>
-    <?php include '../sidebar.php'; ?>
-    <div class="container">
+    <?php include 'sidebar.php'; ?>
+    <div id="main-content" class="container mt-5">
         <h1>Conductor Remittance</h1>
 
         <form id="remittanceForm" method="POST" action="">
             <label for="rfid_scan">RFID Scan:</label>
-            <input type="text" id="rfid_scan" name="rfid_scan" placeholder="Scan RFID..." required value="<?= htmlspecialchars($rfid_scan) ?>">
+            <input type="text" id="rfid_scan" name="rfid_scan" placeholder="Scan RFID..." required
+                value="<?= htmlspecialchars($rfid_scan) ?>">
 
             <label for="bus_no">Bus No:</label>
             <input type="text" id="bus_no" name="bus_no" required value="<?= htmlspecialchars($bus_number) ?>" readonly>
 
             <label for="conductor_name">Conductor Name:</label>
-            <input type="text" id="conductor_name" name="conductor_name" required value="<?= htmlspecialchars($conductor_name) ?>" readonly>
+            <input type="text" id="conductor_name" name="conductor_name" required
+                value="<?= htmlspecialchars($conductor_name) ?>" readonly>
 
             <label for="total_load">Total Load (₱):</label>
-            <input type="number" id="total_load" name="total_load" step="0.01" readonly value="<?= htmlspecialchars($total_load) ?>">
+            <input type="number" id="total_load" name="total_load" step="0.01" readonly
+                value="<?= htmlspecialchars($total_load) ?>">
 
             <div id="deductions-container">
                 <button type="button" id="toggleDeductions" class="btn btn-primary">+ Deductions</button>
@@ -138,13 +134,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['rfid_scan'])) {
             </div>
 
             <label for="net_amount">Net Amount (₱):</label>
-            <input type="number" id="net_amount" name="net_amount" step="0.01" readonly value="<?= htmlspecialchars($total_load) ?>">
+            <input type="number" id="net_amount" name="net_amount" step="0.01" readonly
+                value="<?= htmlspecialchars($total_load) ?>">
 
             <button type="submit" name="generate_remittance" id="remitButton">Generate Remittance</button>
 
         </form>
     </div>
 
+    <script src="../js/sidebar.js"></script>
 
     <script>
         document.getElementById('rfid_scan').addEventListener('input', function () {

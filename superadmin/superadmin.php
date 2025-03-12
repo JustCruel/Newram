@@ -286,22 +286,6 @@ $recentTripsStmt->close(); // Close the statement
             </div>
 
 
-            <div class="dashboard-item">
-                <i class="fas fa-wallet"></i>
-                <h3>Your Balance</h3>
-                <p>₱<?php echo number_format($balance, 2); ?></p>
-            </div>
-            <div class="dashboard-item">
-                <i class="fas fa-money-bill-wave"></i>
-                <h3>Total Fare Spent</h3>
-                <p>₱<?php echo number_format($totalFare, 2); ?></p>
-            </div>
-            <div class="dashboard-item">
-                <i class="fas fa-car"></i>
-                <h3>Recent Trips</h3>
-                <p><?php echo number_format($totalTrips); ?> Trips</p>
-            </div>
-        </div>
 
         <!-- Revenue Chart Card -->
 

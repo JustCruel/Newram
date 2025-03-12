@@ -19,7 +19,7 @@ if (!isset($_SESSION['email']) || ($_SESSION['role'] != 'User')) {
     <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800,900" rel="stylesheet">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <link rel="stylesheet" href="../css/style.css"> <!-- Your custom CSS -->
+    <link rel="stylesheet" href="../css/sidebars.css"> <!-- Your custom CSS -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
 
     <style>
@@ -184,7 +184,7 @@ if (!isset($_SESSION['email']) || ($_SESSION['role'] != 'User')) {
 </script>
 
 <body>
-    <?php include '../sidebar.php'; ?>
+    <?php include 'sidebar.php'; ?>
     <div class="container mt-5 pt-5">
         <div class="row justify-content-center">
             <div class="col-md-6">
@@ -230,7 +230,7 @@ if (!isset($_SESSION['email']) || ($_SESSION['role'] != 'User')) {
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
-    <script src="../js/main.js"></script>
+    <script src="../js/sidebar.js"></script>
 
     <script type="text/javascript">
         const indicator = document.querySelector(".indicator");

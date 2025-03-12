@@ -1,45 +1,93 @@
-<div class="wrapper d-flex align-items-stretch">
+<?php
+if (isset($_SESSION['firstname']) && isset($_SESSION['lastname'])) {
+    $firstname = $_SESSION['firstname'];
+    $lastname = $_SESSION['lastname'];
+} else {
+    // Handle case where session variables are not set
+    $firstname = 'Guest';
+    $lastname = '';
+}
 
-    <nav id="sidebar" class="active">
+// Get the current page's filename
+$currentPage = basename($_SERVER['PHP_SELF']);
+?>
 
-        <h1><a href="index.php" class="logo">
-                <img src="../assets/logo/logoramstar.jpg" alt="logo" />
-            </a></h1>
 
-        <div class="user-profile text-center mb-3">
-            <?php if (!empty($profile_picture)) { ?>
-                <img src="../images/<?php echo $profile_picture; ?>" alt="Profile Picture" class="img-fluid rounded-circle"
-                    width="100" height="100">
-            <?php } else { ?>
-                <img src="../images/default_profile.jpg" alt="Default Profile Picture" class="img-fluid rounded-circle"
-                    width="100" height="100">
-            <?php } ?>
-            <h3><?php echo $firstname, " ", $lastname; ?></h3>
-        </div>
-        <ul class="list-unstyled components mb-5">
-            <li class="active">
-                <a href="./index.php"><span class="fa fa-tachometer-alt"></span>
-                    Dashboard</a>
-            </li>
-            <li>
-                <a href="./loadrfid.php"><span class="fa fa-credit-card"></span>
-                    Load RFID</a>
-            </li>
-            <li>
-                <a href="./activate.php"><span class="fa fa-bolt"></span>
-                    Activation</a>
-            </li>
-            <li>
-                <a href="./transactionlogs.php"><span class="fa fa-list-alt"></span>
-                    Load Transaction</a>
-            </li>
-            <li>
-                <a href="./loadtransaction.php"><span class="fa fa-chart-line"></span>
-                    Load Revenue</a>
-            </li>
-            <li>
-                <a href="../logout.php"><span class="fa fa-sign-out-alt"></span> Logout</a>
-            </li>
-        </ul>
 
-    </nav>
+
+<!-- Top Bar -->
+<div class="top-bar">
+    <h4>Ramstar</h4>
+    <div class="profile">
+        <i class="fas fa-user-circle fa-2x"></i>
+        <span>Cashier</span>
+        <a href="logout.php" class="btn btn-sm btn-light">Logout</a>
+    </div>
+</div>
+
+<!-- Sidebar -->
+<nav class="sidebar">
+    <h4>Cashier Panel</h4>
+    <ul class="nav flex-column">
+        <li class="nav-item">
+            <a class="nav-link <?php echo ($currentPage == 'cashierdashboard.php') ? 'active' : ''; ?>"
+                href="cashierdashboard.php">
+                <i class="fa fa-tachometer-alt"></i> Dashboard
+            </a>
+        </li>
+        <div class="sidebar-divider"></div>
+        <li class="nav-item">
+            <a class="nav-link <?php echo ($currentPage == 'loadrfidadmin.php') ? 'active' : ''; ?>"
+                href="loadrfidadmin.php">
+                <i class="fa fa-credit-card"></></i> Load RFID
+            </a>
+        </li>
+        <div class="sidebar-divider"></div>
+        <li class="nav-item">
+            <a class="nav-link <?php echo ($currentPage == 'remit.php') ? 'active' : ''; ?>" href="remit.php">
+                <i class="fa fa-chart-line me-2"></i>Remit
+            </a>
+        </li>
+        <div class="sidebar-divider"></div>
+        <li class="nav-item">
+            <a class="nav-link <?php echo ($currentPage == 'translogscashier.php') ? 'active' : ''; ?>"
+                href="translogscashier.php">
+                <i class="fa fa-list-alt me-2"></i> Load Transaction
+            </a>
+        </li>
+        <div class="sidebar-divider"></div>
+        <li class="nav-item">
+            <a class="nav-link <?php echo ($currentPage == 'remit_logs.php') ? 'active' : ''; ?>" href="remit_logs.php">
+                <i class="fa fa-list-alt me-2"></i> Remit Logs
+            </a>
+        </li>
+        <div class="sidebar-divider"></div>
+        <li class="nav-item">
+            <a class="nav-link <?php echo ($currentPage == 'loadtranscashier.php') ? 'active' : ''; ?>"
+                href="loadtranscashier.php">
+                <i class="fa fa-chart-line me-2"></i> Load Revenue
+            </a>
+        </li>
+
+
+        <div class="sidebar-divider"></div>
+        <li class="nav-item">
+            <a class="nav-link" href="../logout.php">
+                <i class="fa fa-sign-out-alt"></i> Logout
+            </a>
+        </li>
+    </ul>
+</nav>
+
+
+<!-- Hamburger Button -->
+<i id="hamburger" class="fas fa-bars fa-2x"></i>
+
+<footer class="footer">
+    <p>&copy; <?php echo date('Y'); ?> Ramstar Bus. All rights reserved.</p>
+ 
+    <div class="footer-links">
+        <a href="../terms.php" target="_blank">Terms and Conditions</a> | 
+        <a href="../privacy.php" target="_blank">Privacy Policy</a>
+    </div>
+</footer>

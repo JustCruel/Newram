@@ -1,7 +1,7 @@
 <?php
 session_start();
 include '../config/connection.php';
-include '../sidebar.php'; // Ensure you include your database connection script
+include 'sidebar.php'; // Ensure you include your database connection script
 
 
 if (!isset($_SESSION['email']) || ($_SESSION['role'] != 'Admin' && $_SESSION['role'] != 'Superadmin')) {
@@ -113,16 +113,29 @@ $busData[] = [
     <!-- jQuery CDN link -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/sidebars.css">
     <style>
         h2 {
-            color: black;
+          
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            font-weight: bold;
+            color: transparent;
+            /* Make the text color transparent */
+            background-image: linear-gradient(to right, #f1c40f, #e67e22);
+            background-clip: text;
+            -webkit-background-clip: text;
+            /* WebKit compatibility */
+            -webkit-text-fill-color: transparent;
+            /* Ensures only the gradient is visible */
+            -webkit-text-stroke: 0.5px black;
+            /* Outline effect */
         }
     </style>
 </head>
 
 <body>
-    <div class="container mt-5">
+<div id="main-content" class="container mt-4">
         <h2>Bus Fare and Passengers Report for Today</h2>
 
         <!-- Display the bus data -->
@@ -152,9 +165,11 @@ $busData[] = [
         </table>
 
     </div>
+                </div>
     <script src="../js/popper.js"></script>
     <script src="../js/bootstrap.min.js"></script>
     <script src="../js/main.js"></script>
+    <script src="../js/sidebar.js"></script>
 </body>
 
 </html>

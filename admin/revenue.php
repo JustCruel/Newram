@@ -6,7 +6,7 @@ ini_set('display_errors', 0); // Suppress errors
 error_reporting(0);          // Turn off error reporting
 
 include '../config/connection.php';
-include '../sidebar.php';
+include 'sidebar.php';
 
 if (!isset($_SESSION['email']) || ($_SESSION['role'] != 'Admin' && $_SESSION['role'] != 'Superadmin')) {
     header("Location: ../index.php");
@@ -63,7 +63,7 @@ $selectedDayRevenue = $selectedDayRevenue ?? 0;
     <!-- jQuery CDN link -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/sidebars.css">
 
     <style>
         h1 {
@@ -73,7 +73,7 @@ $selectedDayRevenue = $selectedDayRevenue ?? 0;
 </head>
 
 <body>
-    <div class="container mt-5">
+<div id="main-content" class="container mt-5">
         <h1>Revenue Report</h1>
 
         <!-- Filter Form -->
@@ -98,7 +98,8 @@ $selectedDayRevenue = $selectedDayRevenue ?? 0;
         <!-- Chart for daily revenue -->
         <div id="revenueChart"></div> <!-- ApexCharts container -->
     </div>
-
+    </div>
+    <script src="../js/sidebar.js"></script>
     <script>
         // Update the chart using ApexCharts (for a single day)
         function updateChart(dailyRevenue) {

@@ -60,7 +60,7 @@ $recentTripsStmt->close(); // Close the statement
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800,900" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/sidebars.css">
 
     <style>
         body {
@@ -128,73 +128,70 @@ $recentTripsStmt->close(); // Close the statement
 
 <body>
 
-    <?php include "../sidebar.php"; ?>
+    <?php include "sidebar.php"; ?>
 
-    <div id="content" class="p-4 p-md-5">
-        
+    <div id="main-content" class="container mt-5">
+    <div class="dashboard">
+        <div class="dashboard-item">
+            <i class="fas fa-wallet"></i>
+            <h3>Your Balance</h3>
+            <p>₱<?php echo number_format($balance, 2); ?></p>
+        </div>
+        <div class="dashboard-item">
+            <i class="fas fa-money-bill-wave"></i>
+            <h3>Total Fare Spent</h3>
+            <p>₱<?php echo number_format($totalFare, 2); ?></p>
+        </div>
+        <div class="dashboard-item">
+            <i class="fas fa-car"></i>
+            <h3>Recent Trips</h3>
+            <p><?php echo number_format($totalTrips); ?> Trips</p>
+        </div>
+    </div>
 
-        <div id="main-content">
-            <div class="dashboard">
-                <div class="dashboard-item">
-                    <i class="fas fa-wallet"></i>
-                    <h3>Your Balance</h3>
-                    <p>₱<?php echo number_format($balance, 2); ?></p>
-                </div>
-                <div class="dashboard-item">
-                    <i class="fas fa-money-bill-wave"></i>
-                    <h3>Total Fare Spent</h3>
-                    <p>₱<?php echo number_format($totalFare, 2); ?></p>
-                </div>
-                <div class="dashboard-item">
-                    <i class="fas fa-car"></i>
-                    <h3>Recent Trips</h3>
-                    <p><?php echo number_format($totalTrips); ?> Trips</p>
-                </div>
-            </div>
-
-            <div class="recent-trips">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Recent Trip History (Today)</h5>
-                        <?php if ($recentTripsResult->num_rows > 0): ?>
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th>From Route</th>
-                                        <th>To Route</th>
-                                        <th>Fare</th>
-                                        <th>Conductor</th>
-                                        <th>Bus Number</th>
-                                        <th>Transaction Number</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php while ($trip = $recentTripsResult->fetch_assoc()): ?>
-                                        <tr>
-                                            <td><?php echo htmlspecialchars($trip['from_route']); ?></td>
-                                            <td><?php echo htmlspecialchars($trip['to_route']); ?></td>
-                                            <td>₱<?php echo number_format($trip['fare'], 2); ?></td>
-                                            <td><?php echo htmlspecialchars($trip['conductor_name']); ?></td>
-                                            <td><?php echo htmlspecialchars($trip['bus_number']); ?></td>
-                                            <td><?php echo htmlspecialchars($trip['transaction_number']); ?></td>
-                                        </tr>
-                                    <?php endwhile; ?>
-                                </tbody>
-                            </table>
-                        <?php else: ?>
-                            <p>No recent trips available for today.</p>
-                        <?php endif; ?>
-                    </div>
-                </div>
+    <div class="recent-trips">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Recent Trip History (Today)</h5>
+                <?php if ($recentTripsResult->num_rows > 0): ?>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>From Route</th>
+                                <th>To Route</th>
+                                <th>Fare</th>
+                                <th>Conductor</th>
+                                <th>Bus Number</th>
+                                <th>Transaction Number</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php while ($trip = $recentTripsResult->fetch_assoc()): ?>
+                                <tr>
+                                    <td><?php echo htmlspecialchars($trip['from_route']); ?></td>
+                                    <td><?php echo htmlspecialchars($trip['to_route']); ?></td>
+                                    <td>₱<?php echo number_format($trip['fare'], 2); ?></td>
+                                    <td><?php echo htmlspecialchars($trip['conductor_name']); ?></td>
+                                    <td><?php echo htmlspecialchars($trip['bus_number']); ?></td>
+                                    <td><?php echo htmlspecialchars($trip['transaction_number']); ?></td>
+                                </tr>
+                            <?php endwhile; ?>
+                        </tbody>
+                    </table>
+                <?php else: ?>
+                    <p>No recent trips available for today.</p>
+                <?php endif; ?>
             </div>
         </div>
+    </div>
+    </div>
     </div>
 
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="../js/popper.js"></script>
     <script src="../js/bootstrap.min.js"></script>
-    <script src="../js/main.js"></script>
+    <script src="../js/sidebar.js"></script>
 
     <script>
         function loadContent(page) {

@@ -168,7 +168,7 @@ if (isset($_POST['fetch_users'])) {
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/alertify.min.css"/>
     <script src="https://cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/alertify.min.js"></script>
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/sidebars.css">
     <style>
         .sidebar {
             width: 250px;
@@ -250,12 +250,12 @@ h5{
 
 <body>
     <?php
-    include "../sidebar.php";
+    include "sidebar.php";
     ?>
 
     <!-- Page Content  -->
 
-    <div class="main-content">
+    <div id="main-content" class="container mt-5">
     <h3>
     <a href="#" id="awaitingActivation" class="clickable-count">
         Awaiting Activation: <?php echo $userActivateCount; ?> (Disabled)
@@ -358,11 +358,12 @@ h5{
     </div>
 </div>
 
-      
+                        </div>
 
         <!-- Confirmation Script -->
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+        <script src="../js/sidebar.js"></script>
         <script>
 
 

@@ -17,6 +17,8 @@ $driverac = isset($_SESSION['driver_name']) ? $_SESSION['driver_name'] : null;  
 
 
 $conductorName = $firstname . ' ' . $lastname;
+ 
+
 
 // Fetch driver names from useracc where role is 'Driver'
 $drivers = [];
@@ -42,6 +44,9 @@ $fareSettingsQuery = "SELECT * FROM fare_settings LIMIT 1"; // Assuming there's 
 $fareSettingsResult = $conn->query($fareSettingsQuery);
 $fareSettings = $fareSettingsResult->fetch_assoc();
 
+
+$discountPercentage = $fareSettings['discount_percentage']; // Fetch discount percentage
+
 // Store passengers in a session to track those currently on the bus
 if (!isset($_SESSION['passengers'])) {
     $_SESSION['passengers'] = [];
@@ -49,11 +54,15 @@ if (!isset($_SESSION['passengers'])) {
 
 // Function to fetch balance based on RFID
 // Function to log passenger entry
-function logPassengerEntry($rfid, $fromRoute, $toRoute, $fare, $conductorName, $busNumber, $transactionNumber, $conn)
+
+
+function logPassengerEntry($rfid, $fromRoute, $toRoute, $fare, $conductorName,$driverac, $busNumber, $transactionNumber, $conn)
 {
-    $query = "INSERT INTO passenger_logs (rfid, from_route, to_route, fare, conductor_name, bus_number, transaction_number) VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+
+    $query = "INSERT INTO passenger_logs (rfid, from_route, to_route, fare, conductor_name,driver_name,bus_number, transaction_number) VALUES (?,?, ?, ?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($query);
-    $stmt->bind_param("sssssss", $rfid, $fromRoute, $toRoute, $fare, $conductorName, $busNumber, $transactionNumber);
+    $stmt->bind_param("ssssssss", $rfid, $fromRoute, $toRoute, $fare, $conductorName,$driverac, $busNumber, $transactionNumber);
     $stmt->execute();
     $stmt->close();
 }
@@ -116,9 +125,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $totalFare = $fare * $passengerQuantity;
 
         // Apply discount if applicable
-        if ($fareType === 'discounted') {
-            $totalFare *= 0.8; // 20% discount
-        }
+       // Apply discount if applicable
+if ($fareType === 'discounted') {
+    $totalFare *= (1 - ($discountPercentage / 100)); // Apply the discount based on the fetched percentage
+}
 
         if (empty($rfid)) { // Check if payment is made in cash
             $totalFare = round($totalFare); // Round to the nearest whole number
@@ -141,7 +151,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ];
 
             $loggedRfid = !empty($rfid) ? $rfid : 'cash'; // Use 'cash' if payment is made in cash
-            logPassengerEntry($loggedRfid, $fromRoute['route_name'], $toRoute['route_name'], $totalFare, $conductorName, $bus_number, $transactionNumber, $conn);
+            logPassengerEntry($loggedRfid, $fromRoute['route_name'], $toRoute['route_name'], $totalFare, $conductorName,$driverac, $bus_number, $transactionNumber, $conn);
 
             echo json_encode([
                 'status' => 'success',
@@ -272,8 +282,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['removeAllPassengers']))
     exit;
 }
 
-
-
 // Check if bus number and driver name are not set in the session
 if (!$bus_number || !$driverac) {
 
@@ -386,6 +394,8 @@ window.onload = function() {
 };
 </script>";
 }
+
+
 $conn->close();
 
 ?>
@@ -404,7 +414,7 @@ $conn->close();
     <script src="../js/main.js"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/sidebars.css">
     <style>
         body {
             background-color: #f8f9fa;
@@ -431,9 +441,10 @@ $conn->close();
 <body>
 
     <?php
-    include '../sidebar.php'
+    include 'sidebar.php'
         ?>
-    <div class="container mt-5">
+        
+        <div id="main-content" class="container mt-5">
         <h1 class="text-center text-primary">Bus Fare Calculator</h1>
         <form id="fareForm" class="mt-4">
             <!-- KM Display -->
@@ -480,7 +491,7 @@ $conn->close();
                     <label for="fareType" class="form-label">Fare Type</label>
                     <select id="fareType" name="fareType" class="form-select">
                         <option value="regular">Regular</option>
-                        <option value="discounted">Student/Senior (20% Off)</option>
+                        <option value="discounted">Student/Senior (<?= htmlspecialchars($discountPercentage); ?>% Off)</option>
                     </select>
                 </div>
                 <div class="col-md-6">
@@ -556,11 +567,12 @@ $conn->close();
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../js/main.js"></script>
+    <script src="../js/sidebar.js"></script>
     <script>
 
         const baseFare = <?php echo $base_fare; ?>;
         const additionalFare = <?php echo $additional_fare; ?>;
-        const driverName = "<?= $_SESSION['driver_name']; ?>";  // PHP variable for driver name
+        const driverName = "<?= $_SESSION['driver_name'] ?>";  // PHP variable for driver name
 
         document.getElementById('fromRoute').addEventListener('change', updateDistance);
         document.getElementById('toRoute').addEventListener('change', updateDistance);
@@ -935,7 +947,7 @@ $conn->close();
             if (receiptShown) return; // Prevent showing the receipt again
 
             receiptShown = true;
-            const driverName = "<?= $_SESSION['driver_name']; ?>";  // PHP variable for driver name
+            const driverName = "<?= $_SESSION['driver_name'] ?>";  // PHP variable for driver name
             const busNumber = "<?= $bus_number; ?>";  // PHP variable for bus number
 
             Swal.fire({

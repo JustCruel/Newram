@@ -7,72 +7,121 @@ if (isset($_SESSION['firstname']) && isset($_SESSION['lastname'])) {
     $firstname = 'Guest';
     $lastname = '';
 }
+
+// Get the current page's filename
+$currentPage = basename($_SERVER['PHP_SELF']);
 ?>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-<div class="wrapper d-flex align-items-stretch">
-    <nav id="sidebar" class="active">
-        <h1><a href="index.php" class="logo">
-                <img src="../assets/logo/logoramstar.jpg" alt="logo" />
-            </a></h1>
-        <div class="user-profile text-center mb-3">
-            <?php if (!empty($profile_picture)) { ?>
-                <img src="../images/<?php echo $profile_picture; ?>" alt="Profile Picture" class="img-fluid rounded-circle"
-                    width="100" height="100">
-            <?php } else { ?>
-                <img src="../images/default_profile.jpg" alt="Default Profile Picture" class="img-fluid rounded-circle"
-                    width="100" height="100">
-            <?php } ?>
-            <h3><?php echo $firstname, " ", $lastname; ?></h3>
-        </div>
-        <ul class="list-unstyled components mb-5">
-            <li class="active">
-                <a href="./index.php"><span class="fa fa-home"></span>
-                    Dashboard</a>
-            </li>
-            <li>
-                <a href="register.php"><span class="fa fa-user"></span>
-                    Registration</a>
-            </li>
-            <li>
-                <a href="activate.php"><span class="fa fa-sticky-note"></span>
-                    Activation</a>
-            </li>
-            <li>
-                <a href="deactivate.php"><span class="fa fa-sticky-note"></span>
-                    Deactivation</a>
-            </li>
 
-            <li>
-                <a href="revenue.php"><span class="fa fa-cogs"></span>
-                    Revenue</a>
-            </li>
-            <li>
-                <a href="fareupdate.php" onclick=""><span class="fa fa-arrow-up-1-9"></span>
-                    Fare Update</a>
-            </li>
-            <li>
-                <a href="businfo.php">
-                    <span class="fa fa-bus"></span> Reg Bus Info
-                </a>
-            </li>
-            <li>
-                <a href="busviewinfo.php">
-                    <span class="fa fa-eye"></span> View Bus Info
-                </a>
-            </li>
-            <li>
-                <a href="../logout.php">
-                    <span class="fa fa-paper-plane"></span> Logout
-                </a>
-            </li>
-        </ul>
 
-        <div class="footer">
-            <p>
-                Copyright &copy;
-                <script>document.write(new Date().getFullYear());</script> All rights reserved | This template is
-                made with <i class="icon-heart" aria-hidden="true"></i> by <a href="https://colorlib.com"
-                    target="_blank">Colorlib.com</a>
-            </p>
-        </div>
-    </nav>
+
+
+<!-- Top Bar -->
+<div class="top-bar">
+    <h4>Ramstar</h4>
+    <div class="profile">
+        <i class="fas fa-user-circle fa-2x"></i>
+        <span>Admin</span>
+        <a href="../logout.php" class="btn btn-sm btn-light">Logout</a>
+    </div>
+</div>
+
+<!-- Sidebar -->
+<nav class="sidebar">
+    <h4>Admin Panel</h4>
+    <ul class="nav flex-column">
+        <li class="nav-item">
+            <a class="nav-link <?php echo ($currentPage == 'admindashboard.php') ? 'active' : ''; ?>"
+                href="admindashboard.php">
+                <i class="fa fa-home"></i> Dashboard
+            </a>
+        </li>
+        <div class="sidebar-divider"></div>
+        <li class="nav-item">
+            <a class="nav-link <?php echo ($currentPage == 'register.php') ? 'active' : ''; ?>" href="register.php">
+                <i class="fa fa-user"></i> Registration
+            </a>
+        </li>
+        <div class="sidebar-divider"></div>
+        <li class="nav-item">
+            <a class="nav-link <?php echo ($currentPage == 'regemploye.php') ? 'active' : ''; ?>" href="regemploye.php">
+                <i class="fa fa-user"></i> Reg Employee
+            </a>
+        </li>
+        <div class="sidebar-divider"></div>
+        <li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle <?php echo ($currentPage == 'activate.php' || $currentPage == 'manageaccounts.php' || $currentPage == 'accountsettings.php') ? 'active' : ''; ?>" 
+       href="#" 
+       id="accountsDropdown" 
+       role="button" 
+       data-bs-toggle="dropdown" 
+       aria-expanded="false">
+        <i class="fa fa-sticky-note"></i> Accounts
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="accountsDropdown">
+        <li>
+            <a class="dropdown-item <?php echo ($currentPage == 'activate_users.php') ? 'active' : ''; ?>" href="activate_users.php">Activate Accounts</a>
+        </li>
+        <li>
+            <a class="dropdown-item <?php echo ($currentPage == 'disable_users.php') ? 'active' : ''; ?>" href="disable_users.php">Disable Accounts</a>
+        </li>
+        <li>
+            <a class="dropdown-item <?php echo ($currentPage == 'transfer_user_funds.php') ? 'active' : ''; ?>" href="transfer_user_funds.php">Transfer User Funds</a>
+        </li>
+    </ul>
+</li>
+
+
+        <div class="sidebar-divider"></div>
+        <li class="nav-item">
+            <a class="nav-link <?php echo ($currentPage == 'revenue.php') ? 'active' : ''; ?>" href="revenue.php">
+                <i class="fa fa-cogs"></i> Revenue
+            </a>
+        </li>
+        <div class="sidebar-divider"></div>
+        <li class="nav-item">
+            <a class="nav-link <?php echo ($currentPage == 'fareupdate.php') ? 'active' : ''; ?>" href="fareupdate.php">
+                <i class="fa fa-arrow-up-1-9"></i> Fare Update
+            </a>
+        </li>
+        <div class="sidebar-divider"></div>
+        <li class="nav-item">
+            <a class="nav-link <?php echo ($currentPage == 'businfo.php') ? 'active' : ''; ?>" href="businfo.php">
+                <i class="fa fa-bus"></i> Reg Bus Info
+            </a>
+        </li>
+        <div class="sidebar-divider"></div>
+        <li class="nav-item">
+            <a class="nav-link <?php echo ($currentPage == 'busviewinfo.php') ? 'active' : ''; ?>"
+                href="busviewinfo.php">
+                <i class="fa fa-eye"></i> View Bus Info
+            </a>
+        </li>
+        <div class="sidebar-divider"></div>
+        <li class="nav-item">
+            <a class="nav-link <?php echo ($currentPage == 'feedbackview.php') ? 'active' : ''; ?>"
+                href="feedbackview.php">
+                <i class="fa fa-eye"></i> Feedbacks
+            </a>
+        </li>
+        <div class="sidebar-divider"></div>
+        <li class="nav-item">
+            <a class="nav-link" href="../logout.php">
+                <i class="fa fa-sign-out-alt"></i> Logout
+            </a>
+        </li>
+    </ul>
+</nav>
+
+
+<!-- Hamburger Button -->
+<i id="hamburger" class="fas fa-bars fa-2x"></i>
+<!-- Footer -->
+<footer class="footer">
+    <p>&copy; <?php echo date('Y'); ?> Ramstar Bus. All rights reserved.</p>
+ 
+    <div class="footer-links">
+        <a href="../terms.php" target="_blank">Terms and Conditions</a> | 
+        <a href="../privacy.php" target="_blank">Privacy Policy</a>
+    </div>
+</footer>
+

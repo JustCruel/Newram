@@ -25,6 +25,18 @@ if (!$user) {
 }
 
 $availablePoints = $user['points'];
+
+// Fetch account number from the session
+$account_number = $_SESSION['account_number'];
+
+// Fetch user balance
+$balanceQuery = "SELECT balance FROM useracc WHERE account_number = ?";
+$stmt = $conn->prepare($balanceQuery);
+$stmt->bind_param('s', $account_number); // Use 's' for string
+$stmt->execute();
+$stmt->bind_result($balance);
+$stmt->fetch();
+$stmt->close(); // Close the statement
 ?>
 
 <!DOCTYPE html>
@@ -39,13 +51,135 @@ $availablePoints = $user['points'];
     <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800,900" rel="stylesheet">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <link rel="stylesheet" href="../css/style.css"> <!-- Your custom CSS -->
+    <link rel="stylesheet" href="../css/sidebars.css"> <!-- Your custom CSS -->
 </head>
+<style>
+    /* Custom CSS for "Convert Points to Balance" page */
+    body {
+        font-family: 'Poppins', sans-serif;
+        background-color: #f8f9fa;
+        margin: 0;
+        padding: 0;
+    }
+
+   
+
+
+    .card-header {
+        font-size: 2.5rem;
+        margin-bottom: 20px;
+        color: #f1c40f;
+        font-weight: bold;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    }
+
+    .card-header .card-title {
+        font-size: 30px;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .card-body {
+        padding: 20px;
+        background-color: #ffffff;
+        border-radius: 0 0 10px 10px;
+    }
+
+    .form-label {
+        font-weight: 500;
+        font-size: 16px;
+    }
+
+    .form-control {
+        border-radius: 8px;
+        border: 1px solid #ced4da;
+        padding: 10px;
+    }
+
+    .form-control-plaintext {
+        background-color: #f8f9fa;
+        padding: 10px;
+        border-radius: 8px;
+        font-size: 16px;
+        color: #212529;
+    }
+
+    .btn {
+        background: #f1c40f;
+        color: black;
+        font-size: 16px;
+        font-weight: 500;
+        padding: 12px 25px;
+        border: none;
+        border-radius: 25px;
+        cursor: pointer;
+        transition: all 0.3s ease-in-out;
+    }
+
+    .btn-secondary {
+        background: #f1c40f;
+        color: white;
+        font-size: 16px;
+        font-weight: bold;
+        padding: 12px 25px;
+        border: none;
+        border-radius: 25px;
+        cursor: pointer;
+        transition: all 0.3s ease-in-out;
+    }
+
+    .btn-secondary:hover {
+        background-color: #f39c12;
+
+    }
+
+    .btn-primary {
+        background: rgb(6, 3, 201);
+        color: white;
+        font-size: 16px;
+        font-weight: bold;
+        padding: 12px 25px;
+        border: none;
+        border-radius: 25px;
+        cursor: pointer;
+        transition: all 0.3s ease-in-out;
+    }
+
+    .btn-primary:hover {
+        background-color: #2980b9;
+
+    }
+
+    button+button {
+        margin-left: 10px;
+        transform: scale(1.05);
+        transition: transform 0.3s ease;
+    }
+
+    @media (max-width: 576px) {
+        .card-header {
+            padding: 15px;
+        }
+
+        .card-header .card-title {
+            font-size: 20px;
+        }
+
+        .btn {
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        button+button {
+            margin-left: 0;
+        }
+    }
+</style>
 
 <body>
-    <?php include '../sidebar.php'; ?>
-    <div class="container mt-5">
-        <div class="card">
+    <?php include 'sidebar.php'; ?>
+    <div id="main-content" class="container mt-5">
+       
             <div class="card-header">
                 <h1 class="card-title">Convert Points to Balance</h1>
             </div>
@@ -89,9 +223,7 @@ $availablePoints = $user['points'];
                         <input type="number" class="form-control" name="points" id="points" min="1"
                             max="<?php echo htmlspecialchars($availablePoints); ?>" required>
                     </div>
-                    <!-- Button to input all points -->
                     <button type="button" class="btn btn-secondary" onclick="inputAllPoints()">Input All Points</button>
-                    <!-- Button to trigger conversion -->
                     <button type="button" class="btn btn-primary" onclick="confirmConversion()">Convert Points</button>
                 </form>
 
@@ -99,16 +231,40 @@ $availablePoints = $user['points'];
         </div>
     </div>
 
+    <!-- Modal for Updated Balance -->
+    <div class="modal fade" id="updatedBalanceModal" tabindex="-1" aria-labelledby="updatedBalanceLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="updatedBalanceLabel">Updated Balance</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Your new balance is: <strong id="newBalance">₱<?php echo number_format($balance, 2); ?></strong>
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                        onclick="reloadPage()">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="../js/main.js"></script>
+    <script src="../js/sidebar.js"></script>
 
     <script>
-        // Function to input all available points into the points input field
+
+        function reloadPage() {
+            location.reload();  // This will reload the current page
+        }
         function inputAllPoints() {
-            var availablePoints = <?php echo $availablePoints; ?>; // Get available points from PHP
-            $('#points').val(availablePoints); // Set points input field to available points
+            var availablePoints = <?php echo $availablePoints; ?>;
+            $('#points').val(availablePoints);
         }
 
         function confirmConversion() {
@@ -122,36 +278,37 @@ $availablePoints = $user['points'];
                 confirmButtonText: 'Yes, convert it!'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // Call converting_points.php via AJAX
                     convertPoints();
                 }
             });
         }
 
         function convertPoints() {
-            var pointsToConvert = $('#points').val(); // Get the points value
+            var pointsToConvert = $('#points').val();
             if (pointsToConvert) {
                 $.ajax({
-                    url: 'converting_points.php', // The PHP file handling the conversion
+                    url: 'converting_points.php',
                     type: 'POST',
-                    data: { points: pointsToConvert }, // Send the points to convert
+                    data: { points: pointsToConvert },
                     success: function (response) {
-                        var result = JSON.parse(response); // Parse JSON response
+                        var result = JSON.parse(response);
                         if (result.status === 'success') {
                             Swal.fire({
                                 icon: 'success',
                                 title: 'Success',
-                                text: result.message, // Show success message from the response
+                                text: result.message,
                                 timer: 3000,
                                 showConfirmButton: false
                             }).then(() => {
-                                location.reload(); // Reload the page to update points after success
+                                $('#newBalance').text(result.new_balance);
+                                $('#updatedBalanceModal').modal('show');
+
                             });
                         } else {
                             Swal.fire({
                                 icon: 'error',
                                 title: 'Conversion Failed',
-                                text: result.message, // Show error message from the response
+                                text: result.message,
                                 timer: 3000,
                                 showConfirmButton: false
                             });
@@ -178,7 +335,4 @@ $availablePoints = $user['points'];
             }
         }
     </script>
-
 </body>
-
-</html>

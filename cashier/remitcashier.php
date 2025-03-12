@@ -72,69 +72,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         "&deduction_amount=" . urlencode(implode(',', $deduction_amount)));
 }
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['confirm_remittance'])) {
-    // Confirm and save the remittance
-    $bus_no = $_POST['bus_no'];
-    $conductor_id = (string) $_POST['conductor_id'];
-    $total_load = (float) $_POST['total_load']; // Ensure total load is a float
-    $total_cash = (float) $_POST['total_fare']; // Ensure total load is a float
-    $deduction_desc = explode(',', $_POST['deduction_desc']);
-    $deduction_amount = array_map('floatval', explode(',', $_POST['deduction_amount'])); // Convert deductions to floats
-    $net_amount = (float) $_POST['net_amount']; // Ensure net amount is a float
-    var_dump($total_cash);
-    // Insert into remittances
-    $remitDate = date('Y-m-d');
-    $stmt = $conn->prepare("INSERT INTO remittances (bus_no, conductor_id, remit_date, total_earning, total_deductions,
-net_amount) VALUES (?, ?, ?, ?, ?, ?)");
-    $total_deductions = array_sum($deduction_amount);
-    $stmt->bind_param("sssdds", $bus_no, $conductor_id, $remitDate, $total_load, $total_deductions, $net_amount);
-    $stmt->execute();
-    $remit_id = $stmt->insert_id;
-
-    // Insert remittance log into remit_logs table
-    $stmtRemitLog = $conn->prepare("INSERT INTO remit_logs (remit_id, bus_no, conductor_id, total_load, total_cash,
-total_deductions, net_amount, remit_date) VALUES (?, ?,?, ?, ?, ?, ?, ?)");
-    $stmtRemitLog->bind_param(
-        "issdddds",
-        $remit_id,
-        $bus_no,
-        $conductor_id,
-        $total_load,
-        $total_cash,
-        $total_deductions,
-        $net_amount,
-        $remitDate
-    );
-    $stmtRemitLog->execute();
-
-    // Insert deductions
-    $stmtDeduction = $conn->prepare("INSERT INTO deductions (remit_id, description, amount) VALUES (?, ?, ?)");
-    foreach ($deduction_desc as $key => $desc) {
-        $amount = $deduction_amount[$key];
-        $stmtDeduction->bind_param("isd", $remit_id, $desc, $amount);
-        $stmtDeduction->execute();
-    }
-
-    // Reset the daily revenue to 0 after remittance
-    $resetRevenueStmt = $conn->prepare("UPDATE transactions SET status = 'remitted' WHERE bus_number = ? AND
-DATE(transaction_date) = CURDATE()");
-    $resetRevenueStmt->bind_param("s", $bus_no);
-    $resetRevenueStmt->execute();
-
-    $resetPassengerLogsStmt = $conn->prepare("UPDATE passenger_logs SET status = 'remitted' WHERE bus_number = ? AND
-DATE(timestamp) = CURDATE()");
-    $resetPassengerLogsStmt->bind_param("s", $bus_no);
-    $resetPassengerLogsStmt->execute();
-
-    // Pass conductor name to printremit.php via POST
-    $_POST['conductor_name'] = $conductor_name;
-    include 'printremit.php';
-
-    // Success response
-    echo "
-<script>alert('Remittance saved successfully! Revenue for today has been reset.'); window.location.href = '';</script>";
-}
-
 $firstname = $_SESSION['firstname'];
 $lastname = $_SESSION['lastname'];
 
@@ -170,11 +107,11 @@ $stmt->close(); // Close statement
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/sidebars.css">
     <title>Conductor Remittance</title>
     <style>
         .container {
-            max-width: 600px;
+            max-width: 1000px;
             margin: auto;
             background: #fff;
             padding: 20px;
@@ -183,8 +120,19 @@ $stmt->close(); // Close statement
         }
 
         h1 {
-            text-align: center;
-            color: #333;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            font-weight: bold;
+            color: transparent;
+            /* Make the text color transparent */
+            background-image: linear-gradient(to right, #f1c40f, #e67e22);
+            background-clip: text;
+            -webkit-background-clip: text;
+            /* WebKit compatibility */
+            -webkit-text-fill-color: transparent;
+            /* Ensures only the gradient is visible */
+            -webkit-text-stroke: 0.5px black;
+            /* Outline effect */
         }
 
         label {
@@ -218,50 +166,51 @@ $stmt->close(); // Close statement
 </head>
 
 <body>
-    <?php include '../sidebar.php'; ?>
-    <div class="container">
-        <h1>Conductor Remittance</h1>
+    <?php include 'sidebar.php'; ?>
 
-        <form id="remittanceForm" method="POST" action="#">
-            <label for="rfid_input">Scan RFID:</label>
-            <input type="text" id="rfid_input" name="rfid_input" placeholder="Scan RFID here" autofocus>
-            <label for="bus_no">Bus No:</label>
-            <input type="text" id="bus_no" name="bus_no" required value="" readonly>
+    <h1>Conductor Remittance</h1>
 
-            <label for="conductor_name">Conductor Name:</label>
-            <input type="text" id="conductor_name" name="conductor_name" required value="" readonly>
+    <form id="remittanceForm" method="POST" action="#">
+        <label for="rfid_input">Scan RFID:</label>
+        <input type="text" id="rfid_input" name="rfid_input" placeholder="Scan RFID here" autofocus>
+        <label for="bus_no">Bus No:</label>
+        <input type="text" id="bus_no" name="bus_no" required value="" readonly>
 
-            <label for="conductor_id">Conductor Name:</label>
-            <input type="text" id="conductor_id" name="conductor_id" required value="" readonly>
+        <label for="conductor_name">Conductor Name:</label>
+        <input type="text" id="conductor_name" name="conductor_name" required value="" readonly>
 
-            <label for="total_fare">Total Fare (₱):</label>
-            <input type="number" id="total_fare" name="total_fare" step="0.01" readonly value="">
+        <label for="conductor_id">Conductor Name:</label>
+        <input type="text" id="conductor_id" name="conductor_id" required value="" readonly>
+
+        <label for="total_fare">Total Fare (₱):</label>
+        <input type="number" id="total_fare" name="total_fare" step="0.01" readonly value="">
 
 
-            <label for="total_load">Total Load (₱):</label>
-            <input type="number" id="total_load" name="total_load" step="0.01" readonly value="">
+        <label for="total_load">Total Load (₱):</label>
+        <input type="number" id="total_load" name="total_load" step="0.01" readonly value="">
 
-            <div id="deductions-container">
-                <button type="button" id="toggleDeductions" class="btn btn-primary">+ Deductions</button>
-                <div id="deductions" style="display: none; margin-top: 10px;">
-                    <h3>Deductions</h3>
-                    <div class="deduction-row">
-                        <input type="text" name="deduction_desc[]" placeholder="Description">
-                        <input type="number" name="deduction_amount[]" step="0.01" placeholder="Amount (₱)">
-                    </div>
-                    <button type="buttons" id="addDeduction" class="btn btn-secondary">Add Deduction</button>
+        <div id="deductions-container">
+            <button type="button" id="toggleDeductions" class="btn btn-primary">+ Deductions</button>
+            <div id="deductions" style="display: none; margin-top: 10px;">
+                <h3>Deductions</h3>
+                <div class="deduction-row">
+                    <input type="text" name="deduction_desc[]" placeholder="Description">
+                    <input type="number" name="deduction_amount[]" step="0.01" placeholder="Amount (₱)">
                 </div>
+                <button type="buttons" id="addDeduction" class="btn btn-secondary">Add Deduction</button>
             </div>
+        </div>
 
-            <label for="net_amount">Net Amount (₱):</label>
-            <input type="number" id="net_amount" name="net_amount" step="0.01" readonly value="">
+        <label for="net_amount">Net Amount (₱):</label>
+        <input type="number" id="net_amount" name="net_amount" step="0.01" readonly value="">
 
 
-            <button type="submit" name="generate_remittance" id="remitButton">Generate Remittance</button>
+        <button type="submit" name="generate_remittance" id="remitButton">Generate Remittance</button>
 
-        </form>
+    </form>
     </div>
 
+    <script src="../js/sidebar.js"></script>
     <script>
 
         document.addEventListener('DOMContentLoaded', function () {

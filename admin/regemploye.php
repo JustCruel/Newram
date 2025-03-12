@@ -92,8 +92,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="../css/style.css">
-
+    <link rel="stylesheet" href="../css/sidebars.css">
     <style>
+        h2{
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            font-weight: bold;
+            color: transparent;
+            /* Make the text color transparent */
+            background-image: linear-gradient(to right, #f1c40f, #e67e22);
+            background-clip: text;
+            -webkit-background-clip: text;
+            /* WebKit compatibility */
+            -webkit-text-fill-color: transparent;
+            /* Ensures only the gradient is visible */
+            -webkit-text-stroke: 0.5px black;
+            /* Outline effect */
+        }
       /* Country code styling */
       .country-code {
             background-color: #f8f9fa;
@@ -119,10 +134,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   background-color: #007bff;
   border-color: #007bff;
 }
+
+h4 {
+  color: #ffffff;
+  text-align: center;
+  margin-bottom: 20px;
+}
     </style>
 </head>
 <body>
-<?php include "../sidebar.php"; ?>
+<?php include "sidebar.php"; ?>
 <div class="container mt-5">
     <h2 class="text-center mb-4">Employee Registration</h2>
 
@@ -252,6 +273,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="../js/main.js"></script>
+<script src="../js/sidebar.js"></script>
 <script>
 
 function checkSubmitButton() {

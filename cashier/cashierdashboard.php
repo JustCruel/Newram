@@ -61,22 +61,20 @@ $stmt->fetch();
 <html lang="en">
 
 <head>
-    <title>Cashier</title>
+    <title>Cashier Dashboard</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <link href="https://fonts.googleapis.com/css?family=Poppins:300,400, 500,600,700,800,900" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800,900" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link rel="stylesheet" href="../css/style.css"> <!-- Your custom CSS -->
-
+    <link rel="stylesheet" href="../css/sidebars.css"> <!-- Your custom CSS -->
     <style>
+        /* Dashboard Grid */
         .dashboard {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -102,55 +100,66 @@ $stmt->fetch();
             font-size: 24px;
         }
 
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .sidebar {
-                width: 200px;
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            background-color: #ffffff;
+            overflow-y: auto;
+            border-left: 1px solid #e0e0e0;
+        }
+
+        /* Make it responsive */
+        @media (max-width: 1200px) {
+            .dashboard {
+                grid-template-columns: repeat(3, 1fr);
             }
         }
 
-        @media (max-width: 576px) {
-            .sidebar {
-                width: 150px;
+        @media (max-width: 992px) {
+            .dashboard {
+                grid-template-columns: repeat(2, 1fr);
             }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Ensure the page content doesn't stretch too wide */
+        #main-content {
+            padding: 30px;
         }
     </style>
-
 </head>
 
 <body>
 
     <?php
-    include "../sidebar.php";
+    include "sidebar.php";
     ?>
 
-    <!-- Page Content  -->
-    <div id="content" class="p-4 p-md-5">
-       
-        <div id="main-content">
-        <div class="col-md-12 mb-4">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h2 class="card-title text-primary">Past Months' Total Load</h2>
-                    <div id="pastMonthsChart"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-                <div class="col-md-12 mb-4">
-                    <div class="card shadow-sm">
-                        <div class="card-body">
-                            <h2 class="card-title text-primary">Today's Total Load</h2>
-                            <div id="revenueChart"></div>
-                        </div>
+    <!-- Page Content -->
+    <div id="main-content" class="container mt-5">
+        <div class="row">
+            <div class="col-md-12 mb-4">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h2 class="card-title text-primary">Past Months' Total Load</h2>
+                        <div id="pastMonthsChart"></div>
                     </div>
                 </div>
+            </div>
 
-                
-</div>
-
-            </main>
+            <div class="col-md-12 mb-4">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h2 class="card-title text-primary">Today's Total Load</h2>
+                        <div id="revenueChart"></div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -159,34 +168,10 @@ $stmt->fetch();
     <script src="../js/popper.js"></script>
     <script src="../js/bootstrap.min.js"></script>
     <script src="../js/main.js"></script>
+    <script src="../js/sidebar.js"></script>
 
-    
     <script>
-        function loadContent(page) {
-            $.ajax({
-                url: page,
-                method: 'GET',
-                success: function (data) {
-                    $('#main-content').html(data);
-                },
-                error: function () {
-                    alert('Failed to load content');
-                }
-            });
-        }
-
-        function toggleSidebar(event) {
-            event.preventDefault(); // Prevent default action when clicking toggle button
-            $('#sidebar').toggleClass('active');
-        }
-
-        // Initial call to bind the sidebar toggle button
-        $(document).ready(function () {
-            $('#sidebarCollapse').on('click', toggleSidebar);
-        });
-
-        // Initialize ApexCharts for today's revenue
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", function () {
             var options = {
                 chart: {
                     type: 'bar',
@@ -226,4 +211,5 @@ $stmt->fetch();
         });
     </script>
 </body>
+
 </html>

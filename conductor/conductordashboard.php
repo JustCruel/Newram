@@ -78,7 +78,7 @@ while ($row = mysqli_fetch_assoc($revenueByDateResult)) {
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/sidebars.css">
     <style>
         .dashboard {
             display: grid;
@@ -125,64 +125,64 @@ while ($row = mysqli_fetch_assoc($revenueByDateResult)) {
 </head>
 
 <body>
-    <?php include "../sidebar.php"; ?>
+    <?php include "sidebar.php"; ?>
 
-    <div id="content" class="p-4">
-        <h1 class="mb-4">Conductor Dashboard</h1>
+    <div id="main-content" class="container mt-5">
+    <h1 class="mb-4">Conductor Dashboard</h1>
 
-        <!-- Dashboard Metrics -->
-        <!-- Dashboard Metrics -->
-        <div class="dashboard">
-            <div class="card text-center text-white bg-primary">
-                <div class="card-body">
-                    <h3><i class="fas fa-users"></i></h3>
-                    <h4>Total Users</h4>
-                    <p class="h2"><?php echo $userCount; ?></p>
-                </div>
+    <!-- Dashboard Metrics -->
+    <!-- Dashboard Metrics -->
+    <div class="dashboard">
+        <div class="card text-center text-white bg-primary">
+            <div class="card-body">
+                <h3><i class="fas fa-users"></i></h3>
+                <h4>Total Users</h4>
+                <p class="h2"><?php echo $userCount; ?></p>
             </div>
-            <div class="card text-center text-white bg-success">
-                <div class="card-body">
-                    <h3><i class="fas fa-coins"></i></h3>
-                    <h4>Total Load(Today)</h4>
-                    <p class="h2">₱<?php echo number_format($totalRevenue, 2); ?></p>
-                </div>
+        </div>
+        <div class="card text-center text-white bg-success">
+            <div class="card-body">
+                <h3><i class="fas fa-coins"></i></h3>
+                <h4>Total Load(Today)</h4>
+                <p class="h2">₱<?php echo number_format($totalRevenue, 2); ?></p>
             </div>
-            <div class="card text-center text-white bg-info">
+        </div>
+        <div class="card text-center text-white bg-info">
+            <div class="card-body">
+                <h3><i class="fas fa-bus"></i></h3>
+                <h4>Total Transactions Today</h4>
+                <p class="h2"><?php echo $totalPassengers; ?></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Revenue Chart -->
+    <div class="row">
+        <div class="col-md-6 col-12">
+            <div class="card mt-4">
                 <div class="card-body">
-                    <h3><i class="fas fa-bus"></i></h3>
-                    <h4>Total Transactions Today</h4>
-                    <p class="h2"><?php echo $totalPassengers; ?></p>
+                    <h4 class="card-title">Revenue Trends</h4>
+                    <div class="chart-container" id="revenueChart"></div>
                 </div>
             </div>
         </div>
 
-        <!-- Revenue Chart -->
-        <div class="row">
-            <div class="col-md-6 col-12">
-                <div class="card mt-4">
-                    <div class="card-body">
-                        <h4 class="card-title">Revenue Trends</h4>
-                        <div class="chart-container" id="revenueChart"></div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-6 col-12">
-                <div class="card mt-4">
-                    <div class="card-body">
-                        <h4 class="card-title">Passenger Count Trends</h4>
-                        <div class="chart-container" id="passengerChart"></div>
-                    </div>
+        <div class="col-md-6 col-12">
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h4 class="card-title">Passenger Count Trends</h4>
+                    <div class="chart-container" id="passengerChart"></div>
                 </div>
             </div>
         </div>
+    </div>
 
 
-        <!-- Revenue Chart -->
+    <!-- Revenue Chart -->
 
 
     </div>
-    <script src="../js/main.js"></script>
+    <script src="../js/sidebar.js"></script>
     <script>
         // Revenue chart
         const revenueData = <?php echo json_encode($revenueData); ?>;

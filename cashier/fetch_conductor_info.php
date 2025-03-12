@@ -38,9 +38,21 @@ $stmt->close();
 
 // Now, fetch the total load and total fare based on the conductor's bus number
 $stmt = $conn->prepare("SELECT 
-    (SELECT SUM(amount) FROM transactions WHERE status ='notremitted' AND bus_number = ? AND conductor_id = ? AND DATE(transaction_date) = CURDATE()) AS total_load,
-    (SELECT SUM(fare) FROM passenger_logs WHERE status ='notremitted' AND bus_number = ? AND conductor_name = ? AND rfid = 'cash' AND DATE(timestamp) = CURDATE()) as total_fare
-FROM DUAL;"); 
+    (SELECT SUM(amount) 
+     FROM transactions 
+     WHERE status = 'notremitted' 
+     AND bus_number = ? 
+     AND conductor_id = ? 
+     AND DATE(transaction_date) = CURDATE()) AS total_load,
+     
+    (SELECT SUM(fare) 
+     FROM passenger_logs 
+     WHERE status = 'notremitted' 
+     AND bus_number = ? 
+     AND conductor_name = ? 
+     AND rfid = 'cash' 
+     AND DATE(timestamp) = CURDATE()) AS total_fare;
+"); 
 
 $stmt->bind_param("ssss", $bus_number, $rfid, $bus_number, $conductor_name);
 $stmt->execute();

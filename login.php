@@ -110,11 +110,24 @@ if (isset($_POST['Login'])) {
    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
    <style>
       body {
-         background: #f0f2f5;
-         font-family: Arial, sans-serif;
+         background: url('images/bus1.jpg') no-repeat center center fixed;
+         /* Add your image path here */
+         background-size: cover;
+         /* Ensures the image covers the full page */
+         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+         margin: 0;
+         padding: 0;
       }
 
-     
+      .wrapper {
+         max-width: 400px;
+         margin: 100px auto;
+         padding: 40px;
+         background-color: rgba(255, 255, 255, 0.8);
+         /* Transparent background */
+         border-radius: 8px;
+         box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      }
 
       .title-text {
          text-align: center;
@@ -122,8 +135,9 @@ if (isset($_POST['Login'])) {
       }
 
       .title-text p {
-         font-size: 24px;
-         font-weight: bold;
+         font-size: 28px;
+         font-weight: 600;
+         color: #333;
       }
 
       .form-container {
@@ -137,19 +151,18 @@ if (isset($_POST['Login'])) {
 
       .field input {
          width: 100%;
-         padding: 10px;
+         padding: 12px 15px;
          font-size: 16px;
          border: 1px solid #ccc;
          border-radius: 4px;
          background-color: #f9f9f9;
+         box-sizing: border-box;
+         transition: border-color 0.3s ease;
       }
 
-      .field i {
-         position: absolute;
-         right: 10px;
-         top: 50%;
-         transform: translateY(-50%);
-         cursor: pointer;
+      .field input:hover {
+         transform: scale(1.05);
+         transition: transform 0.3s ease;
       }
 
       .field input:focus {
@@ -157,37 +170,44 @@ if (isset($_POST['Login'])) {
          border-color: #3498db;
       }
 
+      .field i {
+         position: absolute;
+         right: 15px;
+         top: 50%;
+         transform: translateY(-50%);
+         cursor: pointer;
+         color: #aaa;
+         transition: color 0.3s ease;
+      }
+
+      .field i:hover {
+         color: #3498db;
+      }
+
       .btn {
-         width: 100%;
-         padding: 15px;
-         background-color: #576BED;
-         color: white;
-         font-size: 18px;
+         background: #f1c40f;
+         color: black;
+         font-size: 16px;
+         font-weight: 500;
+         padding: 12px 25px;
          border: none;
-         border-radius: 4px;
+         border-radius: 25px;
          cursor: pointer;
-         transition: background-color 0.3s;
-         
+         transition: all 0.3s ease-in-out;
+         margin-bottom: 10px;
       }
-      .btn-signup {
-         margin-top: 10px;
-         width: 100%;
-         padding: 15px;
-         background-color: #576BED;
-         color: white;
-         font-size: 18px;
-         border: none;
-         border-radius: 4px;
-         cursor: pointer;
-         transition: background-color 0.3s;
-      }
+
+     
+
       .btn:hover {
-         background-color: #2980b9;
+         background-color: #e67e22;
+         transform: scale(1.05);
+         transition: transform 0.3s ease;
       }
 
       .alert {
          text-align: center;
-         padding: 10px;
+         padding: 12px;
          border-radius: 5px;
          margin-bottom: 20px;
          font-size: 14px;
@@ -204,19 +224,17 @@ if (isset($_POST['Login'])) {
       }
 
       header {
-         background-color: #576BED;
+         background: linear-gradient(to right, rgb(243, 75, 83), rgb(131, 4, 4));
          color: white;
-         padding: 15px;
+         padding: 20px 0;
+         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
       }
 
       header nav ul {
          list-style: none;
+         margin: 0;
+         padding: 0;
          text-align: center;
-      }
-
-      header nav ul li {
-         display: inline;
-         margin: 0 10px;
       }
 
       header nav ul li a {
@@ -224,20 +242,55 @@ if (isset($_POST['Login'])) {
          font-size: 16px;
          font-weight: bold;
          text-decoration: none;
-         transition: color 0.3s;
+         padding: 10px 20px;
+         border-radius: 30px;
+         background: #f1c40f;
+         cursor: pointer;
+         transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
       }
 
       header nav ul li a:hover {
-         color: #2980b9;
+         background: #e67e22;
+         transform: scale(1.1);
+         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
       }
-      .signup-link p {
-         margin-top: 15px;
-         font-size: 20px;
+
+      header nav ul li a:active {
+         background: #f1c40f;
+         transform: scale(1);
       }
-      .forgot-link p{
-         margin-top: 15px;
-         font-size: 20px;
+
+      @media (max-width: 768px) {
+         header nav ul li a {
+            font-size: 18px;
+            width: 100%;
+         }
       }
+
+      @media (max-width: 480px) {
+         header nav ul li a {
+            font-size: 16px;
+            padding: 10px 15px;
+         }
+      }
+
+      .forgot-link p {
+  font-size: 20px;          /* Set the font size */
+  color: #333;              /* Text color */
+  font-family: Arial, sans-serif;  /* Font style */
+  line-height: 1.5;         /* Line height for better readability */
+  margin: 10px 0;           /* Spacing around the paragraph */
+}
+
+.forgot-link a {
+  color: #007bff;           /* Link color */
+  text-decoration: none;    /* Remove underline */
+}
+
+.forgot-link a:hover {
+  text-decoration: underline; /* Underline on hover */
+}
+
    </style>
    <script>
       function togglePassword(inputId, iconId) {
@@ -253,6 +306,9 @@ if (isset($_POST['Login'])) {
             icon.classList.add("fa-eye");
          }
       }
+    
+
+     
    </script>
 </head>
 
@@ -278,17 +334,15 @@ if (isset($_POST['Login'])) {
             <i class="fas fa-eye" id="togglePassword2" onclick="togglePassword('pass2', 'togglePassword2')"></i>
          </div>
          <input type="submit" name="Login" value="Log in" class="btn">
+         <button onclick="window.location.href='userregister.php'" class="btn">Sign up</button>
+       
       </form>
-      <div class="signup-link">
-         <!-- Changed to a button -->
-         <button onclick="window.location.href='userregister.php'" class="btn-signup">Sign up</button>
-      </div>
+     
       <div class="forgot-link">
-         <p>Forgot Password? <a href="forgotpassword.php">Click here</a></p>
+      <p>Forgot Password? <a href="forgotpassword.php">Click here</a></p>
       </div>
    </div>
-</div>
-
+   </div>
 </body>
 
 </html>

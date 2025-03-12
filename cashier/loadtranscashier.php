@@ -3,7 +3,7 @@ session_start();
 require '../fpdf/fpdf.php';
 include '../config/connection.php'; // Include your DB connection file
 
-if (!isset($_SESSION['email']) || ($_SESSION['role'] != 'Conductor' && $_SESSION['role'] != 'Superadmin')) {
+if (!isset($_SESSION['email']) || ($_SESSION['role'] != 'Cashier' && $_SESSION['role'] != 'Superadmin')) {
     header("Location: ../index.php");
     exit();
 }
@@ -21,11 +21,12 @@ $lastname = $_SESSION['lastname'];
 // Initialize variables
 $dailyRevenue = [];
 $totalRevenue = 0;
+$showWholeMonth = false; // Initialize the variable to prevent the undefined variable warning
 
 // Handle POST request
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $selectedDate = isset($_POST['selected_date']) ? $_POST['selected_date'] : date('Y-m-d');
-    $showWholeMonth = isset($_POST['show_whole_month']);
+    $showWholeMonth = isset($_POST['show_whole_month']); // This will now be set to true or false based on the checkbox
 
     $selectedMonth = date('m', strtotime($selectedDate));
     $selectedYear = date('Y', strtotime($selectedDate));
@@ -54,12 +55,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($showWholeMonth) {
         $dailyRevenue = array_fill(1, 31, 0); // Default to 0 for all days
         while ($row = $result->fetch_assoc()) {
-            $dailyRevenue[(int)$row['day']] = (float)$row['total_revenue'];
+            $dailyRevenue[(int) $row['day']] = (float) $row['total_revenue'];
         }
     } else {
-        $dailyRevenue[(int)$selectedDay] = 0; // Default to 0 for the selected day
+        $dailyRevenue[(int) $selectedDay] = 0; // Default to 0 for the selected day
         if ($row = $result->fetch_assoc()) {
-            $dailyRevenue[(int)$selectedDay] = (float)$row['total_revenue'];
+            $dailyRevenue[(int) $selectedDay] = (float) $row['total_revenue'];
         }
     }
 
@@ -70,8 +71,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $totalRevenue = array_sum($dailyRevenue);
 ?>
 
+
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -80,7 +83,7 @@ $totalRevenue = array_sum($dailyRevenue);
     <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800,900" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/sidebars.css">
     <style>
         body {
             font-family: 'Poppins', sans-serif;
@@ -100,7 +103,8 @@ $totalRevenue = array_sum($dailyRevenue);
             border-left: 1px solid #e0e0e0;
         }
 
-        h1, h2 {
+        h1,
+        h2 {
             color: #343a40;
         }
 
@@ -114,12 +118,13 @@ $totalRevenue = array_sum($dailyRevenue);
         }
 
         .btn-primary:hover {
-            background-color: #0056b3 }
-        
-            #chart {
-    width: 100%;
-    height: 350px;
-}
+            background-color: #0056b3
+        }
+
+        #chart {
+            width: 100%;
+            height: 350px;
+        }
 
 
         /* Responsive Design */
@@ -136,71 +141,71 @@ $totalRevenue = array_sum($dailyRevenue);
         }
     </style>
 </head>
+
 <body>
-<?php include "../sidebar.php"; ?>
-<div class="container-fluid d-flex">
-    <div class="sidebar">
-        <!-- Sidebar content -->
-    </div>
-    <div class="main-content flex-grow-1">
-        <h1 class="mt-4">Daily Revenue Report</h1>
-        <form method="POST" class="mb-4">
-            <div class="form-group">
-                <label for="selected_date">Select Date:</label>
-                <input type="date" id="selected_date" name="selected_date" class="form-control" value="<?php echo htmlspecialchars($selectedDate); ?>">
-            </div>
-            <div class="form-group form-check">
-                <input type="checkbox" id="show_whole_month" name="show_whole_month" class="form-check-input" <?php echo $showWholeMonth ? 'checked' : ''; ?>>
-                <label for="show_whole_month" class="form-check-label">Show Whole Month</label>
-            </div>
-            <button type="submit" class="btn btn-primary">Generate Report</button>
-        </form>
+    <?php include "sidebar.php"; ?>
 
-        <p>Total Revenue: <strong><?php echo number_format($totalRevenue, 2); ?></strong></p>
+    <div id="main-content" class="container mt-5">
+    <h1 class="mt-4">Daily Revenue Report</h1>
+    <form method="POST" class="mb-4">
+        <div class="form-group">
+            <label for="selected_date">Select Date:</label>
+            <input type="date" id="selected_date" name="selected_date" class="form-control"
+                value="<?php echo htmlspecialchars($selectedDate); ?>">
+        </div>
+        <div class="form-group form-check">
+            <input type="checkbox" id="show_whole_month" name="show_whole_month" class="form-check-input" <?php echo $showWholeMonth ? 'checked' : ''; ?>>
+            <label for="show_whole_month" class="form-check-label">Show Whole Month</label>
+        </div>
+        <button type="submit" class="btn btn-primary">Generate Report</button>
+    </form>
 
-        <div id="chart"></div>
+    <p>Total Revenue: <strong><?php echo number_format($totalRevenue, 2); ?></strong></p>
 
-        <script>
- window.onload = function () {
-    const dailyRevenue = <?php echo json_encode(array_values($dailyRevenue)); ?>;
-    updateChart(dailyRevenue);
-};
+    <div id="chart"></div>
+    <script src="../js/sidebar.js"></script>
+    <script>
+        window.onload = function () {
+            const dailyRevenue = <?php echo json_encode(array_values($dailyRevenue)); ?>;
+            updateChart(dailyRevenue);
+        };
 
-function updateChart(dailyRevenue) {
-    const categories = <?php echo json_encode($showWholeMonth ? range(1, 31) : [$selectedDay]); ?>;
+        function updateChart(dailyRevenue) {
+            const categories = <?php echo json_encode($showWholeMonth ? range(1, 31) : [$selectedDay]); ?>;
 
-    const options = {
-        chart: {
-            type: 'bar',
-            height: 350
-        },
-        series: [{
-            name: 'Revenue',
-            data: dailyRevenue
-        }],
-        xaxis: {
-            categories: categories
-        },
-        title: {
-            text: 'Daily Revenue',
-            align: 'center'
-        },
-        dataLabels: {
-            enabled: true
-        },
-        tooltip: {
-            shared: true,
-            intersect: false
+            const options = {
+                chart: {
+                    type: 'bar',
+                    height: 350
+                },
+                series: [{
+                    name: 'Revenue',
+                    data: dailyRevenue
+                }],
+                xaxis: {
+                    categories: categories
+                },
+                title: {
+                    text: 'Daily Revenue',
+                    align: 'center'
+                },
+                dataLabels: {
+                    enabled: true
+                },
+                tooltip: {
+                    shared: true,
+                    intersect: false
+                }
+            };
+
+            const chart = new ApexCharts(document.querySelector("#chart"), options);
+            chart.render();
         }
-    };
-
-    const chart = new ApexCharts(document.querySelector("#chart"), options);
-    chart.render();
-}
 
 
-        </script>
+    </script>
     </div>
-</div>
+    </div>
 </body>
+
 </html>

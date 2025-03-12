@@ -138,7 +138,7 @@ try {
 
     // Recipients
    
-    $mail->setFrom('ramstarzaragoza@gmail.com', 'Ramstar Bus Transportation');
+                $mail->setFrom('ramstarzaragoza@gmail.com', 'Ramstar Bus Transportation');
     $mail->addAddress($email,$fullname);
 
 
@@ -178,7 +178,16 @@ try {
 
 $conn->close();
 ?>
+<!DOCTYPE html>
+<html lang="en">
 
+<head>
+   <meta charset="utf-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Login</title>
+   <link rel="stylesheet" href="css/login.css">
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <!-- Include SweetAlert CSS and JS -->
 <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.6.5/dist/sweetalert2.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.6.5/dist/sweetalert2.min.js"></script>
@@ -194,6 +203,9 @@ $conn->close();
         justify-content: center;
         align-items: center;
         height: 100vh;
+        background: url('images/bus1.jpg') no-repeat center center fixed;
+         /* Add your image path here */
+         background-size: cover;
     }
     .form-container {
         background-color: white;
@@ -201,7 +213,7 @@ $conn->close();
         border-radius: 8px;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         width: 100%;
-        max-width: 400px;
+        max-width: 600px;
     }
     .form-container h2 {
         margin-bottom: 20px;
@@ -233,9 +245,90 @@ $conn->close();
     }
     button:hover {
         background-color: #45a049;
+        
     }
-</style>
+    .btn {
+        background: #f1c40f;
+         color: black;
+         font-size: 16px;
+         font-weight: 500;
+         padding: 12px 25px;
+         border: none;
+         border-radius: 25px;
+         cursor: pointer;
+         transition: all 0.3s ease-in-out;
+         margin-bottom: 10px;
+      }
 
+      .btn:hover {
+         background-color: #e67e22;
+         transform: scale(1.05);
+         transition: transform 0.3s ease;
+      }
+
+
+      header {
+         background: linear-gradient(to right, rgb(243, 75, 83), rgb(131, 4, 4));
+         color: white;
+         padding: 20px 0;
+         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      header nav ul {
+         list-style: none;
+         margin: 0;
+         padding: 0;
+         text-align: center;
+      }
+
+      header nav ul li a {
+         color: white;
+         font-size: 16px;
+         font-weight: bold;
+         text-decoration: none;
+         padding: 10px 20px;
+         border-radius: 30px;
+         background: #f1c40f;
+         cursor: pointer;
+         transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+      }
+
+      header nav ul li a:hover {
+         background: #e67e22;
+         transform: scale(1.1);
+         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+
+      header nav ul li a:active {
+         background: #f1c40f;
+         transform: scale(1);
+      }
+
+      @media (max-width: 768px) {
+         header nav ul li a {
+            font-size: 18px;
+            width: 100%;
+         }
+      }
+
+      @media (max-width: 480px) {
+         header nav ul li a {
+            font-size: 16px;
+            padding: 10px 15px;
+         }
+      }
+
+
+</style>
+    </head>
+<body>
+<header>
+      <nav>
+         <ul>
+            <li><a href="index.php">Home</a></li>
+         </ul>
+      </nav>
+   </header>
 <!-- Forgot Password Form -->
 <?php if (!$otp_sent) { ?> <!-- Only show this form if OTP has not been sent -->
 <div class="form-container">
@@ -244,7 +337,8 @@ $conn->close();
         <input type="hidden" name="action" value="forgot_password">
         <label for="email">Email Address:</label>
         <input type="email" name="email" required>
-        <button type="submit">Send OTP</button>
+        <button type="submit" class="btn">Send OTP</button>
+        <button onclick="window.location.href='login.php'" class="btn">Go Back</button>
     </form>
 </div>
 <?php } ?>
@@ -290,3 +384,4 @@ $conn->close();
         });
     <?php } ?>
 </script>
+    </body>

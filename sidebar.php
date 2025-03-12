@@ -43,13 +43,15 @@ if (isset($_SESSION['firstname']) && isset($_SESSION['lastname'])) {
                             Registration</a>
                     </li>
                     <li>
+                        <a href="regemploye.php">
+                            <span class="fa fa-user"></span> Reg Employee
+                        </a>
+                    </li>
+                    <li>
                         <a href="activate.php"><span class="fa fa-sticky-note"></span>
                             Accounts</a>
                     </li>
-                    <li>
-                        <a href="deactivate.php"><span class="fa fa-sticky-note"></span>
-                            Deactivate</a>
-                    </li>
+
                     <li>
                         <a href="revenue.php"><span class="fa fa-cogs"></span>
                             Revenue</a>
@@ -63,14 +65,15 @@ if (isset($_SESSION['firstname']) && isset($_SESSION['lastname'])) {
                             <span class="fa fa-bus"></span> Reg Bus Info
                         </a>
                     </li>
-                    <li>
-                        <a href="regemploye.php">
-                            <span class="fa fa-bus"></span> Reg Driver Info
-                        </a>
-                    </li>
+                   
                     <li>
                         <a href="busviewinfo.php">
                             <span class="fa fa-eye"></span> View Bus Info
+                        </a>
+                    </li>
+                    <li>
+                        <a href="feedbackview.php">
+                            <span class="fa fa-eye"></span> Feedbacks
                         </a>
                     </li>
                     <li>
@@ -82,24 +85,28 @@ if (isset($_SESSION['firstname']) && isset($_SESSION['lastname'])) {
             <?php if ($role === 'Cashier') { ?>
                 <ul class="list-unstyled components mb-5">
                     <li class="active">
-                        <a href="./cashierdashboard.php"><span class="fa fa-tachometer-alt"></span>
+                        <a href="cashierdashboard.php"><span class="fa fa-tachometer-alt"></span>
                             Dashboard</a>
                     </li>
                     <li>
-                        <a href="./loadrfidadmin.php"><span class="fa fa-credit-card"></span>
+                        <a href="loadrfidadmin.php"><span class="fa fa-credit-card"></span>
                             Load RFID</a>
                     </li>
                     <li>
-                        <a href="./remitcashier.php"><span class="fa fa-bolt"></span>
+                        <a href="remitcashier.php"><span class="fa fa-bolt"></span>
                             Remit</a>
-                    </li> 
+                    </li>
                     <li>
-                        <a href="./translogscashier.php"><span class="fa fa-list-alt"></span>
+                        <a href="translogscashier.php"><span class="fa fa-list-alt"></span>
                             Load Transaction</a>
                     </li>
                     <li>
-                        <a href="./loadtranscashier.php"><span class="fa fa-chart-line"></span>
-                            Load Report</a>
+                        <a href="loadtranscashier.php"><span class="fa fa-chart-line"></span>
+                            Load Revenue</a>
+                    </li>
+                    <li>
+                        <a href="remit_logs.php"><span class="fa fa-chart-line"></span>
+                            Remit Logs</a>
                     </li>
                     <li>
                         <a href="../logout.php"><span class="fa fa-sign-out-alt"></span> Logout</a>
@@ -110,20 +117,20 @@ if (isset($_SESSION['firstname']) && isset($_SESSION['lastname'])) {
             <?php if ($role === 'Conductor') { ?>
                 <ul class="list-unstyled components mb-5">
                     <li class="active">
-                        <a href="./conductordashboard.php"><span class="fa fa-tachometer-alt"></span> Dashboard</a>
+                        <a href="conductordashboard.php"><span class="fa fa-tachometer-alt"></span> Dashboard</a>
                     </li>
                     <li>
-                        <a href="./busfare.php"><span class="fa fa-bus"></span> Bus Fare</a>
+                        <a href="busfare.php"><span class="fa fa-bus"></span> Bus Fare</a>
                     </li>
 
                     <li>
-                        <a href="./loadrfidconductor.php"><span class="fa fa-id-badge"></span> Load RFID</a>
+                        <a href="loadrfidconductor.php"><span class="fa fa-id-badge"></span> Load RFID</a>
                     </li>
                     <li>
-                        <a href="./translogscon.php"><span class="fa fa-history"></span> Load Transaction</a>
+                        <a href="translogscon.php"><span class="fa fa-history"></span> Load Transaction</a>
                     </li>
                     <li>
-                        <a href="./loadtranscon.php"><span class="fa fa-dollar-sign"></span> Load Report</a>
+                        <a href="loadtranscon.php"><span class="fa fa-dollar-sign"></span> Load Revenue</a>
                     </li>
 
                     <li>

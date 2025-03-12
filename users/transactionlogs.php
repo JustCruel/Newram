@@ -60,18 +60,30 @@ $transactions = fetchTransactions($conn, $accountNumber, $limit, $offset);
     <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800,900" rel="stylesheet">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <link rel="stylesheet" href="../css/style.css"> <!-- Your custom CSS -->
+    <link rel="stylesheet" href="../css/sidebars.css"> <!-- Your custom CSS -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
     <title>Load Transaction Logs</title>
     <style>
         h2 {
-            color: black;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            font-weight: bold;
+            color: transparent;
+            /* Make the text color transparent */
+            background-image: linear-gradient(to right, #f1c40f, #e67e22);
+            background-clip: text;
+            -webkit-background-clip: text;
+            /* WebKit compatibility */
+            -webkit-text-fill-color: transparent;
+            /* Ensures only the gradient is visible */
+            -webkit-text-stroke: 0.5px black;
+            /* Outline effect */
         }
     </style>
 </head>
 
 <body>
-    <?php include '../sidebar.php'; ?>
+    <?php include 'sidebar.php'; ?>
     <div class="container mt-5">
         <h2 class="text-center">Load Transaction Logs</h2>
         <table class="table table-bordered mt-4">
@@ -131,7 +143,7 @@ $transactions = fetchTransactions($conn, $accountNumber, $limit, $offset);
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="../js/main.js"></script>
+    <script src="../js/sidebar.js"></script>
 </body>
 
 </html>

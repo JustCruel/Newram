@@ -66,7 +66,7 @@ if (isset($_POST['confirm_logout']) && $_POST['confirm_logout'] === 'true') {
     echo json_encode($response);
     exit();
 }
- var_dump($lastname);
+
 ?>
 
 

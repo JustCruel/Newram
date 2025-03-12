@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Fetch the user's current points to ensure they have enough
-    $stmt = $conn->prepare("SELECT points FROM useracc WHERE account_number = ?");
+    $stmt = $conn->prepare("SELECT points, balance FROM useracc WHERE account_number = ?");
     $stmt->bind_param("s", $accountNumber);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -36,10 +36,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->bind_param("dds", $balanceEquivalent, $pointsToConvert, $accountNumber);
     $stmt->execute();
 
+    // Fetch the updated balance after conversion
+    $stmt = $conn->prepare("SELECT balance FROM useracc WHERE account_number = ?");
+    $stmt->bind_param("s", $accountNumber);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $updatedUser = $result->fetch_assoc();
+    $newBalance = $updatedUser['balance'];
+
     // Check if the update was successful
     if ($stmt->affected_rows > 0) {
-        // Return success message as JSON
-        echo json_encode(['status' => 'success', 'message' => 'Points converted to balance successfully!']);
+        // Return success message along with the updated balance as JSON
+        echo json_encode([
+            'status' => 'success',
+            'message' => 'Points converted to balance successfully!',
+            'new_balance' => $newBalance
+        ]);
     } else {
         // Return error message if the update failed
         echo json_encode(['status' => 'error', 'message' => 'Failed to convert points. Please try again.']);
